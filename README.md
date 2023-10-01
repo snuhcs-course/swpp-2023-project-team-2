@@ -1,10 +1,4 @@
-# SNU-SWPP-Template
-
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
-
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
-
-# [Your Application Name]
+# EmojiHub
 
 [Short application description here]
 
@@ -26,3 +20,15 @@ Please note that the README doesn't affect your grade and is not included in doc
 ### Installation
 
 [Installation link here]
+
+- - -
+### Git Conventions
+
+- 크게 `main`, `release`, `develop` 세 가지의 브랜치를 관리합니다.
+- 모든 commit은 직접 push하지 않습니다. merge 전 반드시 **Pull Request + at least 1 Code Review**를 거칩니다.
+- `develop`: Unit test의 대상이 되는 feature level 코드를 위한 브랜치. 모든 작업은 이곳에 merge하는 것을 기본으로 합니다.
+    - Branch naming convention examples
+    - `feat/user-authentification`
+    - `fix/bottom-sheet-animation`
+- `release`: Iteration 단계에서 integration test 대상이 되는 코드를 위한 브랜치.
+- `main`: Integration test를 통과한 배포 상태의 코드를 위한 브랜치.
