@@ -1,10 +1,10 @@
-package com.goliath.emojihub.api
+package com.goliath.emojihub.springboot
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class ApiApplicationTests {
+class SpringbootApplicationTests {
 
 	@Test
 	fun contextLoads() {

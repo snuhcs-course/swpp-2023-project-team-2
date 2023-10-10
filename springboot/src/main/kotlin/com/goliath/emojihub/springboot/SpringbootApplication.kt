@@ -1,11 +1,11 @@
-package com.goliath.emojihub.api
+package com.goliath.emojihub.springboot
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class ApiApplication
+class SpringbootApplication
 
 fun main(args: Array<String>) {
-	runApplication<ApiApplication>(*args)
+	runApplication<SpringbootApplication>(*args)
 }
