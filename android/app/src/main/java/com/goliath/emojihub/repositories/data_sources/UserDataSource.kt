@@ -1,4 +1,6 @@
 package com.goliath.emojihub.repositories.data_sources
 
-class UserDataSource {
+import javax.inject.Inject
+
+class UserDataSource @Inject constructor() {
 }

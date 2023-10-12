@@ -8,12 +8,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-sealed interface UserUseCase {
+interface UserUseCase {
     fun fetchUser(id: String)
     fun registerUser(id: String, password: String): User
 }
 
-class UserUseCaseImpl (
+@Singleton
+class UserUseCaseImpl @Inject constructor(
     private val repository: UserRepository
 ): UserUseCase {
     override fun fetchUser(id: String) {

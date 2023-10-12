@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-
-class UserViewModel (
+@HiltViewModel
+class UserViewModel @Inject constructor(
     private val userUseCase: UserUseCase
 ): ViewModel() {
 
