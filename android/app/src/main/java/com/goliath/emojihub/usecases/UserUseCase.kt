@@ -3,8 +3,6 @@ package com.goliath.emojihub.usecases
 import com.goliath.emojihub.models.User
 import com.goliath.emojihub.models.dummyUser
 import com.goliath.emojihub.repositories.remote.UserRepository
-import com.goliath.emojihub.viewmodels.Resource
-import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
