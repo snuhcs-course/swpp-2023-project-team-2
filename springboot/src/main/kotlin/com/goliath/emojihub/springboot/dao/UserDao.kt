@@ -1,6 +1,6 @@
 package com.goliath.emojihub.springboot.dao
 
-import com.goliath.emojihub.springboot.model.User
+import com.goliath.emojihub.springboot.dto.UserDto
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import com.google.firebase.cloud.FirestoreClient
@@ -15,13 +15,13 @@ class UserDao {
         const val COLLECTION_NAME = "Users"
     }
 
-    fun getUsers(): List<User> {
-        val list = mutableListOf<User>()
+    fun getUsers(): List<UserDto> {
+        val list = mutableListOf<UserDto>()
         val db: Firestore = FirestoreClient.getFirestore()
         val future = db.collection(COLLECTION_NAME).get()
         val documents: List<QueryDocumentSnapshot> = future.get().documents
         for (document in documents) {
-            list.add(document.toObject(User::class.java))
+            list.add(document.toObject(UserDto::class.java))
         }
         return list
     }

@@ -9,28 +9,37 @@ plugins {
 
 group = "com.goliath.emojihub"
 version = "0.0.1-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
-java {
-	sourceCompatibility = JavaVersion.VERSION_17
-}
+//java {
+//	sourceCompatibility = JavaVersion.VERSION_17
+//}
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	// Web &DB
 	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// Kotlin Features
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+	// Test
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// Firebase
+	implementation("com.google.firebase:firebase-admin:9.2.0")
+
     implementation("org.projectlombok:lombok:1.18.30")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("com.google.firebase:firebase-admin:9.2.0")
 }
 
 tasks.withType<KotlinCompile> {
 	kotlinOptions {
-		freeCompilerArgs += "-Xjsr305=strict"
+		freeCompilerArgs = listOf("-Xjsr305=strict")
 		jvmTarget = "17"
 	}
 }
