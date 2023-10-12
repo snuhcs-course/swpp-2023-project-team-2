@@ -1,6 +1,8 @@
 package com.goliath.emojihub.springboot.dao
 
+import com.goliath.emojihub.springboot.dto.SignUpRequest
 import com.goliath.emojihub.springboot.dto.UserDto
+import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import com.google.firebase.cloud.FirestoreClient
@@ -24,5 +26,17 @@ class UserDao {
             list.add(document.toObject(UserDto::class.java))
         }
         return list
+    }
+
+    fun existUser(userId: String): Boolean {
+        val db: Firestore = FirestoreClient.getFirestore()
+        val future = db.collection(COLLECTION_NAME).document(userId).get()
+        val document: DocumentSnapshot = future.get()
+        return document.exists()
+    }
+
+    fun insertUser(signUpRequest: SignUpRequest) {
+        val db: Firestore = FirestoreClient.getFirestore()
+        val future = db.collection(COLLECTION_NAME).document(signUpRequest.id).set(UserDto(signUpRequest))
     }
 }

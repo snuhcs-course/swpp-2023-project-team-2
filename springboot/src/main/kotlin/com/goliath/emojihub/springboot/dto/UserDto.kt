@@ -27,4 +27,11 @@ data class UserDto (
         result = 31 * result + (email?.hashCode() ?: 0)
         return result
     }
+
+    constructor(signUpRequest: SignUpRequest) : this() {
+        id = signUpRequest.id
+        email = signUpRequest.email
+        username = signUpRequest.username
+        password = signUpRequest.password
+    }
 }
