@@ -6,12 +6,16 @@ import com.google.gson.annotations.SerializedName
 class User(
     dto: UserDto
 ) {
+    var token: String = dto.token
     var likedEmojiList: Array<String> = dto.likedEmojiList
     var createdEmojiList: Array<String> = dto.createdEmojiList
     val userId: String = dto.userId
 }
 
 class UserDto(
+    @SerializedName("token")
+    val token: String,
+
     @SerializedName("user_id")
     val userId: String,
 
@@ -21,3 +25,10 @@ class UserDto(
     @SerializedName("created_emoji_list")
     val createdEmojiList: Array<String>
 )
+
+val dummyUser = User(UserDto(
+    token = "dummy",
+    userId = "1",
+    likedEmojiList = arrayOf(),
+    createdEmojiList = arrayOf()
+))
