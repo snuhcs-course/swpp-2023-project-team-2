@@ -14,23 +14,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewLoginView() {
-    LoginPage(onLoginClicked = { _, _ -> },
-                onCreateAccountClicked = {})
-}
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.viewmodels.UserViewModel
 
 @Composable
-fun LoginPage(
-    onLoginClicked: (String, String) -> Unit,
-    onCreateAccountClicked: () -> Unit
-) {
+fun LoginPage() {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val userViewModel = hiltViewModel<UserViewModel>()
 
     // Your UI components here
     Column(
@@ -53,13 +46,13 @@ fun LoginPage(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { onLoginClicked(username, password) }
+            onClick = {  }
         ) {
             Text("로그인")
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { onCreateAccountClicked() }
+            onClick = { userViewModel.registerUser(username = username, password = password) }
         ) {
             Text("계정 생성")
         }
