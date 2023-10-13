@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -60,6 +61,10 @@ fun LoginPage() {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var isPasswordFocused by remember { mutableStateOf(false) }
 
+    // For "비회원 모드로 시작하기"
+    var isClicked by remember { mutableStateOf(false) }
+    val textColor by animateColorAsState(if (isClicked) Color.LightGray else Color.DarkGray)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -75,9 +80,9 @@ fun LoginPage() {
                 painter = painterResource(id = R.drawable.emojihub),
                 contentDescription = null,
                 modifier = Modifier
+                    .offset(y = (-40).dp)
                     .fillMaxWidth(0.5f)
-                    .aspectRatio(1f)
-                    .offset(y = (-40).dp),
+                    .aspectRatio(1f),
                 contentScale = ContentScale.Fit
             )
             TextField(
@@ -94,6 +99,7 @@ fun LoginPage() {
                     }
                 },
                 modifier = Modifier
+                    .offset(y = (-40).dp)
                     .fillMaxWidth()
                     .height(50.dp)
                     .background(
@@ -102,10 +108,9 @@ fun LoginPage() {
                     .padding(bottom = 1.dp)
                     .onFocusChanged { focusState ->
                         isUsernameFocused = focusState.isFocused
-                    }
-                    .offset(y = (-40).dp),
+                    },
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White, // Set the background color to white
+                    backgroundColor = Color.White,
                     cursorColor = Color.Black,
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.LightGray,
@@ -126,6 +131,7 @@ fun LoginPage() {
                     }
                 },
                 modifier = Modifier
+                    .offset(y = (-40).dp)
                     .fillMaxWidth()
                     .height(50.dp)
                     .background(
@@ -134,10 +140,9 @@ fun LoginPage() {
                     .padding(bottom = 1.dp)
                     .onFocusChanged { focusState ->
                         isPasswordFocused = focusState.isFocused
-                    }
-                    .offset(y = (-40).dp),
+                    },
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White, // Set the background color to white
+                    backgroundColor = Color.White,
                     cursorColor = Color.Black,
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.LightGray,
@@ -147,9 +152,9 @@ fun LoginPage() {
             Button(
                 onClick = { /* TODO Handle Login Click*/ },
                 modifier = Modifier
+                    .offset(y = (-30).dp)
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .offset(y = (-30).dp),
+                    .height(50.dp),
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -166,9 +171,9 @@ fun LoginPage() {
             OutlinedButton(
                 onClick = { /* TODO Handle Sign Up Click */ },
                 modifier = Modifier
+                    .offset(y = (-30).dp)
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .offset(y = (-30).dp),
+                    .height(50.dp),
                 shape = RoundedCornerShape(50),
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
@@ -185,12 +190,15 @@ fun LoginPage() {
             )
             Text(
                 text = "비회원 모드로 시작하기",
-                color = Color.DarkGray, // Adjust color as required
+                color = textColor,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier
-                    .clickable(onClick = { })
-                    .padding(8.dp)
                     .offset (y = 40.dp )
+                    .clickable(onClick = {
+                        isClicked = !isClicked
+                        /* TODO Handle 비회원 모드 Click*/
+                    })
+                    .padding(8.dp)
             )
         }
     }
