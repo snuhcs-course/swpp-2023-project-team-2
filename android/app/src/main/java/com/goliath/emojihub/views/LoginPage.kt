@@ -2,6 +2,7 @@ package com.goliath.emojihub.views
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +65,7 @@ fun LoginPage() {
 
     Box(
         modifier = Modifier
+            .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
             .clickable(interactionSource = interactionSource, indication = null) {
@@ -76,13 +78,10 @@ fun LoginPage() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.emojihub),
+                painter = painterResource(id = R.drawable.logo_horizontal),
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .aspectRatio(1f)
-                    .padding(top = 32.dp),
-                contentScale = ContentScale.Fit
+                    .padding(top = 48.dp)
             )
             TextField(
                 value = username,
@@ -95,6 +94,7 @@ fun LoginPage() {
                 },
                 modifier = Modifier
                     .onFocusChanged { it.isFocused }
+                    .padding(top = 60.dp)
                     .fillMaxWidth(),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -178,7 +178,7 @@ fun LoginPage() {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "비회원 모드로 시작하기",
-                color = Color.LightGray,
+                color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier
                     .clickable {

@@ -81,7 +81,7 @@ fun SignUpPage() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.emojihub),
+                painter = painterResource(id = R.drawable.logo_horizontal),
                 contentDescription = null,
                 modifier = Modifier
                     .offset(y = (-40).dp)
