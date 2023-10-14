@@ -1,11 +1,9 @@
 package com.goliath.emojihub.views
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +12,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -33,9 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,65 +51,58 @@ fun LoginPagePreview() {
     LoginPage()
 }
 
-
 @Composable
 fun LoginPage() {
+
     var username by remember { mutableStateOf(TextFieldValue("")) }
-    var isUsernameFocused by remember { mutableStateOf(false) }
-
     var password by remember { mutableStateOf(TextFieldValue("")) }
-    var isPasswordFocused by remember { mutableStateOf(false) }
 
-    // For "비회원 모드로 시작하기"
-    var isClicked by remember { mutableStateOf(false) }
-    val textColor by animateColorAsState(if (isClicked) Color.LightGray else Color.DarkGray)
+    val focusManager = LocalFocusManager.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val userViewModel = hiltViewModel<UserViewModel>()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable(interactionSource = interactionSource, indication = null) {
+                focusManager.clearFocus()
+            },
         contentAlignment = Alignment.Center
-    )
-    {
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.emojihub),
                 contentDescription = null,
                 modifier = Modifier
-                    .offset(y = (-40).dp)
                     .fillMaxWidth(0.5f)
-                    .aspectRatio(1f),
+                    .aspectRatio(1f)
+                    .padding(top = 32.dp),
                 contentScale = ContentScale.Fit
             )
             TextField(
                 value = username,
-                onValueChange = {
-                    username = it
-                },
-                label = {
-                    if (username.text.isEmpty() && !isUsernameFocused) {
-                        Text(
-                            text = "Username",
-                            color = Color.LightGray
-                        )
-                    }
+                onValueChange = { username = it },
+                placeholder = {
+                    Text(
+                        text = "Username",
+                        color = Color.LightGray
+                    )
                 },
                 modifier = Modifier
-                    .offset(y = (-40).dp)
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(
-                        color = Color.White,
-                    )
-                    .padding(bottom = 1.dp)
-                    .onFocusChanged { focusState ->
-                        isUsernameFocused = focusState.isFocused
-                    },
+                    .onFocusChanged { it.isFocused }
+                    .fillMaxWidth(),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White,
+                    backgroundColor = Color.Transparent,
                     cursorColor = Color.Black,
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.LightGray,
@@ -119,42 +111,36 @@ fun LoginPage() {
             )
             TextField(
                 value = password,
-                onValueChange = {
-                    password = it
-                },
-                label = {
-                    if (password.text.isEmpty() && !isPasswordFocused) {
-                        Text(
-                            text = "Password",
-                            color = Color.LightGray
-                        )
-                    }
+                onValueChange = { password = it },
+                placeholder = {
+                    Text(
+                        text = "Password",
+                        color = Color.LightGray
+                    )
                 },
                 modifier = Modifier
-                    .offset(y = (-40).dp)
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(
-                        color = Color.White,
-                    )
-                    .padding(bottom = 1.dp)
-                    .onFocusChanged { focusState ->
-                        isPasswordFocused = focusState.isFocused
-                    },
+                    .onFocusChanged { it.isFocused }
+                    .fillMaxWidth(),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White,
+                    backgroundColor = Color.Transparent,
                     cursorColor = Color.Black,
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.LightGray,
                 ),
+                visualTransformation = PasswordVisualTransformation(),
                 singleLine = true
             )
             Button(
                 onClick = { /* TODO Handle Login Click*/ },
                 modifier = Modifier
-                    .offset(y = (-30).dp)
+                    .padding(top = 24.dp)
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -169,11 +155,12 @@ fun LoginPage() {
                 }
             )
             OutlinedButton(
-                onClick = { /* TODO Handle Sign Up Click */ },
+                onClick = {
+                    userViewModel.registerUser(username = username.text, password = password.text)
+                },
                 modifier = Modifier
-                    .offset(y = (-30).dp)
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(50),
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
@@ -188,18 +175,17 @@ fun LoginPage() {
                     )
                 }
             )
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "비회원 모드로 시작하기",
-                color = textColor,
+                color = Color.LightGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier
-                    .offset (y = 40.dp )
-                    .clickable(onClick = {
-                        isClicked = !isClicked
+                    .clickable {
                         /* TODO Handle 비회원 모드 Click*/
-                    })
-                    .padding(8.dp)
+                    }
             )
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
