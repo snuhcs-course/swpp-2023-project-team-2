@@ -22,14 +22,14 @@ class UserServiceImpl(private val userDao: UserDao) : UserService {
     }
 
     override fun signUp(signUpRequest: SignUpRequest) {
-        if (userDao.existUser(signUpRequest.id)) {
+        if (userDao.existUser(signUpRequest.username)) {
             throw CustomHttp409("Id already exists.")
         }
         userDao.insertUser(signUpRequest)
     }
 
     override fun login(loginRequest: LoginRequest) {
-        val user = userDao.getUser(loginRequest.id) ?: throw CustomHttp404("Id doesn't exist.")
+        val user = userDao.getUser(loginRequest.username) ?: throw CustomHttp404("Id doesn't exist.")
         if (loginRequest.password != user.password) {
             throw CustomHttp401("Password is incorrect.")
         }

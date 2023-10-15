@@ -28,10 +28,10 @@ class UserDao {
         return list
     }
 
-    fun getUser(userId: String): UserDto? {
+    fun getUser(username: String): UserDto? {
         var userDto: UserDto? = null
         val db: Firestore = FirestoreClient.getFirestore()
-        val future = db.collection(COLLECTION_NAME).document(userId).get()
+        val future = db.collection(COLLECTION_NAME).document(username).get()
         val document: DocumentSnapshot = future.get()
         if (document.exists()) {
             userDto = document.toObject(UserDto::class.java)!!
@@ -39,15 +39,15 @@ class UserDao {
         return userDto
     }
 
-    fun existUser(userId: String): Boolean {
+    fun existUser(username: String): Boolean {
         val db: Firestore = FirestoreClient.getFirestore()
-        val future = db.collection(COLLECTION_NAME).document(userId).get()
+        val future = db.collection(COLLECTION_NAME).document(username).get()
         val document: DocumentSnapshot = future.get()
         return document.exists()
     }
 
     fun insertUser(signUpRequest: SignUpRequest) {
         val db: Firestore = FirestoreClient.getFirestore()
-        val future = db.collection(COLLECTION_NAME).document(signUpRequest.id).set(UserDto(signUpRequest))
+        val future = db.collection(COLLECTION_NAME).document(signUpRequest.username).set(UserDto(signUpRequest))
     }
 }
