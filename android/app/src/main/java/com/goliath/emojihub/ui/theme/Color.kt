@@ -9,3 +9,12 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+object Color {
+    val EmojiHubGray = Color(0xFF42403C)
+    val EmojiHubYellow = Color(0xFFEDBA0A)
+    val EmojiHubLabel = Color(0xFF808080)
+    val EmojiHubDetailLabel = Color(0xFF989898)
+    val EmojiHubRed = Color(0xFFD66464)
+    val EmojiHubDividerColor = Color(0x0D000000)
+}
