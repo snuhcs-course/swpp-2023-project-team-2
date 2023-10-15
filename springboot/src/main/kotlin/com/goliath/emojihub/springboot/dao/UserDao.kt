@@ -29,14 +29,13 @@ class UserDao {
     }
 
     fun getUser(username: String): UserDto? {
-        var userDto: UserDto? = null
         val db: Firestore = FirestoreClient.getFirestore()
         val future = db.collection(COLLECTION_NAME).document(username).get()
         val document: DocumentSnapshot = future.get()
         if (document.exists()) {
-            userDto = document.toObject(UserDto::class.java)!!
+            return document.toObject(UserDto::class.java)
         }
-        return userDto
+        return null
     }
 
     fun existUser(username: String): Boolean {
