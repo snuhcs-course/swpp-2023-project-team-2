@@ -47,6 +47,8 @@ class UserDao {
 
     fun insertUser(signUpRequest: SignUpRequest) {
         val db: Firestore = FirestoreClient.getFirestore()
-        val future = db.collection(COLLECTION_NAME).document(signUpRequest.username).set(UserDto(signUpRequest))
+        db.collection(COLLECTION_NAME)
+            .document(signUpRequest.username)
+            .set(UserDto(signUpRequest))
     }
 }
