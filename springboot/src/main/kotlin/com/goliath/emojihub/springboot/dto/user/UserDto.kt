@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.dto
+package com.goliath.emojihub.springboot.dto.user
 
 data class UserDto (
     var email: String = "",
