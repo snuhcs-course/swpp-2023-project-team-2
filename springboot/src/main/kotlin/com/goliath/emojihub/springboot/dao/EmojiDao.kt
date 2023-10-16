@@ -43,9 +43,12 @@ class EmojiDao {
     }
 
     // TODO: 이 부분은 좀 더 고민해봐야 할 것 같다.
-    fun postEmoji(emoji: EmojiDto) {
+    fun postEmoji(postEmojiRequest: PostEmojiRequest) {
         val db: Firestore = FirestoreClient.getFirestore()
-        val future = db.collection(EMOJI_COLLECTION_NAME).document(emoji.id).set(emoji)
+        val emoji = EmojiDto(postEmojiRequest)
+        db.collection(EMOJI_COLLECTION_NAME)
+            .document(emoji.id)
+            .set(emoji)
     }
 
     fun saveEmoji(userId: String, emojiId: String) {

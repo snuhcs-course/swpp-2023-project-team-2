@@ -1,6 +1,7 @@
 package com.goliath.emojihub.springboot.controller
 
 import com.goliath.emojihub.springboot.dto.emoji.EmojiDto
+import com.goliath.emojihub.springboot.dto.emoji.PostEmojiRequest
 import com.goliath.emojihub.springboot.service.EmojiService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,9 +30,9 @@ class EmojiController (private val emojiService: EmojiService){
 
     @PostMapping("/upload")
     fun postEmoji(
-        @RequestBody emoji: EmojiDto
+        @RequestBody postEmojiRequest: PostEmojiRequest
     ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(emoji), HttpStatus.CREATED)
+        return ResponseEntity(emojiService.postEmoji(postEmojiRequest), HttpStatus.CREATED)
     }
 
     @PutMapping("/save")
