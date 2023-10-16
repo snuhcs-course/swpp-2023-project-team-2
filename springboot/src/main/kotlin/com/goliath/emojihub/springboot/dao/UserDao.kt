@@ -1,7 +1,7 @@
 package com.goliath.emojihub.springboot.dao
 
-import com.goliath.emojihub.springboot.dto.SignUpRequest
-import com.goliath.emojihub.springboot.dto.UserDto
+import com.goliath.emojihub.springboot.dto.user.SignUpRequest
+import com.goliath.emojihub.springboot.dto.user.UserDto
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
