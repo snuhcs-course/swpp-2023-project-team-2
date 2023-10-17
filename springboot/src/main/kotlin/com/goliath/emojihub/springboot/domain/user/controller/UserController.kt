@@ -1,9 +1,9 @@
-package com.goliath.emojihub.springboot.controller
+package com.goliath.emojihub.springboot.domain.user.controller
 
-import com.goliath.emojihub.springboot.dto.LoginRequest
-import com.goliath.emojihub.springboot.dto.SignUpRequest
-import com.goliath.emojihub.springboot.dto.UserDto
-import com.goliath.emojihub.springboot.service.UserService
+import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
+import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
+import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

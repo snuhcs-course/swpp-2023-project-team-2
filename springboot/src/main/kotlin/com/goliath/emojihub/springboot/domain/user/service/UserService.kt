@@ -1,12 +1,12 @@
-package com.goliath.emojihub.springboot.service
+package com.goliath.emojihub.springboot.domain.user.service
 
-import com.goliath.emojihub.springboot.common.CustomHttp401
-import com.goliath.emojihub.springboot.common.CustomHttp404
-import com.goliath.emojihub.springboot.common.CustomHttp409
-import com.goliath.emojihub.springboot.dao.UserDao
-import com.goliath.emojihub.springboot.dto.LoginRequest
-import com.goliath.emojihub.springboot.dto.SignUpRequest
-import com.goliath.emojihub.springboot.dto.UserDto
+import com.goliath.emojihub.springboot.global.common.CustomHttp401
+import com.goliath.emojihub.springboot.global.common.CustomHttp404
+import com.goliath.emojihub.springboot.global.common.CustomHttp409
+import com.goliath.emojihub.springboot.domain.user.dao.UserDao
+import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
+import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
+import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import org.springframework.stereotype.Service
 
 interface UserService {
