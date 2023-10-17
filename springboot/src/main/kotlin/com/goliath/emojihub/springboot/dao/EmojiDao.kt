@@ -45,10 +45,7 @@ class EmojiDao {
         val db: Firestore = FirestoreClient.getFirestore()
         val future = db.collection(EMOJI_COLLECTION_NAME).document(emojiId).get()
         val document: DocumentSnapshot = future.get()
-        if (document.exists()){
-            return document.toObject(EmojiDto::class.java)
-        }
-        return null
+        return document.toObject(EmojiDto::class.java)
     }
 
     // TODO: 이 부분은 좀 더 고민해봐야 할 것 같다.
@@ -103,5 +100,12 @@ class EmojiDao {
         for(user in usersWithDeletedEmoji) {
             user.reference.update("saved_emojis", FieldValue.arrayRemove(emojiId))
         }
+    }
+
+    fun existsEmoji(emojiId: String): Boolean {
+        val db: Firestore = FirestoreClient.getFirestore()
+        val future = db.collection(EMOJI_COLLECTION_NAME).document(emojiId).get()
+        val document: DocumentSnapshot = future.get()
+        return document.exists()
     }
 }

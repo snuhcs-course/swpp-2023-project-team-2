@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -19,12 +20,16 @@ class EmojiController (private val emojiService: EmojiService){
 
     // Get randomly selected emojis with a limit of `numLimit`
     @GetMapping
-    fun getEmojis(numLimit: Int = 10): ResponseEntity<List<EmojiDto>> {
+    fun getEmojis(
+        @RequestParam(value = "numLimit", defaultValue = "10") numLimit: Int
+    ): ResponseEntity<List<EmojiDto>> {
         return ResponseEntity.ok(emojiService.getEmojis(numLimit))
     }
 
     @GetMapping("/search")
-    fun getEmoji(emojiId: String): ResponseEntity<EmojiDto> {
+    fun getEmoji(
+        @RequestParam(value = "emojiId", defaultValue = "") emojiId: String,
+    ): ResponseEntity<EmojiDto> {
         return ResponseEntity.ok(emojiService.getEmoji(emojiId))
     }
 
@@ -37,21 +42,23 @@ class EmojiController (private val emojiService: EmojiService){
 
     @PutMapping("/save")
     fun saveEmoji(
-        @RequestBody userId: String, emojiId: String
+        @RequestParam(value = "userId", defaultValue = "") userId: String,
+        @RequestParam(value = "emojiId", defaultValue = "") emojiId: String,
     ): ResponseEntity<Unit> {
         return ResponseEntity(emojiService.saveEmoji(userId, emojiId), HttpStatus.CREATED)
     }
 
     @PutMapping("/unsave")
     fun unSaveEmoji(
-        @RequestBody userId: String, emojiId: String
+        @RequestParam(value = "userId", defaultValue = "") userId: String,
+        @RequestParam(value = "emojiId", defaultValue = "") emojiId: String,
     ): ResponseEntity<Unit> {
         return ResponseEntity(emojiService.unSaveEmoji(userId, emojiId), HttpStatus.OK)
     }
 
     @DeleteMapping("/delete")
     fun deleteEmoji(
-        @RequestBody emojiId: String
+        @RequestParam(value = "emojiId", defaultValue = "") emojiId: String,
     ): ResponseEntity<Unit> {
         return ResponseEntity(emojiService.deleteEmoji(emojiId), HttpStatus.OK)
     }
