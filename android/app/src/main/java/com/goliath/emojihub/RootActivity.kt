@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -36,11 +38,17 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                val token = userViewModel.loginState.collectAsState().value?.token
-                if (token.isNullOrEmpty()) {
-                    LoginPage()
-                } else {
-                    RootView()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                ) {
+                    val token = userViewModel.loginState.collectAsState().value?.token
+                    if (token.isNullOrEmpty()) {
+                        LoginPage()
+                    } else {
+                        RootView()
+                    }
                 }
             }
         }
