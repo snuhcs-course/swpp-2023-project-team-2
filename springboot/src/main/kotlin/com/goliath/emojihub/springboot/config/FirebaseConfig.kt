@@ -16,6 +16,7 @@ class FirebaseConfig {
             val serviceAccount = FileInputStream("src/main/resources/serviceAccountKey.json")
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setStorageBucket("emojihub-e2023.appspot.com")
                 .build()
             FirebaseApp.initializeApp(options)
         } catch(e: Exception) {

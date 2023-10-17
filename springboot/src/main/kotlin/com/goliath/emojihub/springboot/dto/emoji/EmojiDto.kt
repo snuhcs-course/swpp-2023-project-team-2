@@ -12,15 +12,17 @@ class EmojiDto (
     var emoji_label: String = "",
     var created_at: String = ""
 ){
-    constructor(postEmojiRequest: PostEmojiRequest) : this() {
+    constructor(postEmojiRequest: PostEmojiRequest, emojiVideoUrl: String) : this() {
+        // TODO: 이 constructor도 완전 의식의 흐름대로 만들었다... 수정 필요
         val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         val outputStrLength: Long = 20
         id = java.util.Random().ints(outputStrLength, 0, source.length)
                 .asSequence()
                 .map(source::get)
                 .joinToString("")
+
         created_by = postEmojiRequest.created_by
-        video_url = postEmojiRequest.video_url
+        video_url = emojiVideoUrl
         emoji_unicode = postEmojiRequest.emoji_unicode
         emoji_label = postEmojiRequest.emoji_label
         created_at = getDateTimeNow()
