@@ -11,6 +11,12 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 object Color {
+    val Black = Color(0xFF000000)
+    val White = Color(0xFFFFFFFF)
+    val DarkGray = Color(0xFF333333)
+    val LightGray = Color(0xFFCCCCCC)
+    val Transparent = Color(0x00000000)
+
     val EmojiHubGray = Color(0xFF42403C)
     val EmojiHubYellow = Color(0xFFEDBA0A)
     val EmojiHubLabel = Color(0xFF808080)
