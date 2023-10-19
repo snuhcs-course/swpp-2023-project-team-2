@@ -10,4 +10,7 @@ import dagger.hilt.android.components.ViewModelComponent
 abstract class UseCaseModule {
     @Binds
     abstract fun bindsUserUseCase(impl: UserUseCaseImpl): UserUseCase
+
+    @Binds
+    abstract fun bindsEmojiUseCase(impl: EmojiUseCaseImpl): EmojiUseCase
 }

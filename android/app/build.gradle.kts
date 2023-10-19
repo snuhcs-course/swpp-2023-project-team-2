@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -22,6 +24,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // get properties from `local.properties`
+        buildConfigField("String", "API_BASE_URL", getProperty("API_BASE_URL"))
     }
 
     buildTypes {
@@ -33,19 +38,25 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -98,4 +109,9 @@ dependencies {
 // Allow references to generated code (hilt)
 kapt {
     correctErrorTypes = true
+}
+
+// get property from `local.properties` with key value
+fun getProperty(propertyKey: String): String {
+    return gradleLocalProperties(rootDir).getProperty(propertyKey)
 }
