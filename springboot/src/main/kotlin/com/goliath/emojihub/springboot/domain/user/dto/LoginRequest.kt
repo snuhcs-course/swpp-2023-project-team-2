@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.dto.user
+package com.goliath.emojihub.springboot.domain.user.dto
 
 data class LoginRequest (
     var username: String,

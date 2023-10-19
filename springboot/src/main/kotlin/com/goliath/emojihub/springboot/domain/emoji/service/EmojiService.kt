@@ -1,9 +1,9 @@
-package com.goliath.emojihub.springboot.service
+package com.goliath.emojihub.springboot.domain.emoji.service
 
-import com.goliath.emojihub.springboot.common.CustomHttp404
-import com.goliath.emojihub.springboot.dao.EmojiDao
-import com.goliath.emojihub.springboot.dto.emoji.EmojiDto
-import com.goliath.emojihub.springboot.dto.emoji.PostEmojiRequest
+import com.goliath.emojihub.springboot.global.common.CustomHttp404
+import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
+import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import org.springframework.stereotype.Service
 
 @Service

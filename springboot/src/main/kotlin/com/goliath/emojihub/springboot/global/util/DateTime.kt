@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.util
+package com.goliath.emojihub.springboot.global.util
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

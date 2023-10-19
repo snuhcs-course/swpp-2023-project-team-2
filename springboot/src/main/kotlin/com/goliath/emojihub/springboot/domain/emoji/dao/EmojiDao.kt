@@ -1,8 +1,8 @@
-package com.goliath.emojihub.springboot.dao
+package com.goliath.emojihub.springboot.domain.emoji.dao
 
-import com.goliath.emojihub.springboot.dto.emoji.EmojiDto
-import com.goliath.emojihub.springboot.dto.emoji.PostEmojiRequest
-import com.goliath.emojihub.springboot.util.getDateTimeNow
+import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
+import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
@@ -13,7 +13,6 @@ import com.google.cloud.storage.Storage
 import com.google.firebase.cloud.FirestoreClient
 import com.google.firebase.cloud.StorageClient
 import lombok.extern.slf4j.Slf4j
-import org.slf4j.Logger
 import org.springframework.stereotype.Repository
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
@@ -56,7 +55,8 @@ class EmojiDao {
                                                             .bucket()
                                                             .storage
         // NOTE: created_by(username)을 video이름으로 넣어주어 유저별로 올린 비디오를 구분할 수 있게 한다.
-        val emojiVideoBlobId : BlobId = BlobId.of(EMOJI_STORAGE_BUCKET_NAME,
+        val emojiVideoBlobId : BlobId = BlobId.of(
+            EMOJI_STORAGE_BUCKET_NAME,
             postEmojiRequest.created_by + "_" + getDateTimeNow() + ".mp4")
         val emojiVideoBlob : BlobInfo = BlobInfo.newBuilder(emojiVideoBlobId)
                                                 .setContentType("video/mp4")

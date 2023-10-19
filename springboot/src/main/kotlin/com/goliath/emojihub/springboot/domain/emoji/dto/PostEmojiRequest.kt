@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.dto.emoji
+package com.goliath.emojihub.springboot.domain.emoji.dto
 
 class PostEmojiRequest (
     var created_by: String = "",

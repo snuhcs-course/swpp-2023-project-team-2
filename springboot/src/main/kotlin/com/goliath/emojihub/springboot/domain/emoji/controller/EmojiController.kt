@@ -1,8 +1,8 @@
-package com.goliath.emojihub.springboot.controller
+package com.goliath.emojihub.springboot.domain.emoji.controller
 
-import com.goliath.emojihub.springboot.dto.emoji.EmojiDto
-import com.goliath.emojihub.springboot.dto.emoji.PostEmojiRequest
-import com.goliath.emojihub.springboot.service.EmojiService
+import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
+import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping

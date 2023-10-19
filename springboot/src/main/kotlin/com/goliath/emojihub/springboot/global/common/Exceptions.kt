@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.common
+package com.goliath.emojihub.springboot.global.common
 
 import org.springframework.http.HttpStatus
 

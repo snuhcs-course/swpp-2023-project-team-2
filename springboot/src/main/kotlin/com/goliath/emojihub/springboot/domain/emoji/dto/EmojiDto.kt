@@ -1,6 +1,6 @@
-package com.goliath.emojihub.springboot.dto.emoji
+package com.goliath.emojihub.springboot.domain.emoji.dto
 
-import com.goliath.emojihub.springboot.util.getDateTimeNow
+import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import kotlin.streams.asSequence
 
 class EmojiDto (
