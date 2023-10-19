@@ -4,31 +4,66 @@ import com.google.gson.annotations.SerializedName
 
 // TODO: replace with `Array<Emoji>`
 class User(
-    dto: UserDto
+    dto: UserDtoList
 ) {
-    var token: String = dto.token
-    var likedEmojiList: Array<String> = dto.likedEmojiList
-    var createdEmojiList: Array<String> = dto.createdEmojiList
-    val userId: String = dto.userId
+    var token: String = dto.email
+    // var likedEmojiList: Array<String> = dto.likedEmojiList ?: arrayOf()
+    // var createdEmojiList: Array<String> = dto.createdEmojiList ?: arrayOf()
+    val name: String = dto.name
 }
 
-class UserDto(
-    @SerializedName("token")
-    val token: String,
+// after login
+//data class UserDto(
+//    @SerializedName("token")
+//    val token: String,
+//
+//    @SerializedName("email")
+//    val email: String,
+//
+//    @SerializedName("username")
+//    val name: String,
+//
+//    @SerializedName("liked_emojis")
+//    val likedEmojiList: String?,
+//
+//    @SerializedName("created_emojis")
+//    val createdEmojiList: String?
+//)
 
-    @SerializedName("user_id")
-    val userId: String,
+// user list: will be deprecated
+data class UserDtoList(
+    @SerializedName("email")
+    val email: String,
 
-    @SerializedName("liked_emoji_list")
-    val likedEmojiList: Array<String>,
+    @SerializedName("username")
+    val name: String,
 
-    @SerializedName("created_emoji_list")
-    val createdEmojiList: Array<String>
+    @SerializedName("password")
+    val password: String,
+
+    @SerializedName("liked_emojis")
+    val likedEmojiList: String?,
+
+    @SerializedName("created_emojis")
+    val createdEmojiList: String?
 )
 
-val dummyUser = User(UserDto(
-    token = "dummy",
-    userId = "1",
-    likedEmojiList = arrayOf(),
-    createdEmojiList = arrayOf()
+class RegisterUser(
+    @SerializedName("username")
+    val name: String,
+
+    @SerializedName("email")
+    val email: String,
+
+    @SerializedName("password")
+    val password: String,
+)
+
+val dummyUser = User(UserDtoList(
+    //token = "dummy",
+    email = "example@exmaple.com",
+    name = "1",
+    password = "1234",
+    likedEmojiList = null,
+    createdEmojiList = null
 ))

@@ -1,4 +1,4 @@
-package com.goliath.emojihub.repositories
+package com.goliath.emojihub.data_sources
 
 import com.goliath.emojihub.BuildConfig
 

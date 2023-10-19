@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,14 +22,15 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.R
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
+import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
 @Composable
@@ -62,6 +63,7 @@ fun LoginPage() {
     val interactionSource = remember { MutableInteractionSource() }
 
     val userViewModel = hiltViewModel<UserViewModel>()
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -156,7 +158,11 @@ fun LoginPage() {
             )
             OutlinedButton(
                 onClick = {
-                    userViewModel.registerUser(username = username.text, password = password.text)
+                    coroutineScope.launch {
+                        userViewModel.registerUser(
+                            username = username.text,
+                            password = password.text)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -176,6 +182,12 @@ fun LoginPage() {
                 }
             )
             Spacer(modifier = Modifier.weight(1f))
+
+            // fetch entire user list
+            Text(
+                text = userViewModel.userState.collectAsState().value.toString()
+            )
+
             Text(
                 text = "비회원 모드로 시작하기",
                 color = Color.DarkGray,
@@ -183,6 +195,9 @@ fun LoginPage() {
                 modifier = Modifier
                     .clickable {
                         /* TODO Handle 비회원 모드 Click*/
+                        coroutineScope.launch {
+                            userViewModel.fetchUserList()
+                        }
                     }
             )
             Spacer(modifier = Modifier.height(24.dp))

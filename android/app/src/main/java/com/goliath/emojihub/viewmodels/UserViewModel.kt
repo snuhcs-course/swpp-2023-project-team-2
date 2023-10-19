@@ -17,11 +17,17 @@ class UserViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<User?>(null)
     val loginState = _loginState.asStateFlow()
 
-    fun fetchUser(id: String) {
+    val userState = userUseCase.userState
+
+    suspend fun fetchUserList() {
+        userUseCase.fetchUserList()
+    }
+
+    suspend fun fetchUser(id: String) {
         userUseCase.fetchUser(id)
     }
 
-    fun registerUser(username: String, password: String) {
+    suspend fun registerUser(username: String, password: String) {
         _loginState.update { userUseCase.registerUser(username, password) }
     }
 }

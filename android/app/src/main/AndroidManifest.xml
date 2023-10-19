@@ -16,6 +16,7 @@
         android:icon="@mipmap/emojihub_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.EmojiHub"
         tools:targetApi="31">
         <activity
