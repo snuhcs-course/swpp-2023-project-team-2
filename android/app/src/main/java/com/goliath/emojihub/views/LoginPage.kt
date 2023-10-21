@@ -138,7 +138,11 @@ fun LoginPage() {
                 singleLine = true
             )
             Button(
-                onClick = { /* TODO Handle Login Click*/ },
+                onClick = {
+                      coroutineScope.launch {
+                          userViewModel.login(username.text, password.text)
+                      }
+                },
                 modifier = Modifier
                     .padding(top = 24.dp)
                     .fillMaxWidth()

@@ -1,7 +1,9 @@
 package com.goliath.emojihub.usecases
 
+import android.util.Log
+import com.goliath.emojihub.models.LoginUserDto
+import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
-import com.goliath.emojihub.models.dummyUser
 import com.goliath.emojihub.repositories.remote.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +16,8 @@ sealed interface UserUseCase {
 
     suspend fun fetchUserList()
     suspend fun fetchUser(id: String)
-    suspend fun registerUser(id: String, password: String): User
+    suspend fun registerUser(email: String, name: String, password: String)
+    suspend fun login(name: String, password: String)
 }
 
 @Singleton
@@ -36,7 +39,14 @@ class UserUseCaseImpl @Inject constructor(
         repository.fetchUser(id)
     }
 
-    override suspend fun registerUser(id: String, password: String): User {
-        return dummyUser
+    override suspend fun registerUser(email: String, name: String, password: String) {
+        val dto = RegisterUserDto(email, name, password)
+        repository.registerUser(dto)
+    }
+
+    override suspend fun login(name: String, password: String) {
+        val dto = LoginUserDto(name, password)
+        val result = repository.login(dto)
+        Log.d("login result", result.toString())
     }
 }

@@ -48,15 +48,15 @@ data class UserDtoList(
     val createdEmojiList: String?
 )
 
-class RegisterUser(
-    @SerializedName("username")
-    val name: String,
-
-    @SerializedName("email")
+class RegisterUserDto(
+    @SerializedName("username") val name: String,
     val email: String,
-
-    @SerializedName("password")
     val password: String,
+)
+
+class LoginUserDto(
+    @SerializedName("username") val name: String,
+    val password: String
 )
 
 val dummyUser = User(UserDtoList(

@@ -1,6 +1,8 @@
 package com.goliath.emojihub.repositories.remote
 
 import com.goliath.emojihub.data_sources.UserApi
+import com.goliath.emojihub.models.LoginUserDto
+import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.UserDtoList
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -8,7 +10,8 @@ import javax.inject.Singleton
 interface UserRepository {
     suspend fun fetchUserList(): Array<UserDtoList>
     fun fetchUser(name: String)
-    fun registerUser(email: String, name: String, password: String)
+    suspend fun registerUser(dto: RegisterUserDto)
+    suspend fun login(dto: LoginUserDto): Unit?
 }
 
 @Singleton
@@ -23,7 +26,11 @@ class UserRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun registerUser(email: String, name: String, password: String) {
-        TODO("Not yet implemented")
+    override suspend fun registerUser(dto: RegisterUserDto) {
+        userApi.registerUser(dto)
+    }
+
+    override suspend fun login(dto: LoginUserDto): Unit? {
+        return userApi.login(dto).body()
     }
 }
