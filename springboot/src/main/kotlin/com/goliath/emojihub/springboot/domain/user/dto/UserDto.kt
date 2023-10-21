@@ -30,4 +30,8 @@ data class UserDto (
         username = signUpRequest.username
         password = signUpRequest.password
     }
+
+    data class AuthToken(
+        val accessToken: String,
+    )
 }
