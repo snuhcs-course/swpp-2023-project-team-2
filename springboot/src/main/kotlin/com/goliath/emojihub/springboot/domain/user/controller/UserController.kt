@@ -26,7 +26,7 @@ class UserController (private val userService: UserService) {
     @PostMapping("/login")
     fun login(
         @RequestBody loginRequest: LoginRequest
-    ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(userService.login(loginRequest))
+    ): ResponseEntity<UserDto.AuthToken> {
+        return userService.login(loginRequest)
     }
 }
