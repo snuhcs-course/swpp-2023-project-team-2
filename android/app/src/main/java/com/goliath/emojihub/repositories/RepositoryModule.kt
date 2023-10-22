@@ -1,5 +1,7 @@
 package com.goliath.emojihub.repositories
 
+import com.goliath.emojihub.repositories.remote.EmojiRepository
+import com.goliath.emojihub.repositories.remote.EmojiRepositoryImpl
 import com.goliath.emojihub.repositories.remote.UserRepository
 import com.goliath.emojihub.repositories.remote.UserRepositoryImpl
 import dagger.Binds
@@ -12,4 +14,7 @@ import dagger.hilt.components.SingletonComponent
 abstract class RepositoryModule {
     @Binds
     abstract fun bindsUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    abstract fun bindsEmojiRepository(impl: EmojiRepositoryImpl): EmojiRepository
 }
