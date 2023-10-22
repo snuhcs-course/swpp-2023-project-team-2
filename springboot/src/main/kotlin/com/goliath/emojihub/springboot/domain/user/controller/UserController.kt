@@ -1,9 +1,9 @@
-package com.goliath.emojihub.springboot.controller
+package com.goliath.emojihub.springboot.domain.user.controller
 
-import com.goliath.emojihub.springboot.dto.LoginRequest
-import com.goliath.emojihub.springboot.dto.SignUpRequest
-import com.goliath.emojihub.springboot.dto.UserDto
-import com.goliath.emojihub.springboot.service.UserService
+import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
+import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
+import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -19,14 +19,14 @@ class UserController (private val userService: UserService) {
     @PostMapping("/signup")
     fun signUp(
         @RequestBody signUpRequest: SignUpRequest
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<UserDto.AuthToken> {
         return ResponseEntity(userService.signUp(signUpRequest), HttpStatus.CREATED)
     }
 
     @PostMapping("/login")
     fun login(
         @RequestBody loginRequest: LoginRequest
-    ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(userService.login(loginRequest))
+    ): ResponseEntity<UserDto.AuthToken> {
+        return userService.login(loginRequest)
     }
 }
