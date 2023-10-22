@@ -19,3 +19,9 @@ data class EmojiDto(
     @SerializedName("video") val videoLink: String,
     val unicode: String
 )
+
+data class EmojiMetaDataDto(
+    @SerializedName("emoji") val emoji: String,
+    @SerializedName("used_by") val usedBy: String,
+    @SerializedName("used_at") val usedAt: String
+)

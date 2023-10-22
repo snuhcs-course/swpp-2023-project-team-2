@@ -26,6 +26,11 @@ class UserDto(
     val createdEmojiList: Array<String>
 )
 
+// TODO: refactor directory if needed
+data class UserResponse(
+    @SerializedName("access_token") val token: String
+)
+
 val dummyUser = User(UserDto(
     token = "dummy",
     userId = "1",
