@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.goliath.emojihub.R
+import com.goliath.emojihub.models.dummyPost
 
 @Composable
 fun BottomNavigationBar(
@@ -12,7 +13,7 @@ fun BottomNavigationBar(
 ) {
     NavHost(navController, startDestination = PageItem.Feed.screenRoute) {
         composable(PageItem.Feed.screenRoute) {
-            FeedPage()
+            FeedPage((1..10).map { dummyPost })
         }
 
         composable(PageItem.Emoji.screenRoute) {

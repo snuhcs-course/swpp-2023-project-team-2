@@ -25,6 +25,7 @@ import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginPage
+import com.goliath.emojihub.views.SignUpPage
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
 

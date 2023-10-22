@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.config
+package com.goliath.emojihub.springboot.global.config
 
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -13,7 +13,7 @@ class FirebaseConfig {
     @PostConstruct
     fun init() {
         try {
-            val serviceAccount = FileInputStream("src/main/resources/serviceAccountKey.json")
+            val serviceAccount = FileInputStream("springboot/src/main/resources/serviceAccountKey.json")
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build()

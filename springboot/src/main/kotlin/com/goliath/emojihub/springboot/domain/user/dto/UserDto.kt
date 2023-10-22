@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.dto
+package com.goliath.emojihub.springboot.domain.user.dto
 
 data class UserDto (
     var email: String = "",
@@ -30,4 +30,8 @@ data class UserDto (
         username = signUpRequest.username
         password = signUpRequest.password
     }
+
+    data class AuthToken(
+        val accessToken: String,
+    )
 }

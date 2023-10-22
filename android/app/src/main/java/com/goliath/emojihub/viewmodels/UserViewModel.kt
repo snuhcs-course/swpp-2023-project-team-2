@@ -6,7 +6,6 @@ import com.goliath.emojihub.usecases.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,11 +16,21 @@ class UserViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<User?>(null)
     val loginState = _loginState.asStateFlow()
 
-    fun fetchUser(id: String) {
+    val userState = userUseCase.userState
+
+    suspend fun fetchUserList() {
+        userUseCase.fetchUserList()
+    }
+
+    suspend fun fetchUser(id: String) {
         userUseCase.fetchUser(id)
     }
 
-    fun registerUser(username: String, password: String) {
-        _loginState.update { userUseCase.registerUser(username, password) }
+    suspend fun login(username: String, password: String) {
+        userUseCase.login(username, password)
+    }
+
+    suspend fun registerUser(username: String, password: String) {
+        //_loginState.update { userUseCase.registerUser(username, password) }
     }
 }
