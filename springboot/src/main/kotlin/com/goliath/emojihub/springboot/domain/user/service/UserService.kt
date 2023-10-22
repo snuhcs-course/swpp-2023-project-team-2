@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 
 interface UserService {
     fun getUsers(): List<UserDto>
-    fun signUp(signUpRequest: SignUpRequest)
+    fun signUp(signUpRequest: SignUpRequest): UserDto.AuthToken
     fun login(loginRequest: LoginRequest): ResponseEntity<UserDto.AuthToken>
 }
 
@@ -26,11 +26,13 @@ class UserServiceImpl(
         return userDao.getUsers()
     }
 
-    override fun signUp(signUpRequest: SignUpRequest) {
+    override fun signUp(signUpRequest: SignUpRequest): UserDto.AuthToken {
         if (userDao.existUser(signUpRequest.username)) {
             throw CustomHttp409("Id already exists.")
         }
         userDao.insertUser(signUpRequest)
+        val authToken = jwtTokenProvider.createToken(signUpRequest.username)
+        return UserDto.AuthToken(authToken)
     }
 
     override fun login(loginRequest: LoginRequest): ResponseEntity<UserDto.AuthToken> {
