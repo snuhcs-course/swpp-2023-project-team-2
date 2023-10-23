@@ -59,6 +59,11 @@ class LoginUserDto(
     val password: String
 )
 
+// TODO: refactor directory if needed
+data class UserResponse(
+    @SerializedName("access_token") val token: String
+)
+
 val dummyUser = User(UserDtoList(
     //token = "dummy",
     email = "example@exmaple.com",
