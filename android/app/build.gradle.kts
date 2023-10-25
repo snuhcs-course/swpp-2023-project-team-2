@@ -25,8 +25,9 @@ android {
             useSupportLibrary = true
         }
 
+        // FIXME: temporarily disable lint
         // get properties from `local.properties`
-        buildConfigField("String", "API_BASE_URL", getProperty("API_BASE_URL"))
+//        buildConfigField("String", "API_BASE_URL", getProperty("API_BASE_URL"))
     }
 
     buildTypes {
@@ -104,6 +105,10 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // pytorch mobile
+    implementation("org.pytorch:pytorch_android:1.8.0")
+    implementation("org.pytorch:pytorch_android_torchvision:1.8.0")
 }
 
 // Allow references to generated code (hilt)
@@ -111,7 +116,8 @@ kapt {
     correctErrorTypes = true
 }
 
-// get property from `local.properties` with key value
-fun getProperty(propertyKey: String): String {
-    return gradleLocalProperties(rootDir).getProperty(propertyKey)
-}
+// FIXME: Temporarily disable lint
+//// get property from `local.properties` with key value
+//fun getProperty(propertyKey: String): String {
+//    return gradleLocalProperties(rootDir).getProperty(propertyKey)
+//}
