@@ -44,7 +44,7 @@ class RootActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(Color.White)
                 ) {
-                    val token = userViewModel.loginState.collectAsState().value?.token
+                    val token = userViewModel.userState.collectAsState().value?.accessToken
                     if (token.isNullOrEmpty()) {
                         LoginPage()
                     } else {
@@ -67,10 +67,10 @@ fun RootView(modifier: Modifier = Modifier) {
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
-                pageItemList.forEach {
+                pageItemList.forEach { pageItem ->
                     BottomNavigationItem(
-                        selected = currentRoute == it.screenRoute,
-                        onClick = { navController.navigate(it.screenRoute) {
+                        selected = currentRoute == pageItem.screenRoute,
+                        onClick = { navController.navigate(pageItem.screenRoute) {
                             navController.graph.startDestinationRoute?.let {
                                 popUpTo(it) { saveState = true }
                             }
@@ -79,9 +79,9 @@ fun RootView(modifier: Modifier = Modifier) {
                         } },
                         icon = {
                             Icon(
-                                painter = painterResource(id = it.icon),
+                                painter = painterResource(id = pageItem.icon),
                                 contentDescription = "",
-                                tint = if (currentRoute == it.screenRoute) Color.Black else Color.LightGray)
+                                tint = if (currentRoute == pageItem.screenRoute) Color.Black else Color.LightGray)
                         }
                     )
                 }

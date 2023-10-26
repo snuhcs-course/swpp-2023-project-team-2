@@ -2,33 +2,18 @@ package com.goliath.emojihub.models
 
 import com.google.gson.annotations.SerializedName
 
-// TODO: replace with `Array<Emoji>`
+// TODO: implement User and UserDto
 class User(
-    dto: UserDtoList
+    dto: UserDto
 ) {
-    var token: String = dto.email
-    // var likedEmojiList: Array<String> = dto.likedEmojiList ?: arrayOf()
-    // var createdEmojiList: Array<String> = dto.createdEmojiList ?: arrayOf()
+    var accessToken: String = dto.accessToken
     val name: String = dto.name
 }
 
-// after login
-//data class UserDto(
-//    @SerializedName("token")
-//    val token: String,
-//
-//    @SerializedName("email")
-//    val email: String,
-//
-//    @SerializedName("username")
-//    val name: String,
-//
-//    @SerializedName("liked_emojis")
-//    val likedEmojiList: String?,
-//
-//    @SerializedName("created_emojis")
-//    val createdEmojiList: String?
-//)
+data class UserDto(
+    val accessToken: String,
+    val name: String
+)
 
 // user list: will be deprecated
 data class UserDtoList(
@@ -56,19 +41,5 @@ class RegisterUserDto(
 
 class LoginUserDto(
     @SerializedName("username") val name: String,
-    val password: String
+    @SerializedName("password") val password: String
 )
-
-// TODO: refactor directory if needed
-data class UserResponse(
-    @SerializedName("access_token") val token: String
-)
-
-val dummyUser = User(UserDtoList(
-    //token = "dummy",
-    email = "example@exmaple.com",
-    name = "1",
-    password = "1234",
-    likedEmojiList = null,
-    createdEmojiList = null
-))

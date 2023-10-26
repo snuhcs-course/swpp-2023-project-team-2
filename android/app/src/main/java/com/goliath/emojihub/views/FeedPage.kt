@@ -25,7 +25,7 @@ fun FeedPage(
     ) {
         items(postList) { post ->
             PostCell(post = post)
-            Divider(color = EmojiHubDividerColor, thickness = 1.dp)
+            Divider(color = EmojiHubDividerColor, thickness = 0.5.dp)
         }
     }
 }
