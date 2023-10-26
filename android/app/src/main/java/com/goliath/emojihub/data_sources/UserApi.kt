@@ -3,24 +3,26 @@ package com.goliath.emojihub.data_sources
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.UserDtoList
+import com.goliath.emojihub.models.responses.LoginResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 
 interface UserApi {
-    @GET("/user")
+    @GET("user")
     suspend fun fetchUserList(
 
     ): Response<Array<UserDtoList>>
 
-    @POST("/user/signup")
+    @POST("user/signup")
     suspend fun registerUser(
         @Body body: RegisterUserDto
     ): Response<String>
 
-    @POST("/user/login")
+    @POST("user/login")
     suspend fun login(
         @Body body: LoginUserDto
-    ): Response<Unit>
+    ): Response<LoginResponseDto>
 }

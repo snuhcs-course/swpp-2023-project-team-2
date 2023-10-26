@@ -163,9 +163,7 @@ fun LoginPage() {
             OutlinedButton(
                 onClick = {
                     coroutineScope.launch {
-                        userViewModel.registerUser(
-                            username = username.text,
-                            password = password.text)
+
                     }
                 },
                 modifier = Modifier

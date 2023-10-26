@@ -22,62 +22,68 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.EmptyProfile
 import com.goliath.emojihub.views.components.ProfileMenuCell
 
 @Composable
 fun ProfilePage(
 
 ) {
-    //val userViewModel = hiltViewModel<UserViewModel>()
+    val userViewModel = hiltViewModel<UserViewModel>()
+    val currentUser = userViewModel.userState.collectAsState().value
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        // TODO: add NavigationBar
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
+        if (!currentUser?.accessToken.isNullOrEmpty()) {
+            // TODO: add NavigationBar
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
             ) {
-                Text(
-                    text = "Username",
-                    fontSize = 12.sp,
-                    color = EmojiHubDetailLabel
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "@example",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    Text(
+                        text = "Username",
+                        fontSize = 12.sp,
+                        color = EmojiHubDetailLabel
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "@" + currentUser?.name,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ProfileMenuCell(label = "내가 작성한 포스트", needsTrailingButton = true) {
+                    // for test
+                    Log.d("profile menu", "내가 작성한 포스트")
+                }
+                ProfileMenuCell(label = "내가 만든 이모지", needsTrailingButton = true) {}
+                ProfileMenuCell(label = "저장된 이모지", needsTrailingButton = true) {}
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ProfileMenuCell(label = "로그아웃") {}
+                ProfileMenuCell(label = "회원 탈퇴", isDestructive = true) {}
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-            Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ProfileMenuCell(label = "내가 작성한 포스트", needsTrailingButton = true) {
-                // for test
-                Log.d("profile menu", "내가 작성한 포스트")
-            }
-            ProfileMenuCell(label = "내가 만든 이모지", needsTrailingButton = true) {}
-            ProfileMenuCell(label = "저장된 이모지", needsTrailingButton = true) {}
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ProfileMenuCell(label = "로그아웃") {}
-            ProfileMenuCell(label = "회원 탈퇴", isDestructive = true) {}
+        } else {
+            EmptyProfile()
         }
     }
 }

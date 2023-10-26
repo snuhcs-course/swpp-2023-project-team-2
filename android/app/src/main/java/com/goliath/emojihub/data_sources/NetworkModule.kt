@@ -9,6 +9,7 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.reflect.Type
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -16,6 +17,7 @@ object NetworkModule {
     private const val baseURL = API_BASE_URL
 
     @Provides
+    @Singleton
     fun provideRetrofit(
 
     ): Retrofit {
@@ -27,6 +29,7 @@ object NetworkModule {
     }
 
     @Provides
+    @Singleton
     fun providesUserRestApi(retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
     }
