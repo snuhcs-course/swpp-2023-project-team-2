@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
@@ -34,10 +35,10 @@ fun TransformVideoPage(
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(viewModel.videoUri))
+            repeatMode = Player.REPEAT_MODE_ALL
             prepare()
         }
     }
-    val isPlaying = exoPlayer.isPlaying
 
     Scaffold(
         topBar = {
