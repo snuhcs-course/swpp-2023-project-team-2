@@ -1,7 +1,13 @@
 package com.goliath.emojihub.views
 
-import android.content.Intent
-import android.provider.MediaStore
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,16 +21,28 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContextCompat
 import com.goliath.emojihub.ui.theme.Color
-
 
 @Composable
 fun EmojiPage() {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    val pickMediaLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri.let { Log.d("PhotoPicker", "Selected URI: $uri") }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -36,7 +54,20 @@ fun EmojiPage() {
         ) {
             Button(
                 onClick = {
-                    // TODO: implement
+                    when (PackageManager.PERMISSION_GRANTED) {
+                        ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.READ_MEDIA_VIDEO
+                        ) -> {
+                            pickMediaLauncher.launch(PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.VideoOnly
+                            ))
+                        }
+                        else -> {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                permissionLauncher.launch(Manifest.permission.READ_MEDIA_VIDEO)
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier
                     .padding(top = 24.dp)
@@ -59,6 +90,7 @@ fun EmojiPage() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
 @Composable
 fun EmojiPagePreview() {
