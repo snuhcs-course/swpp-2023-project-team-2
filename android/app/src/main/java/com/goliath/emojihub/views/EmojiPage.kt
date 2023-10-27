@@ -27,11 +27,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
 fun EmojiPage() {
     val context = LocalContext.current
+    val navController = LocalNavController.current
+
+    val viewModel = hiltViewModel<EmojiViewModel>()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -40,7 +47,11 @@ fun EmojiPage() {
     val pickMediaLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri.let { Log.d("PhotoPicker", "Selected URI: $uri") }
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            viewModel.videoUri = uri
+            navController.navigate(NavigationDestination.TransformVideo)
+        }
     }
 
     Box(
