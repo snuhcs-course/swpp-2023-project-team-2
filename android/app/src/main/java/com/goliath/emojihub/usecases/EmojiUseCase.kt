@@ -1,5 +1,6 @@
 package com.goliath.emojihub.usecases
 
+import android.net.Uri
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import javax.inject.Inject
@@ -7,7 +8,7 @@ import javax.inject.Singleton
 
 interface EmojiUseCase {
     fun fetchEmojiList()
-    fun createEmoji(videoUrl: String)
+    fun createEmoji(videoUri: Uri): Pair<String, String>?
 }
 
 @Singleton
@@ -19,8 +20,7 @@ class EmojiUseCaseImpl @Inject constructor(
         repository.fetchEmojiList()
     }
 
-    override fun createEmoji(videoUrl: String) {
-        // TODO: Implement this function
-        model.createEmoji(videoUrl)
+    override fun createEmoji(videoUri: Uri) : Pair<String, String>? {
+        return model.createEmoji(videoUri)
     }
 }
