@@ -4,6 +4,7 @@ import android.util.Log
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
+import com.goliath.emojihub.models.UserDto
 import com.goliath.emojihub.repositories.remote.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 sealed interface UserUseCase {
-    val userState: StateFlow<Array<User>>
+    val userState: StateFlow<User?>
 
     suspend fun fetchUserList()
     suspend fun fetchUser(id: String)
@@ -25,14 +26,14 @@ class UserUseCaseImpl @Inject constructor(
     private val repository: UserRepository
 ): UserUseCase {
 
-    private val _userState = MutableStateFlow<Array<User>>(arrayOf())
-    override val userState: StateFlow<Array<User>>
+    private val _userState = MutableStateFlow<User?>(null)
+    override val userState: StateFlow<User?>
         get() = _userState
 
+    // TODO: remove
     override suspend fun fetchUserList() {
         val userDtoList = repository.fetchUserList()
-        val userList = userDtoList.map { User(it) }.toTypedArray()
-        _userState.update { userList }
+        print(userDtoList)
     }
 
     override suspend fun fetchUser(id: String) {
@@ -46,7 +47,10 @@ class UserUseCaseImpl @Inject constructor(
 
     override suspend fun login(name: String, password: String) {
         val dto = LoginUserDto(name, password)
-        val result = repository.login(dto)
-        Log.d("login result", result.toString())
+        val accessToken = repository.login(dto)
+        if (!accessToken.isNullOrEmpty()) {
+            Log.d("Login Success: Access token", accessToken)
+            _userState.update { User(UserDto(accessToken, name)) }
+        }
     }
 }
