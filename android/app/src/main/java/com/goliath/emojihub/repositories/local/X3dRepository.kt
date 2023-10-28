@@ -16,6 +16,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.exp
 
 interface X3dRepository {
     fun createEmoji(videoUri: Uri): Pair<String, String>?
@@ -26,27 +27,36 @@ class X3dRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): X3dRepository {
     companion object{
-        // !IMPORTANT! : CROP_SIZE, COUNT_OF_FRAMES_PER_INFERENCE should be same as
-        //              those specified when converting Pytorch model to TorchScript
-        //              In tutorial jupyter notebook (pytorchvideo/tutorials/accelerator/Use_PytorchVideo_Accelerator_Model_Zoo.ipynb),
-        //              CROP_SIZE = 160, COUNT_OF_FRAMES_PER_INFERENCE = 4
+        /*
+         !IMPORTANT! : CROP_SIZE, COUNT_OF_FRAMES_PER_INFERENCE should be same as
+                      those specified when converting Pytorch model to TorchScript
+                      In tutorial jupyter notebook (pytorchvideo/tutorials/accelerator/Use_PytorchVideo_Accelerator_Model_Zoo.ipynb),
+                      CROP_SIZE = 160, COUNT_OF_FRAMES_PER_INFERENCE = 4
+         !IMPORTANT! : SAMPLING_RATE should be same as X3D config
+                      from X3D paper https://arxiv.org/pdf/2004.04730.pdf
+                     for XS expansion - SAMPLING_RATE = 12, COUNT_OF_FRAMES_PER_INFERENCE = 4
+                     for S expansion - SAMPLING_RATE = 6, COUNT_OF_FRAMES_PER_INFERENCE = 13
+         TODO: refer to the original paper, apply dimension parameters
+              X-fast, X-temporal, X-spatial, X-Depth, X-Width,X-Bottleneck
+        */
         const val SIDE_SIZE = 160
         val MEAN = floatArrayOf(0.45F, 0.45F, 0.45F)
         val STD = floatArrayOf(0.225F, 0.225F, 0.225F)
         const val CROP_SIZE = 160
         const val NUM_CHANNELS = 3
         const val FRAMES_PER_SECOND = 30
+        const val SAMPLING_RATE = 12
         const val COUNT_OF_FRAMES_PER_INFERENCE = 4
         const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
         const val SCORE_THRESHOLD = 0.5F
     }
 
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
-        val x3dModule = loadModule("efficient_x3d_xs_tutorial_int8.pt") ?: return null
+        val x3dModule = loadModule("efficient_x3d_xs_tutorial_float.pt") ?: return null
         val (classNameFilePath, classUnicodeFilePath) = checkAnnotationFilesExist() ?: return null
         val mediaMetadataRetriever = loadVideoMediaMetadataRetriever(videoUri) ?: return null
         val videoTensor = extractFrameTensorsFromVideo(mediaMetadataRetriever) ?: return null
-        val (maxScoreIdx, maxScore) = runInference(x3dModule, videoTensor)?: return null
+        val (maxScoreIdx, maxScore) = runInference(x3dModule, videoTensor)
         if (maxScore < SCORE_THRESHOLD) {
             Log.e("X3d Repository", "Score is lower than threshold")
             return null
@@ -131,15 +141,16 @@ class X3dRepositoryImpl @Inject constructor(
         try {
             val videoLengthInMs = mediaMetadataRetriever.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_DURATION
-            )?.toLong() ?: 0
+            )?.toLong() ?: return null
 
             val inTensorBuffer = Tensor.allocateFloatBuffer(MODEL_INPUT_SIZE)
             // uniformly sample from videoTensor
-            val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
+//            val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
+            val frameInterval = ((SAMPLING_RATE * 1000) / FRAMES_PER_SECOND).toLong()
             for (i in 0 until COUNT_OF_FRAMES_PER_INFERENCE) {
                 val frameTime = i * frameInterval
                 val bitmap = mediaMetadataRetriever.getFrameAtTime(
-                    frameTime * 1000,
+                    frameTime,
                     MediaMetadataRetriever.OPTION_CLOSEST_SYNC
                 )
                 val resizedBitmap = bitmap?.let {
@@ -177,13 +188,17 @@ class X3dRepositoryImpl @Inject constructor(
     fun runInference(
         x3dModule: Module,
         videoTensor: Tensor
-    ): Pair<Int, Float>? {
+    ): Pair<Int, Float> {
         val outputTensor = x3dModule.forward(IValue.from(videoTensor)).toTensor()
-        val scores: FloatArray = outputTensor.dataAsFloatArray
+        val logits: FloatArray = outputTensor.dataAsFloatArray
+        val scores = softMax(logits)
         // for debug
-        val sortedScores = scores.withIndex().toSortedSet(compareByDescending { it.value })
+        val sortedScores = scores.withIndex().toSortedSet(
+            compareBy<IndexedValue<Float>>({ it.value },{ it.index }).reversed()
+        )
         Log.i("X3d Repository", "sortedScores: $sortedScores")
-        val (maxScoreIdx, maxScore) = scores.withIndex().maxByOrNull { it.value }?: return null
+        val (maxScoreIdx, maxScore) = sortedScores.first()
+        Log.i("X3d Repository", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
         return Pair(maxScoreIdx, maxScore)
     }
 
@@ -195,9 +210,9 @@ class X3dRepositoryImpl @Inject constructor(
         // TODO: after fine-tuning, map index to emoji unicode by 19 classes
         val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
                                     .getString(maxScoreIdx.toString()) ?: return null
-        if (maxScoreClassName == "shaking hands") { // temp. code for demo
-            return Pair(maxScoreClassName, "U+1F91D")
-        }
+//        if (maxScoreClassName == "shaking hands") { // temp. code for demo
+//            return Pair(maxScoreClassName, "U+1F91D")
+//        }
         val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
                                     .getString(maxScoreClassName) ?: return null
         return Pair(maxScoreClassName, maxScoreClassUnicode)
@@ -219,5 +234,18 @@ class X3dRepositoryImpl @Inject constructor(
                 return file.absolutePath
             }
         }
+    }
+
+    fun softMax(logits: FloatArray) : FloatArray {
+        var sumExpLogits = 0.0F
+        val maxLogit = logits.maxOrNull() ?: return logits
+        for (i in logits.indices) {
+            logits[i] = exp(logits[i] - maxLogit)
+            sumExpLogits += logits[i]
+        }
+        for (i in logits.indices) {
+            logits[i] /= sumExpLogits
+        }
+        return logits
     }
 }
