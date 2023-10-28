@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.pytorch.Module
+import org.pytorch.Tensor
 import java.io.File
 
 /**
@@ -25,13 +26,21 @@ class X3dRepositoryImplTest {
     fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("shaking hands.mp4")
+         /*
+         shaking hands 영상에 대해서는 prediction이 정확하지 않음.
+         이유!!!: inference의 시작 시점을 정확하게 잡아주는 것이 상당히 중요함.
+                 sampling의 총 시간이 sampling rate (12 frames) / 30 fps = 0.4 sec 이고
+                 xs expansion 기준 4 frame을 sampling 한다고 했을 때 총 1.6 sec 이므로
+                 상당히 짧은 시간이다. 따라서, 시작 시점을 정확하게 잡아주는 것이 중요함.
+          */
+//         val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("shaking hands.mp4")
+        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
         val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
         assert(
             // dummy emoji unicode for archery is same as the class index 5
-            Pair("shaking hands", "U+00288") == emojiInfo
+            Pair("archery", "U+00005") == emojiInfo
         ){
             """
             Predicted class index is not 5. 
@@ -71,10 +80,10 @@ class X3dRepositoryImplTest {
     }
 
     @Test
-    fun loadModule_x3d_returnModule() {
+    fun loadModule_efficientX3dXsTutorialFloat_returnModule() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val module = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_int8.pt")
+        val module = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
         assertTrue(module is Module)
     }
 
@@ -149,11 +158,25 @@ class X3dRepositoryImplTest {
     }
 
     @Test
-    fun runInference_efficientX3dXsTutorialInt8_archeryVideo_returnPredictedClassIndex5() {
+    fun softMax_1dTensor_return1dTensor() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
+
+        val inputTensorFloatArray = Tensor.fromBlob(floatArrayOf(1.0f, 2.0f, 3.0f), longArrayOf(3))
+                                .dataAsFloatArray
+        val outputTensorFloatArray = x3dRepositoryImpl.softMax(inputTensorFloatArray)
+        assertEquals(
+            mutableListOf(0.09003057f, 0.24472848f, 0.66524094f),
+            outputTensorFloatArray.toList()
+        )
+    }
+
+    @Test
+    fun runInference_efficientX3dXsTutorialFloat_archeryVideo_returnPredictedClassIndex5() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
         // load x3d Module
-        val x3dModule = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_int8.pt")
+        val x3dModule = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
         if (x3dModule == null){
             Log.e("X3dRepositoryImplTest", "x3dModule is null")
             return
@@ -177,19 +200,17 @@ class X3dRepositoryImplTest {
         val elapsedTime = System.currentTimeMillis() - startTime
         Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
 
-        if (predictedClassInfo != null) {
-            if (predictedClassInfo.second < X3dRepositoryImpl.SCORE_THRESHOLD) {
-                Log.e("X3dRepositoryImplTest", "Score is lower than threshold")
-                return
-            }
-            assert(5 == predictedClassInfo.first) {
-                """
-                Predicted class index is not 5. 
-                This error may be caused by the poor performance of the model.   
-                """.trimMargin()
-            }
-        } else {
-            Log.e("X3dRepositoryImplTest", "predictedClassInfo is null")
+        assert (predictedClassInfo.second > X3dRepositoryImpl.SCORE_THRESHOLD) {
+            """
+            X3dRepositoryImplTest, Score of ${predictedClassInfo.second} is lower than 
+            threshold ${X3dRepositoryImpl.SCORE_THRESHOLD}
+            """.trimMargin()
+        }
+        assert(5 == predictedClassInfo.first) {
+            """
+            Predicted class index is not 5. 
+            This error may be caused by the poor performance of the model.   
+            """.trimMargin()
         }
     }
 
