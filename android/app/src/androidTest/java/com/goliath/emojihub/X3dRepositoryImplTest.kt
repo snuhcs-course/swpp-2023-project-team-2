@@ -13,7 +13,6 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 import org.pytorch.Module
 import java.io.File
-import java.util.Arrays
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -23,6 +22,26 @@ import java.util.Arrays
 @RunWith(AndroidJUnit4::class)
 class X3dRepositoryImplTest {
     @Test
+    fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
+        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("shaking hands.mp4")
+        val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
+
+        val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
+        assert(
+            // dummy emoji unicode for archery is same as the class index 5
+            Pair("shaking hands", "U+00288") == emojiInfo
+        ){
+            """
+            Predicted class index is not 5. 
+            This error may be caused by the poor performance of the model.   
+            """.trimMargin()
+        }
+    }
+
+    // Followings are the step by step guide to run X3dRepository unit test.
+    @Test
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
@@ -30,7 +49,7 @@ class X3dRepositoryImplTest {
     }
 
     @Test
-    fun assetManager_efficient_x3d_xs_tutorial_int8_pt_returnFileInputStream() {
+    fun assetManager_efficientX3dXsTutorialInt8_returnFileInputStream() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val assetManager = appContext.assets
         val inputStream = assetManager.open("efficient_x3d_xs_tutorial_int8.pt")
@@ -39,7 +58,7 @@ class X3dRepositoryImplTest {
     }
 
     @Test
-    fun assetFilePath_efficient_x3d_xs_int8_pt_returnFilePath() {
+    fun assetFilePath_efficientX3dXsTutorialInt8_returnFilePath() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
         val filePath = x3dRepositoryImpl.assetFilePath("efficient_x3d_xs_tutorial_int8.pt")
@@ -55,7 +74,7 @@ class X3dRepositoryImplTest {
     fun loadModule_x3d_returnModule() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val module = x3dRepositoryImpl.loadModule()
+        val module = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_int8.pt")
         assertTrue(module is Module)
     }
 
@@ -108,8 +127,12 @@ class X3dRepositoryImplTest {
             Log.e("X3dRepositoryImplTest", "mediaMetadataRetriever is null")
             return
         }
-        val tensors = x3dRepositoryImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
-        if (tensors == null){
+        // Target method: extractFrameTensorsFromVideo
+        val startTime = System.currentTimeMillis()
+        val inputVideoFrameTensors = x3dRepositoryImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
+        val elapsedTime = System.currentTimeMillis() - startTime
+        Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
+        if (inputVideoFrameTensors == null){
             Log.e("X3dRepositoryImplTest", "tensors is null")
             return
         }
@@ -121,8 +144,53 @@ class X3dRepositoryImplTest {
                 X3dRepositoryImpl.CROP_SIZE.toLong(),
                 X3dRepositoryImpl.CROP_SIZE.toLong()
             ),
-            tensors.shape().toList()
+            inputVideoFrameTensors.shape().toList()
         )
+    }
+
+    @Test
+    fun runInference_efficientX3dXsTutorialInt8_archeryVideo_returnPredictedClassIndex5() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
+        // load x3d Module
+        val x3dModule = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_int8.pt")
+        if (x3dModule == null){
+            Log.e("X3dRepositoryImplTest", "x3dModule is null")
+            return
+        }
+        // load archery video input tensors
+        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
+        val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
+        val mediaMetadataRetriever = x3dRepositoryImpl.loadVideoMediaMetadataRetriever(videoUri)
+        if (mediaMetadataRetriever == null){
+            Log.e("X3dRepositoryImplTest", "mediaMetadataRetriever is null")
+            return
+        }
+        val inputVideoFrameTensors = x3dRepositoryImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
+        if (inputVideoFrameTensors == null){
+            Log.e("X3dRepositoryImplTest", "tensors is null")
+            return
+        }
+        // run inference
+        val startTime = System.currentTimeMillis()
+        val predictedClassInfo = x3dRepositoryImpl.runInference(x3dModule, inputVideoFrameTensors)
+        val elapsedTime = System.currentTimeMillis() - startTime
+        Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
+
+        if (predictedClassInfo != null) {
+            if (predictedClassInfo.second < X3dRepositoryImpl.SCORE_THRESHOLD) {
+                Log.e("X3dRepositoryImplTest", "Score is lower than threshold")
+                return
+            }
+            assert(5 == predictedClassInfo.first) {
+                """
+                Predicted class index is not 5. 
+                This error may be caused by the poor performance of the model.   
+                """.trimMargin()
+            }
+        } else {
+            Log.e("X3dRepositoryImplTest", "predictedClassInfo is null")
+        }
     }
 
     @Test
@@ -136,12 +204,11 @@ class X3dRepositoryImplTest {
         }
         val classNameFilePath = filePaths.first
         val classUnicodeFilePath = filePaths.second
-        val emojiInfo = x3dRepositoryImpl.indexToEmojiInfo(0, classNameFilePath, classUnicodeFilePath!!)
+        val emojiInfo = x3dRepositoryImpl.indexToEmojiInfo(0, classNameFilePath, classUnicodeFilePath)
         assertEquals(
-            // dummy emoji unicode
+            // dummy emoji unicode is same as the class index
             Pair("abseiling", "U+00000"),
             emojiInfo
         )
     }
-
 }
