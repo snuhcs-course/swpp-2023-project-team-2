@@ -26,19 +26,23 @@ class X3dRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): X3dRepository {
     companion object{
-        const val SIDE_SIZE = 512
+        // !IMPORTANT! : CROP_SIZE, COUNT_OF_FRAMES_PER_INFERENCE should be same as
+        //              those specified when converting Pytorch model to TorchScript
+        //              In tutorial jupyter notebook (pytorchvideo/tutorials/accelerator/Use_PytorchVideo_Accelerator_Model_Zoo.ipynb),
+        //              CROP_SIZE = 160, COUNT_OF_FRAMES_PER_INFERENCE = 4
+        const val SIDE_SIZE = 160
         val MEAN = floatArrayOf(0.45F, 0.45F, 0.45F)
         val STD = floatArrayOf(0.225F, 0.225F, 0.225F)
-        const val CROP_SIZE = 10
+        const val CROP_SIZE = 160
         const val NUM_CHANNELS = 3
         const val FRAMES_PER_SECOND = 30
-        const val COUNT_OF_FRAMES_PER_INFERENCE = 8
+        const val COUNT_OF_FRAMES_PER_INFERENCE = 4
         const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
         const val SCORE_THRESHOLD = 0.5F
     }
 
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
-        val x3dModule = loadModule() ?: return null
+        val x3dModule = loadModule("efficient_x3d_xs_tutorial_int8.pt") ?: return null
         val (classNameFilePath, classUnicodeFilePath) = checkAnnotationFilesExist() ?: return null
         val mediaMetadataRetriever = loadVideoMediaMetadataRetriever(videoUri) ?: return null
         val videoTensor = extractFrameTensorsFromVideo(mediaMetadataRetriever) ?: return null
@@ -54,9 +58,9 @@ class X3dRepositoryImpl @Inject constructor(
     }
 
 
-    fun loadModule(): Module? {
+    fun loadModule(moduleName: String): Module? {
         try {
-            return Module.load(assetFilePath("efficient_x3d_xs_tutorial_int8.pt"))
+            return Module.load(assetFilePath(moduleName))
         } catch (e: IOException) {
             Log.e("X3d Repository", "Error loading x3d module", e)
             e.printStackTrace()
@@ -170,13 +174,16 @@ class X3dRepositoryImpl @Inject constructor(
         return null
     }
 
-    private fun runInference(
+    fun runInference(
         x3dModule: Module,
         videoTensor: Tensor
     ): Pair<Int, Float>? {
         val outputTensor = x3dModule.forward(IValue.from(videoTensor)).toTensor()
         val scores: FloatArray = outputTensor.dataAsFloatArray
-        val (maxScoreIdx, maxScore) = scores.withIndex().maxByOrNull { it.value } ?: return null
+        // for debug
+        val sortedScores = scores.withIndex().toSortedSet(compareByDescending { it.value })
+        Log.i("X3d Repository", "sortedScores: $sortedScores")
+        val (maxScoreIdx, maxScore) = scores.withIndex().maxByOrNull { it.value }?: return null
         return Pair(maxScoreIdx, maxScore)
     }
 
