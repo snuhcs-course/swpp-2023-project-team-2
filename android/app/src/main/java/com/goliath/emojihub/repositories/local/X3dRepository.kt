@@ -29,26 +29,26 @@ class X3dRepositoryImpl @Inject constructor(
         const val SIDE_SIZE = 512
         val MEAN = floatArrayOf(0.45F, 0.45F, 0.45F)
         val STD = floatArrayOf(0.225F, 0.225F, 0.225F)
-        const val CROP_SIZE = 512
+        const val CROP_SIZE = 10
         const val NUM_CHANNELS = 3
         const val FRAMES_PER_SECOND = 30
-        const val COUNT_OF_FRAMES_PER_INFERENCE = 16
+        const val COUNT_OF_FRAMES_PER_INFERENCE = 8
         const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
         const val SCORE_THRESHOLD = 0.5F
     }
 
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
         val x3dModule = loadModule() ?: return null
-        val classNames = loadClassNames() ?: return null
-        val classUnicodes = HashMap<String, String>() // FIXME
-        val videoTensor = loadVideoTensor(videoUri) ?: return null
+        val (classNameFilePath, classUnicodeFilePath) = checkAnnotationFilesExist() ?: return null
+        val mediaMetadataRetriever = loadVideoMediaMetadataRetriever(videoUri) ?: return null
+        val videoTensor = extractFrameTensorsFromVideo(mediaMetadataRetriever) ?: return null
         val (maxScoreIdx, maxScore) = runInference(x3dModule, videoTensor)?: return null
         if (maxScore < SCORE_THRESHOLD) {
             Log.e("X3d Repository", "Score is lower than threshold")
             return null
         }
         val (maxScoreClassName, maxScoreClassUnicode) = indexToEmojiInfo(
-            maxScoreIdx, classNames, classUnicodes
+            maxScoreIdx, classNameFilePath, classUnicodeFilePath
         )?: return null
         return Pair(maxScoreClassName, maxScoreClassUnicode)
     }
@@ -64,6 +64,7 @@ class X3dRepositoryImpl @Inject constructor(
         return null
     }
 
+    @Deprecated("loadClassNames() is deprecated.")
     fun loadClassNames(): HashMap<Int, String>? {
         try {
             val classNames = HashMap<Int, String>()
@@ -83,10 +84,47 @@ class X3dRepositoryImpl @Inject constructor(
         return null
     }
 
-    private fun loadVideoTensor(videoUri: Uri): Tensor? {
-        try{
+    fun checkAnnotationFilesExist(): Pair<String, String>? {
+        try {
+            val classNameFile = File(assetFilePath("kinetics_id_to_classname.json"))
+            if (!classNameFile.exists()) {
+                Log.e("X3d Repository", "kinetics_id_to_classname.json does not exist")
+                return null
+            }
+            val unicodeFile = File(assetFilePath("kinetics_classname_to_unicode.json"))
+            if (!unicodeFile.exists()) {
+                Log.e("X3d Repository", "kinetics_classname_to_unicode.json does not exist")
+                return null
+            }
+            return Pair(classNameFile.absolutePath, unicodeFile.absolutePath)
+        } catch (e: IOException) {
+            Log.e("X3d Repository", "Error loading class names", e)
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever? {
+        try {
             val mediaMetadataRetriever = MediaMetadataRetriever()
             mediaMetadataRetriever.setDataSource(context, videoUri)
+            if ((mediaMetadataRetriever.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_DURATION
+                )?.toLong() ?: 0) <= 0
+            ) {
+                Log.e("X3d Repository", "Video file is invalid")
+                return null
+            }
+            return mediaMetadataRetriever
+        } catch (e: IOException) {
+            Log.e("X3d Repository", "Error loading video media metadata retriever", e)
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor? {
+        try {
             val videoLengthInMs = mediaMetadataRetriever.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_DURATION
             )?.toLong() ?: 0
@@ -115,13 +153,16 @@ class X3dRepositoryImpl @Inject constructor(
                 TensorImageUtils.bitmapToFloatBuffer(
                     centerCropBitmap, 0, 0, CROP_SIZE, CROP_SIZE,
                     MEAN, STD, inTensorBuffer,
-                    (COUNT_OF_FRAMES_PER_INFERENCE - 1) * i * CROP_SIZE * CROP_SIZE
+                    i * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
                 )
             }
-            val videoTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1,
-                NUM_CHANNELS.toLong(), COUNT_OF_FRAMES_PER_INFERENCE.toLong(),
-                CROP_SIZE.toLong(), CROP_SIZE.toLong()))
-            return videoTensor
+            return Tensor.fromBlob(
+                inTensorBuffer, longArrayOf(
+                    1,
+                    NUM_CHANNELS.toLong(), COUNT_OF_FRAMES_PER_INFERENCE.toLong(),
+                    CROP_SIZE.toLong(), CROP_SIZE.toLong()
+                )
+            )
         } catch (e: IOException) {
             Log.e("X3d Repository", "Error loading video tensor", e)
             e.printStackTrace()
@@ -139,17 +180,19 @@ class X3dRepositoryImpl @Inject constructor(
         return Pair(maxScoreIdx, maxScore)
     }
 
-    private fun indexToEmojiInfo(
+    fun indexToEmojiInfo(
         maxScoreIdx: Int,
-        classNames: HashMap<Int, String>,
-        classUnicodes: HashMap<String, String>
+        classNameFilePath: String,
+        classUnicodeFilePath: String
     ): Pair<String, String>? {
         // TODO: after fine-tuning, map index to emoji unicode by 19 classes
-        val maxScoreClassName = classNames[maxScoreIdx] ?: return null
+        val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
+                                    .getString(maxScoreIdx.toString()) ?: return null
         if (maxScoreClassName == "shaking hands") { // temp. code for demo
             return Pair(maxScoreClassName, "U+1F91D")
         }
-        val maxScoreClassUnicode = classUnicodes[maxScoreClassName] ?: return null
+        val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
+                                    .getString(maxScoreClassName) ?: return null
         return Pair(maxScoreClassName, maxScoreClassUnicode)
     }
 
