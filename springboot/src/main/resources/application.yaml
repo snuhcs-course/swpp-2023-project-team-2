@@ -1,0 +1,5 @@
+auth.jwt:
+  issuer: TEAM_2
+  jwtSecret: SWPP_2023_PROJECT_TEAM_2_SECRET_KEY
+  jwtExpiration: 7200
+  refreshExpiration: 172800

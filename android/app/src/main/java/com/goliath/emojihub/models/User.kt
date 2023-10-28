@@ -2,22 +2,44 @@ package com.goliath.emojihub.models
 
 import com.google.gson.annotations.SerializedName
 
-// TODO: replace with `Array<Emoji>`
+// TODO: implement User and UserDto
 class User(
     dto: UserDto
 ) {
-    var likedEmojiList: Array<String> = dto.likedEmojiList
-    var createdEmojiList: Array<String> = dto.createdEmojiList
-    val userId: String = dto.userId
+    var accessToken: String = dto.accessToken
+    val name: String = dto.name
 }
 
-class UserDto(
-    @SerializedName("user_id")
-    val userId: String,
+data class UserDto(
+    val accessToken: String,
+    val name: String
+)
 
-    @SerializedName("liked_emoji_list")
-    val likedEmojiList: Array<String>,
+// user list: will be deprecated
+data class UserDtoList(
+    @SerializedName("email")
+    val email: String,
 
-    @SerializedName("created_emoji_list")
-    val createdEmojiList: Array<String>
+    @SerializedName("username")
+    val name: String,
+
+    @SerializedName("password")
+    val password: String,
+
+    @SerializedName("liked_emojis")
+    val likedEmojiList: String?,
+
+    @SerializedName("created_emojis")
+    val createdEmojiList: String?
+)
+
+class RegisterUserDto(
+    @SerializedName("username") val name: String,
+    val email: String,
+    val password: String,
+)
+
+class LoginUserDto(
+    @SerializedName("username") val name: String,
+    @SerializedName("password") val password: String
 )

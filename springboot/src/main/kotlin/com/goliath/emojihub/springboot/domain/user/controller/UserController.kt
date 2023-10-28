@@ -19,14 +19,14 @@ class UserController (private val userService: UserService) {
     @PostMapping("/signup")
     fun signUp(
         @RequestBody signUpRequest: SignUpRequest
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<UserDto.AuthToken> {
         return ResponseEntity(userService.signUp(signUpRequest), HttpStatus.CREATED)
     }
 
     @PostMapping("/login")
     fun login(
         @RequestBody loginRequest: LoginRequest
-    ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(userService.login(loginRequest))
+    ): ResponseEntity<UserDto.AuthToken> {
+        return userService.login(loginRequest)
     }
 }

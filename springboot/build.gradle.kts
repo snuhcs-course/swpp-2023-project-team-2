@@ -33,6 +33,12 @@ dependencies {
 	// Firebase
 	implementation("com.google.firebase:firebase-admin:9.2.0")
 
+	// Auth
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+
     implementation("org.projectlombok:lombok:1.18.30")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
