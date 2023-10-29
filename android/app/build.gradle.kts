@@ -79,6 +79,7 @@ dependencies {
 
     // jetpack compose
     implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.activity:activity-ktx:1.8.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -89,7 +90,9 @@ dependencies {
     // jetpack compose extended icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
+    // test tools
     testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
@@ -110,6 +113,14 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Media3
+    implementation("androidx.media3:media3-exoplayer:1.1.1")
+    implementation("androidx.media3:media3-ui:1.1.1")
+
+    // pytorch mobile
+    implementation("org.pytorch:pytorch_android:1.8.0")
+    implementation("org.pytorch:pytorch_android_torchvision:1.8.0")
 }
 
 // Allow references to generated code (hilt)
