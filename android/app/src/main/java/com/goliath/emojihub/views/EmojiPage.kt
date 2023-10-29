@@ -43,8 +43,6 @@ fun EmojiPage(
                 title = {
                     Text(
                         "Emoji",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
                     )
                 },
                 actions = {
