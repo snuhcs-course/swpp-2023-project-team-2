@@ -21,7 +21,7 @@ import java.io.File
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class X3DDataSourceImplTest {
+class X3DDataSourceAndRepositoryImplTest {
     @Test
     fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
