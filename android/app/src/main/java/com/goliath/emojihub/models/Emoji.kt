@@ -25,3 +25,14 @@ data class EmojiMetaDataDto(
     @SerializedName("used_by") val usedBy: String,
     @SerializedName("used_at") val usedAt: String
 )
+
+val dummyEmoji = Emoji(
+    EmojiDto(
+        createdBy = "channn",
+        createdAt = "2023.09.16",
+        savedCount = 1600,
+        videoLink = "https://firebasestorage.googleapis.com/v0/b/emojihub-e2023.appspot.com/o/sample_videos%2Fthumbs%20up.mp4?alt=media&token=9526818f-6ccb-499f-84b2-e6e1f6924704",
+        unicode = "U+1F44D"
+
+    )
+)
