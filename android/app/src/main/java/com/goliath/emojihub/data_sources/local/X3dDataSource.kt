@@ -15,6 +15,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.exp
 
 interface X3dDataSource {
@@ -31,6 +32,7 @@ interface X3dDataSource {
     fun assetFilePath(assetName: String): String
 }
 
+@Singleton
 class X3dDataSourceImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): X3dDataSource {
