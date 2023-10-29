@@ -13,7 +13,7 @@ class FirebaseConfig {
     @PostConstruct
     fun init() {
         try {
-            val serviceAccount = FileInputStream("springboot/src/main/resources/serviceAccountKey.json")
+            val serviceAccount = FileInputStream("src\\main\\resources\\serviceAccountKey.json")
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build()

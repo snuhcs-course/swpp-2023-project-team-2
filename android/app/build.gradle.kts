@@ -7,6 +7,9 @@ plugins {
     // hilt
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+
+    // Add the Google services Gradle plugin
+    //id("com.google.gms.google-services")
 }
 
 android {
@@ -107,6 +110,25 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Media3
+    implementation("androidx.media3:media3-exoplayer:1.1.1")
+    implementation("androidx.media3:media3-ui:1.1.1")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.4.1"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Coil Image, Video
+    implementation("io.coil-kt:coil:2.4.0")
+    implementation("io.coil-kt:coil-video:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+
+
 }
 
 // Allow references to generated code (hilt)
