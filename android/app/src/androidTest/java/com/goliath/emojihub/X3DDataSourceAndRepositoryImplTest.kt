@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.goliath.emojihub.data_sources.local.X3dDataSourceImpl
 import com.goliath.emojihub.repositories.local.X3dRepositoryImpl
 
 import org.junit.Test
@@ -12,7 +13,6 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.pytorch.Module
-import org.pytorch.Tensor
 import java.io.File
 
 /**
@@ -21,11 +21,12 @@ import java.io.File
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class X3dRepositoryImplTest {
+class X3DDataSourceImplTest {
     @Test
     fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val x3dRepositoryImpl = X3dRepositoryImpl(x3DDataSourceImpl)
          /*
          shaking hands 영상에 대해서는 prediction이 정확하지 않음.
          이유!!!: inference의 시작 시점을 정확하게 잡아주는 것이 상당히 중요함.
@@ -34,7 +35,7 @@ class X3dRepositoryImplTest {
                  상당히 짧은 시간이다. 따라서, 시작 시점을 정확하게 잡아주는 것이 중요함.
           */
 //         val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("shaking hands.mp4")
-        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
         val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
@@ -69,8 +70,8 @@ class X3dRepositoryImplTest {
     @Test
     fun assetFilePath_efficientX3dXsTutorialInt8_returnFilePath() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val filePath = x3dRepositoryImpl.assetFilePath("efficient_x3d_xs_tutorial_int8.pt")
+        val x3DDataSource = X3dDataSourceImpl(appContext)
+        val filePath = x3DDataSource.assetFilePath("efficient_x3d_xs_tutorial_int8.pt")
         // NOTE!: Module.load 에 absolute path 가 사용되므로 assetFilePath 는
         //       assets 폴더의 파일을 context.filesDir 에 복사해 그 파일의 absolute path 를 반환한다.
         assertEquals(
@@ -82,24 +83,16 @@ class X3dRepositoryImplTest {
     @Test
     fun loadModule_efficientX3dXsTutorialFloat_returnModule() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val module = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val module = x3DDataSourceImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
         assertTrue(module is Module)
-    }
-
-    @Deprecated("loadClassNames() is deprecated.")
-    fun loadClassNames_kinetics400_returnClassNamesHashMap() {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val classNames = x3dRepositoryImpl.loadClassNames()
-        assertTrue(classNames is HashMap<Int, String>)
     }
 
     @Test
     fun checkAnnotationFilesExist_kinetics400_returnPairOfFilePaths() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val filePaths = x3dRepositoryImpl.checkAnnotationFilesExist()
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist()
         assertEquals(
             Pair("/data/user/0/com.goliath.emojihub/files/kinetics_id_to_classname.json",
                 "/data/user/0/com.goliath.emojihub/files/kinetics_classname_to_unicode.json"),
@@ -112,11 +105,11 @@ class X3dRepositoryImplTest {
     @Test
     fun loadVideoMediaMetadataRetriever_videoUri_returnMediaMetadataRetriever() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
-        val mediaMetadataRetriever = x3dRepositoryImpl.loadVideoMediaMetadataRetriever(videoUri)
+        val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         assertTrue(
             (mediaMetadataRetriever?.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_DURATION
@@ -127,18 +120,18 @@ class X3dRepositoryImplTest {
     @Test
     fun extractFrameTensorsFromVideo_mediaMetadataRetriever_returnTensors() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
-        val mediaMetadataRetriever = x3dRepositoryImpl.loadVideoMediaMetadataRetriever(videoUri)
+        val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         if (mediaMetadataRetriever == null){
             Log.e("X3dRepositoryImplTest", "mediaMetadataRetriever is null")
             return
         }
         // Target method: extractFrameTensorsFromVideo
         val startTime = System.currentTimeMillis()
-        val inputVideoFrameTensors = x3dRepositoryImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
+        val inputVideoFrameTensors = x3DDataSourceImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
         val elapsedTime = System.currentTimeMillis() - startTime
         Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
         if (inputVideoFrameTensors == null){
@@ -148,55 +141,41 @@ class X3dRepositoryImplTest {
         assertEquals(
             mutableListOf(
                 1,
-                X3dRepositoryImpl.NUM_CHANNELS.toLong(),
-                X3dRepositoryImpl.COUNT_OF_FRAMES_PER_INFERENCE.toLong(),
-                X3dRepositoryImpl.CROP_SIZE.toLong(),
-                X3dRepositoryImpl.CROP_SIZE.toLong()
+                X3dDataSourceImpl.NUM_CHANNELS.toLong(),
+                X3dDataSourceImpl.COUNT_OF_FRAMES_PER_INFERENCE.toLong(),
+                X3dDataSourceImpl.CROP_SIZE.toLong(),
+                X3dDataSourceImpl.CROP_SIZE.toLong()
             ),
             inputVideoFrameTensors.shape().toList()
         )
     }
 
     @Test
-    fun softMax_1dTensor_return1dTensor() {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-
-        val inputTensorFloatArray = Tensor.fromBlob(floatArrayOf(1.0f, 2.0f, 3.0f), longArrayOf(3))
-                                .dataAsFloatArray
-        val outputTensorFloatArray = x3dRepositoryImpl.softMax(inputTensorFloatArray)
-        assertEquals(
-            mutableListOf(0.09003057f, 0.24472848f, 0.66524094f),
-            outputTensorFloatArray.toList()
-        )
-    }
-
-    @Test
     fun runInference_efficientX3dXsTutorialFloat_archeryVideo_returnPredictedClassIndex5() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
         // load x3d Module
-        val x3dModule = x3dRepositoryImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
+        val x3dModule = x3DDataSourceImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
         if (x3dModule == null){
             Log.e("X3dRepositoryImplTest", "x3dModule is null")
             return
         }
         // load archery video input tensors
-        val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
-        val mediaMetadataRetriever = x3dRepositoryImpl.loadVideoMediaMetadataRetriever(videoUri)
+        val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         if (mediaMetadataRetriever == null){
             Log.e("X3dRepositoryImplTest", "mediaMetadataRetriever is null")
             return
         }
-        val inputVideoFrameTensors = x3dRepositoryImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
+        val inputVideoFrameTensors = x3DDataSourceImpl.extractFrameTensorsFromVideo(mediaMetadataRetriever)
         if (inputVideoFrameTensors == null){
             Log.e("X3dRepositoryImplTest", "tensors is null")
             return
         }
         // run inference
         val startTime = System.currentTimeMillis()
-        val predictedClassInfo = x3dRepositoryImpl.runInference(x3dModule, inputVideoFrameTensors)
+        val predictedClassInfo = x3DDataSourceImpl.runInference(x3dModule, inputVideoFrameTensors)
         val elapsedTime = System.currentTimeMillis() - startTime
         Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
 
@@ -217,15 +196,15 @@ class X3dRepositoryImplTest {
     @Test
     fun indexToEmojiInfo_0_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val x3dRepositoryImpl = X3dRepositoryImpl(appContext)
-        val filePaths = x3dRepositoryImpl.checkAnnotationFilesExist()
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist()
         if (filePaths == null){
             Log.e("X3dRepositoryImplTest", "checkAnnotationFilesExist() returns null")
             return
         }
         val classNameFilePath = filePaths.first
         val classUnicodeFilePath = filePaths.second
-        val emojiInfo = x3dRepositoryImpl.indexToEmojiInfo(0, classNameFilePath, classUnicodeFilePath)
+        val emojiInfo = x3DDataSourceImpl.indexToEmojiInfo(0, classNameFilePath, classUnicodeFilePath)
         assertEquals(
             // dummy emoji unicode is same as the class index
             Pair("abseiling", "U+00000"),
