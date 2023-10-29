@@ -5,6 +5,7 @@ import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class EmojiService (private val emojiDao: EmojiDao) {
@@ -18,8 +19,8 @@ class EmojiService (private val emojiDao: EmojiDao) {
         return emojiDao.getEmoji(emojiId)
     }
 
-    fun postEmoji(postEmojiRequest: PostEmojiRequest) {
-        emojiDao.postEmoji(postEmojiRequest)
+    fun postEmoji(file: MultipartFile, postEmojiRequest: PostEmojiRequest) {
+        emojiDao.postEmoji(file, postEmojiRequest)
     }
 
     fun saveEmoji(userId: String, emojiId: String) {

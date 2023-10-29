@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/emoji")
@@ -35,9 +36,11 @@ class EmojiController (private val emojiService: EmojiService){
 
     @PostMapping("/upload")
     fun postEmoji(
-        @RequestBody postEmojiRequest: PostEmojiRequest
+//        @CurrentUser username: String,
+        @RequestPart(value = "file") file: MultipartFile,
+        @RequestPart postEmojiRequest: PostEmojiRequest
     ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(postEmojiRequest), HttpStatus.CREATED)
+        return ResponseEntity(emojiService.postEmoji(file, postEmojiRequest), HttpStatus.CREATED)
     }
 
     @PutMapping("/save")

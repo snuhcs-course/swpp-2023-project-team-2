@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.emoji.dto
 
-import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import kotlin.streams.asSequence
 
 class EmojiDto (
@@ -12,7 +11,7 @@ class EmojiDto (
     var emoji_label: String = "",
     var created_at: String = ""
 ){
-    constructor(postEmojiRequest: PostEmojiRequest, emojiVideoUrl: String) : this() {
+    constructor(postEmojiRequest: PostEmojiRequest, emojiVideoUrl: String, dateTime: String) : this() {
         // TODO: 이 constructor도 완전 의식의 흐름대로 만들었다... 수정 필요
         val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         val outputStrLength: Long = 20
@@ -25,6 +24,6 @@ class EmojiDto (
         video_url = emojiVideoUrl
         emoji_unicode = postEmojiRequest.emoji_unicode
         emoji_label = postEmojiRequest.emoji_label
-        created_at = getDateTimeNow()
+        created_at = dateTime
     }
 }
