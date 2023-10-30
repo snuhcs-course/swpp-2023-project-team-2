@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,6 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
-import com.goliath.emojihub.usecases.EmojiUseCaseImpl_Factory
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 
@@ -75,12 +75,13 @@ fun TransformVideoPage(
                             transforming = true
 
                             // TODO: run the model and save the result
-                            resultEmoji = EmojiUseCase.createEmoji(viewModel.videoUri)
+                            resultEmoji = viewModel.createEmoji(viewModel.videoUri)
+                            Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
                             if (resultEmoji != null) transforming = false
                         },
                         enabled = !transforming
                     ) {
-                        Text(text = if (resultEmoji != null) "업러드" else "변환", color = Color.Black)
+                        Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
                     }
                 }
             )

@@ -17,4 +17,8 @@ class EmojiViewModel @Inject constructor(
     val emojiState = _emojiState.asStateFlow()
 
     var videoUri: Uri = Uri.EMPTY
+
+    fun createEmoji(videoUri: Uri): Pair<String, String>? {
+        return emojiUseCase.createEmoji(videoUri)
+    }
 }

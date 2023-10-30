@@ -73,17 +73,17 @@ class X3dDataSourceImpl @Inject constructor(
         try {
             val classNameFile = File(assetFilePath("kinetics_id_to_classname.json"))
             if (!classNameFile.exists()) {
-                Log.e("X3d Repository", "kinetics_id_to_classname.json does not exist")
+                Log.e("X3dDataSource", "kinetics_id_to_classname.json does not exist")
                 return null
             }
             val unicodeFile = File(assetFilePath("kinetics_classname_to_unicode.json"))
             if (!unicodeFile.exists()) {
-                Log.e("X3d Repository", "kinetics_classname_to_unicode.json does not exist")
+                Log.e("X3dDataSource", "kinetics_classname_to_unicode.json does not exist")
                 return null
             }
             return Pair(classNameFile.absolutePath, unicodeFile.absolutePath)
         } catch (e: Exception) {
-            Log.e("X3d Repository", "Error loading class names ${e.message}")
+            Log.e("X3dDataSource", "Error loading class names ${e.message}")
         }
         return null
     }
@@ -96,12 +96,12 @@ class X3dDataSourceImpl @Inject constructor(
                     MediaMetadataRetriever.METADATA_KEY_DURATION
                 )?.toLong() ?: 0) <= 0
             ) {
-                Log.e("X3d Repository", "Video file is invalid")
+                Log.e("X3dDataSource", "Video file is invalid")
                 return null
             }
             return mediaMetadataRetriever
         } catch (e: IOException) {
-            Log.e("X3d Repository", "Error loading video media metadata retriever ${e.message}")
+            Log.e("X3dDataSource", "Error loading video media metadata retriever ${e.message}")
         }
         return null
     }
@@ -153,7 +153,7 @@ class X3dDataSourceImpl @Inject constructor(
                 )
             )
         } catch (e: IOException) {
-            Log.e("X3d Repository", "Error loading video tensor ${e.message}")
+            Log.e("X3dDataSource", "Error loading video tensor ${e.message}")
         }
         return null
     }
@@ -166,9 +166,9 @@ class X3dDataSourceImpl @Inject constructor(
         val sortedScores = scores.withIndex().toSortedSet(
             compareBy<IndexedValue<Float>>({ it.value },{ it.index }).reversed()
         )
-        Log.i("X3d Repository", "sortedScores: $sortedScores")
+        Log.i("X3dDataSource", "sortedScores: $sortedScores")
         val (maxScoreIdx, maxScore) = sortedScores.first()
-        Log.i("X3d Repository", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
+        Log.i("X3dDataSource", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
         return Pair(maxScoreIdx, maxScore)
     }
 
