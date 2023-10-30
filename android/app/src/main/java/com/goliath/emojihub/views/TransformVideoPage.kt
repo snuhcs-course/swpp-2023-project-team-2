@@ -111,17 +111,21 @@ fun TransformVideoPage(
             if (resultEmoji != null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Text(
+                        text = String(Character.toChars(resultEmoji!!.second.substring(2).toInt(16))),
+                        fontSize = 48.sp
+                    )
                     Text (
-                        text = String(Character.toChars(resultEmoji!!.first.substring(2).toInt(16))),
+                        text = resultEmoji!!.first,
                         fontSize = 48.sp
                     )
                     Text (
                         text = "완료되었습니다",
                         fontSize = 24.sp,
-                        color = Color.White
+//                        color = Color.White
                     )
                 }
             }
