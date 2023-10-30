@@ -180,9 +180,6 @@ class X3dDataSourceImpl @Inject constructor(
         // TODO: after fine-tuning, map index to emoji unicode by 19 classes
         val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
             .getString(maxScoreIdx.toString()) ?: return null
-//        if (maxScoreClassName == "shaking hands") { // temp. code for demo
-//            return Pair(maxScoreClassName, "U+1F91D")
-//        }
         val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
             .getString(maxScoreClassName) ?: return null
         return Pair(maxScoreClassName, maxScoreClassUnicode)
@@ -190,9 +187,10 @@ class X3dDataSourceImpl @Inject constructor(
 
     override fun assetFilePath(assetName: String): String {
         val file = File(context.filesDir, assetName)
-        if (file.exists() && file.length() > 0) {
-            return file.absolutePath
-        }
+        // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
+//        if (file.exists() && file.length() > 0) {
+//            return file.absolutePath
+//        }
         context.assets.open(assetName).use { inputStream ->
             FileOutputStream(file).use { outputStream ->
                 val buffer = ByteArray(4 * 1024)
