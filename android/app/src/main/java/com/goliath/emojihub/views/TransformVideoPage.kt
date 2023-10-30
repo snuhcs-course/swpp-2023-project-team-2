@@ -71,10 +71,10 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            // TODO: implement
                             // show progress bar
                             transforming = true
 
+                            // TODO: run the model and save the result
                             resultEmoji = EmojiUseCase.createEmoji(viewModel.videoUri)
                             if (resultEmoji != null) transforming = false
                         },
