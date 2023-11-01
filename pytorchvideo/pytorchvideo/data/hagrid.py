@@ -110,8 +110,13 @@ class GestureDataset(torch.utils.data.Dataset):
         # FIXME: find out suitable _num_frames
         video = self._image_to_video(image, _num_frames=self._NUM_FRAMES)
 
-        labels = torch.LongTensor([self.labels[label] for label in row["labels"]
-                                   if self.labels[label] != self.labels['no_gesture']]).item()
+        # calibrate labels: only use labels that are not "no_gesture"
+        #                   if there is no label, use "no_gesture"
+        _labels_list = [self.labels[label] for label in row["labels"]
+                        if self.labels[label] != self.labels["no_gesture"]]
+        if len(_labels_list) == 0:
+            _labels_list = [self.labels["no_gesture"]]
+        labels = torch.LongTensor(_labels_list)[0]
 
         sample_dict = {
             "video": video,
