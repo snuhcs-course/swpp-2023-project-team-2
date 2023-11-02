@@ -6,6 +6,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -21,6 +23,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val baseURL = API_BASE_URL
+    private const val accessToken: String = ""
 
     @Provides
     @Singleton
@@ -29,9 +32,9 @@ object NetworkModule {
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseURL)
+            .client(provideOkHttpClient())
             .addConverterFactory(nullOnEmptyConverterFactory)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(provideOkHttpClient())
             .build()
     }
 
@@ -39,9 +42,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
-            .addInterceptor(
-                AuthInterceptor("token")
-            )
+            .addInterceptor(AuthInterceptor(accessToken))
             .build()
 
     @Provides
@@ -53,6 +54,17 @@ object NetworkModule {
     @Singleton
     fun providesEmojiRestApi(retrofit: Retrofit): EmojiApi =
         retrofit.create(EmojiApi::class.java)
+
+    // TODO: Use somewhere
+    fun <T : Any> handleResponse(
+        execute: suspend () -> T?
+    ): Flow<retrofit2.Response<T>> = flow {
+        try {
+            emit(retrofit2.Response.success(execute()))
+        } catch (e: Error) {
+            print(e)
+        }
+    }
 
     // empty responses should be handled `success`
     private val nullOnEmptyConverterFactory = object : Converter.Factory() {
