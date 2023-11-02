@@ -1,4 +1,4 @@
-package com.goliath.emojihub.data_sources
+package com.goliath.emojihub.data_sources.api
 
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
