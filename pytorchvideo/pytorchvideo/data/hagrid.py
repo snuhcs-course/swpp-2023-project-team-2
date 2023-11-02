@@ -49,7 +49,7 @@ class GestureDataset(torch.utils.data.Dataset):
         self.labels = {label: num for (label, num) in
                        zip(CLASS_NAMES, range(len(CLASS_NAMES)))}
         self.annotations = self._read_annotations(self.path_annotation)
-        self._NUM_FRAMES = 4
+        self._NUM_FRAMES = 6
         self._MAX_SIDE = 512
 
     def _read_annotations(self, path):
@@ -148,8 +148,7 @@ class GestureDataset(torch.utils.data.Dataset):
         padded_image[:, :image.shape[1], :image.shape[2]] = image
         return padded_image
 
-    @staticmethod
-    def _image_to_video(image: torch.Tensor, _num_frames: int):
+    def _image_to_video(self, image: torch.Tensor, _num_frames: int):
         # TODO : make image animation
         video = torch.stack([image] * _num_frames, dim=1)
         return video

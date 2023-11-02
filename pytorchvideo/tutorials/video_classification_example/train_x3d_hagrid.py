@@ -7,7 +7,7 @@ import logging
 import pytorch_lightning
 import torchmetrics
 from torch.hub import load_state_dict_from_url
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import ExponentialLR
 
 from pytorchvideo.data.hagrid import GestureDataset
 import pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d as efficient_x3d
@@ -18,10 +18,7 @@ from pytorchvideo.losses.cosine_annealing_with_warmup import CosineAnnealingWarm
 from pytorch_lightning.callbacks import (
     LearningRateMonitor,
     RichProgressBar,
-    EarlyStopping,
-    ModelCheckpoint,
-    RichModelSummary,
-    BackboneFinetuning
+    ModelCheckpoint
 )
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
@@ -90,31 +87,35 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         # num_classes=19 : depends on gesture dataset
         if self.args.arch == "video_x3d":
             print("Using EfficientX3d_S")
-            self.model = efficient_x3d.create_x3d(
-                num_classes=19,
-                expansion='S',
-                head_act='identity'
-            )
-            _state_dict = load_state_dict_from_url(
-                hub_efficient_x3d._checkpoint_paths["efficient_x3d_s"],
-                progress=True,
-                map_location="gpu",
-            )
-            print("Pretrained weights loaded")
+            if self.args.cold_start_training:
+                self.model = efficient_x3d.create_x3d(
+                    num_classes=19,
+                    expansion='S',
+                    head_act='identity'
+                )
+                _state_dict = load_state_dict_from_url(
+                    hub_efficient_x3d._checkpoint_paths["efficient_x3d_s"],
+                    progress=True,
+                    map_location="cpu",
+                )
+                print("Pretrained weights loaded")
 
-            #  Due to the classes mismatch between the pretrained model and the
-            #  dataset, we need to remove the last layer of the pretrained model.
-            del _state_dict["projection.model.weight"]
-            del _state_dict["projection.model.bias"]
-            self.model.load_state_dict(_state_dict, strict=False)
+                #  Due to the classes mismatch between the pretrained model and the
+                #  dataset, we need to remove the last layer of the pretrained model.
+                del _state_dict["projection.model.weight"]
+                del _state_dict["projection.model.bias"]
+                self.model.load_state_dict(_state_dict, strict=False)
 
-            # At first time, freeze all layers except the last layer
-            for name, p in self.model.named_parameters():
-                if 'projection.model' in name:
-                    p.requires_grad = True
-                else:
-                    p.requires_grad = False
-            print("Froze all layers except the last layer")
+                for name, p in self.model.named_parameters():
+                    if 's5.pathway0' in name or 'head' in name or 'projection' in name:
+                        p.requires_grad = True
+                    else:
+                        p.requires_grad = False
+                print("Training from s5.pathway0 to projection")
+            else:
+                self.model = VideoClassificationLightningModule.load_from_checkpoint(
+                    "./lightning_logs/version_5/checkpoints/epoch=49-step=1150.ckpt"
+                )
 
             self.batch_key = "video"
         else:
@@ -165,9 +166,6 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         self.log(
             "train_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
         )
-        # if (batch_idx + 1) % 7000 == 0:
-        #     scheduler = self.lr_schedulers()
-        #     scheduler.step()
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -201,14 +199,24 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
             if p.requires_grad:
                 parameters.append(p)
 
-        optimizer = torch.optim.SGD(
+        # optimizer = torch.optim.SGD(
+        #     parameters,
+        #     lr=self.args.lr,
+        #     momentum=self.args.momentum,
+        #     weight_decay=self.args.weight_decay,
+        # )
+        optimizer = torch.optim.AdamW(
             parameters,
             lr=self.args.lr,
-            momentum=self.args.momentum,
+            betas=self.args.betas,
             weight_decay=self.args.weight_decay,
         )
-        scheduler = StepLR(optimizer, step_size=1, gamma=0.8)
-        return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 6000}]
+        # scheduler = ExponentialLR(optimizer, gamma=0.9)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,  T_max=self.args.max_epochs//10, last_epoch=-1
+        )
+        # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 6000}]
+        return [optimizer], [scheduler]
 
 
 class HagridDataModule(pytorch_lightning.LightningDataModule):
@@ -346,10 +354,11 @@ def main():
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model parameters.
-    parser.add_argument("--lr", "--learning-rate", default=2e-05, type=float)
+    parser.add_argument("--lr", "--learning-rate", default=0.0005, type=float)
     parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--betas", default=(0.9,0.999), type=tuple)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
+    parser.add_argument("--cold_start_training", action="store_true")
     parser.add_argument(
         "--arch",
         default="video_x3d",
@@ -366,11 +375,11 @@ def main():
                         type=str, required=False)  # temporarily changed: required=True -> False
     parser.add_argument("--workers", default=10, type=int)
     parser.add_argument("--batch_size", default=16, type=int)
-    parser.add_argument("--clip_duration", default=2, type=float)
+    # parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
         "--data_type", default="video", choices=["video"], type=str
     )
-    parser.add_argument("--video_num_subsampled", default=4, type=int)
+    parser.add_argument("--video_num_subsampled", default=13, type=int)
     parser.add_argument("--video_means", default=(0.45, 0.45, 0.45), type=tuple)
     parser.add_argument("--video_stds", default=(0.225, 0.225, 0.225), type=tuple)
     parser.add_argument("--video_crop_size", default=224, type=int)
@@ -383,12 +392,14 @@ def main():
     parser.set_defaults(
         accelerator='gpu',
         devices=1,
-        max_epochs=10,
+        max_epochs=100,
         callbacks=[
-            EarlyStopping('val_loss'),
-            # ModelCheckpoint(dirpath=)
+            # EarlyStopping('val_loss'),
+            ModelCheckpoint(
+                dirpath="./lightning_logs/version_9/",
+                every_n_epochs=10,
+            ),
             LearningRateMonitor(),
-            RichModelSummary(),
             RichProgressBar(leave=True),
         ],
         replace_sampler_ddp=False,
