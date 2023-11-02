@@ -3,6 +3,7 @@ package com.goliath.emojihub.springboot.domain.emoji.dao
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
@@ -10,12 +11,13 @@ import com.google.cloud.firestore.QueryDocumentSnapshot
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import com.google.firebase.cloud.FirestoreClient
-import com.google.firebase.cloud.StorageClient
 import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Repository
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
+import java.io.FileInputStream
 
 
 @Repository
@@ -25,7 +27,7 @@ class EmojiDao {
     companion object {
         const val USER_COLLECTION_NAME = "Users"
         const val EMOJI_COLLECTION_NAME = "Emojis"
-        const val EMOJI_STORAGE_BUCKET_NAME = "emojihub-e2023"
+        const val EMOJI_STORAGE_BUCKET_NAME = "emojihub-e2023.appspot.com"
     }
 
     // TODO: numLimit 아직 반영 X
@@ -51,9 +53,13 @@ class EmojiDao {
     fun postEmoji(file: MultipartFile, postEmojiRequest: PostEmojiRequest) {
         // TODO: upload video file to emojiBucket
         // PostEmojiRequest has byte array of video file
-        val emojiVideoStorage : Storage = StorageClient.getInstance()
-                                                            .bucket()
-                                                            .storage
+        val serviceAccount = FileInputStream("springboot/src/main/resources/serviceAccountKey.json")
+        val emojiVideoStorage : Storage = StorageOptions.newBuilder()
+            .setProjectId("emojihub-e2023")
+            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+            .build().service
+        print(emojiVideoStorage)
+//        val emoji VideoStorage : Storage = StorageClient.getInstance().bucket().storage
         // NOTE: created_by(username)을 video이름으로 넣어주어 유저별로 올린 비디오를 구분할 수 있게 한다.
         val dateTime = getDateTimeNow()
         val emojiVideoBlobId : BlobId = BlobId.of(
