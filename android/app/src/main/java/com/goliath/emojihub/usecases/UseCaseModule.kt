@@ -13,4 +13,7 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindsEmojiUseCase(impl: EmojiUseCaseImpl): EmojiUseCase
+
+    @Binds
+    abstract fun bindsPostUseCase(impl: PostUseCaseImpl): PostUseCase
 }

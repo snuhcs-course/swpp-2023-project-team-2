@@ -1,6 +1,7 @@
 package com.goliath.emojihub.data_sources
 
 import com.goliath.emojihub.data_sources.api.EmojiApi
+import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.data_sources.api.UserApi
 import dagger.Module
 import dagger.Provides
@@ -15,6 +16,7 @@ import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.lang.reflect.Type
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,6 +56,11 @@ object NetworkModule {
     @Singleton
     fun providesEmojiRestApi(retrofit: Retrofit): EmojiApi =
         retrofit.create(EmojiApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providesPostRestApi(retrofit: Retrofit): PostApi =
+        retrofit.create(PostApi::class.java)
 
     // TODO: Use somewhere
     fun <T : Any> handleResponse(
