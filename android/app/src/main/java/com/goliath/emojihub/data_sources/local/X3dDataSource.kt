@@ -73,17 +73,17 @@ class X3dDataSourceImpl @Inject constructor(
         try {
             val classNameFile = File(assetFilePath("kinetics_id_to_classname.json"))
             if (!classNameFile.exists()) {
-                Log.e("X3d Repository", "kinetics_id_to_classname.json does not exist")
+                Log.e("X3dDataSource", "kinetics_id_to_classname.json does not exist")
                 return null
             }
             val unicodeFile = File(assetFilePath("kinetics_classname_to_unicode.json"))
             if (!unicodeFile.exists()) {
-                Log.e("X3d Repository", "kinetics_classname_to_unicode.json does not exist")
+                Log.e("X3dDataSource", "kinetics_classname_to_unicode.json does not exist")
                 return null
             }
             return Pair(classNameFile.absolutePath, unicodeFile.absolutePath)
         } catch (e: Exception) {
-            Log.e("X3d Repository", "Error loading class names ${e.message}")
+            Log.e("X3dDataSource", "Error loading class names ${e.message}")
         }
         return null
     }
@@ -96,12 +96,12 @@ class X3dDataSourceImpl @Inject constructor(
                     MediaMetadataRetriever.METADATA_KEY_DURATION
                 )?.toLong() ?: 0) <= 0
             ) {
-                Log.e("X3d Repository", "Video file is invalid")
+                Log.e("X3dDataSource", "Video file is invalid")
                 return null
             }
             return mediaMetadataRetriever
         } catch (e: IOException) {
-            Log.e("X3d Repository", "Error loading video media metadata retriever ${e.message}")
+            Log.e("X3dDataSource", "Error loading video media metadata retriever ${e.message}")
         }
         return null
     }
@@ -153,7 +153,7 @@ class X3dDataSourceImpl @Inject constructor(
                 )
             )
         } catch (e: IOException) {
-            Log.e("X3d Repository", "Error loading video tensor ${e.message}")
+            Log.e("X3dDataSource", "Error loading video tensor ${e.message}")
         }
         return null
     }
@@ -166,9 +166,9 @@ class X3dDataSourceImpl @Inject constructor(
         val sortedScores = scores.withIndex().toSortedSet(
             compareBy<IndexedValue<Float>>({ it.value },{ it.index }).reversed()
         )
-        Log.i("X3d Repository", "sortedScores: $sortedScores")
+        Log.i("X3dDataSource", "sortedScores: $sortedScores")
         val (maxScoreIdx, maxScore) = sortedScores.first()
-        Log.i("X3d Repository", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
+        Log.i("X3dDataSource", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
         return Pair(maxScoreIdx, maxScore)
     }
 
@@ -180,9 +180,6 @@ class X3dDataSourceImpl @Inject constructor(
         // TODO: after fine-tuning, map index to emoji unicode by 19 classes
         val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
             .getString(maxScoreIdx.toString()) ?: return null
-//        if (maxScoreClassName == "shaking hands") { // temp. code for demo
-//            return Pair(maxScoreClassName, "U+1F91D")
-//        }
         val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
             .getString(maxScoreClassName) ?: return null
         return Pair(maxScoreClassName, maxScoreClassUnicode)
@@ -190,9 +187,10 @@ class X3dDataSourceImpl @Inject constructor(
 
     override fun assetFilePath(assetName: String): String {
         val file = File(context.filesDir, assetName)
-        if (file.exists() && file.length() > 0) {
-            return file.absolutePath
-        }
+        // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
+//        if (file.exists() && file.length() > 0) {
+//            return file.absolutePath
+//        }
         context.assets.open(assetName).use { inputStream ->
             FileOutputStream(file).use { outputStream ->
                 val buffer = ByteArray(4 * 1024)
