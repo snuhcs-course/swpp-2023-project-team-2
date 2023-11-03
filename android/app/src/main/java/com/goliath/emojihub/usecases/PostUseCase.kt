@@ -1,7 +1,7 @@
 package com.goliath.emojihub.usecases
 
+import android.util.Log
 import com.goliath.emojihub.models.Post
-import com.goliath.emojihub.models.User
 import com.goliath.emojihub.repositories.remote.PostRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +22,6 @@ class PostUseCaseImpl @Inject constructor(
 
     }
     override suspend fun uploadPost(content: String) {
-
+        Log.d("Post", content)
     }
 }

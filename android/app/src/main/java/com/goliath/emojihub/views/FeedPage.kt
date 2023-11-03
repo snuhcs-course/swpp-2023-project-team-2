@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,8 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.dummyPost
+import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.views.components.PostCell
 import com.goliath.emojihub.views.components.TopNavigationBar
@@ -25,12 +29,14 @@ import com.goliath.emojihub.views.components.TopNavigationBar
 fun FeedPage(
     postList: List<Post>
 ) {
-    Column (
+    val navController = LocalNavController.current
 
+    Column (
+        Modifier.background(Color.White)
     ) {
         TopNavigationBar("Feed", shouldNavigate = false) {
             IconButton(onClick = {
-                print("something")
+                navController.navigate(NavigationDestination.CreatePost)
             }) {
                 Icon(
                     imageVector = Icons.Default.Add,

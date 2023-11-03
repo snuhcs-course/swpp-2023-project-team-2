@@ -11,6 +11,7 @@ import com.goliath.emojihub.R
 import com.goliath.emojihub.models.dummyEmoji
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 
 @Composable
 fun BottomNavigationBar(
@@ -35,6 +36,14 @@ fun BottomNavigationBar(
             }
             val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
             TransformVideoPage(emojiViewModel)
+        }
+
+        composable(NavigationDestination.CreatePost) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Feed.screenRoute)
+            }
+            val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+            CreatePostPage(postViewModel)
         }
     }
 }
