@@ -28,27 +28,22 @@ fun getEmoji(unicode: Int): String {
 @Composable
 fun EmojiCell (
     emoji: Emoji,
-    modifier: Modifier = Modifier,
-
+    modifier: Modifier = Modifier
 ) {
     Card (
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        elevation = 5.dp
+        shape = RoundedCornerShape(4.dp)
     ) {
         Box(
-            modifier = Modifier.height(350.dp)
+            modifier = Modifier.height(292.dp)
         ) {
             // TODO: put dynamic emoji here (maybe put only thumbnail?)
-
             FloatingActionButton(
-                modifier = Modifier
-                    .align(Alignment.Center),
+                modifier = Modifier.align(Alignment.Center),
                 contentColor = Color.White,
                 backgroundColor = Color.LightGray,
                 onClick = {
                     //TODO: play video
-
                 }
             ) {
                 Icon(Icons.Filled.PlayCircle, "Play video button.")
@@ -82,7 +77,6 @@ fun EmojiCell (
                     .padding(12.dp),
                 fontSize = 16.sp
             )
-
         }
     }
 }
