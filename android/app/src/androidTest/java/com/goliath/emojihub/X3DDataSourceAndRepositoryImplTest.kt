@@ -35,7 +35,7 @@ class X3DDataSourceAndRepositoryImplTest {
                  상당히 짧은 시간이다. 따라서, 시작 시점을 정확하게 잡아주는 것이 중요함.
           */
 //         val sampleVideoAbsolutePath = x3dRepositoryImpl.assetFilePath("shaking hands.mp4")
-        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("kinetics/archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
         val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
@@ -62,7 +62,7 @@ class X3DDataSourceAndRepositoryImplTest {
     fun assetManager_efficientX3dXsTutorialInt8_returnFileInputStream() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val assetManager = appContext.assets
-        val inputStream = assetManager.open("efficient_x3d_xs_tutorial_float.pt")
+        val inputStream = assetManager.open("kinetics/efficient_x3d_xs_tutorial_float.pt")
         Log.e("X3dRepositoryImplTest", "inputStream: $inputStream")
         assertNotNull(assetManager)
     }
@@ -71,7 +71,7 @@ class X3DDataSourceAndRepositoryImplTest {
     fun assetFilePath_efficientX3dXsTutorialFloat_returnFilePath() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSource = X3dDataSourceImpl(appContext)
-        val filePath = x3DDataSource.assetFilePath("efficient_x3d_xs_tutorial_float.pt")
+        val filePath = x3DDataSource.assetFilePath("kinetics/efficient_x3d_xs_tutorial_float.pt")
         // NOTE!: Module.load 에 absolute path 가 사용되므로 assetFilePath 는
         //       assets 폴더의 파일을 context.filesDir 에 복사해 그 파일의 absolute path 를 반환한다.
         assertEquals(
@@ -84,7 +84,7 @@ class X3DDataSourceAndRepositoryImplTest {
     fun loadModule_efficientX3dXsTutorialFloat_returnModule() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
-        val module = x3DDataSourceImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
+        val module = x3DDataSourceImpl.loadModule("kinetics/efficient_x3d_xs_tutorial_float.pt")
         assertTrue(module is Module)
     }
 
@@ -106,7 +106,7 @@ class X3DDataSourceAndRepositoryImplTest {
     fun loadVideoMediaMetadataRetriever_videoUri_returnMediaMetadataRetriever() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
-        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("kinetics/archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
         val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
@@ -121,7 +121,7 @@ class X3DDataSourceAndRepositoryImplTest {
     fun extractFrameTensorsFromVideo_mediaMetadataRetriever_returnTensors() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
-        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("kinetics/archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
         val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
@@ -155,13 +155,13 @@ class X3DDataSourceAndRepositoryImplTest {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
         // load x3d Module
-        val x3dModule = x3DDataSourceImpl.loadModule("efficient_x3d_xs_tutorial_float.pt")
+        val x3dModule = x3DDataSourceImpl.loadModule("kinetics/efficient_x3d_xs_tutorial_float.pt")
         if (x3dModule == null){
             Log.e("X3dRepositoryImplTest", "x3dModule is null")
             return
         }
         // load archery video input tensors
-        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("archery.mp4")
+        val sampleVideoAbsolutePath = x3DDataSourceImpl.assetFilePath("kinetics/archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
         val mediaMetadataRetriever = x3DDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         if (mediaMetadataRetriever == null){
