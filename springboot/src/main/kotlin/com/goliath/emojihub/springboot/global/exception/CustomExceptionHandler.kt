@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.global.common
+package com.goliath.emojihub.springboot.global.exception
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,6 +15,6 @@ class CustomExceptionHandler {
 
     @ExceptionHandler(value = [CustomHttpException::class])
     fun handle(e: CustomHttpException): ResponseEntity<Any> {
-        return ResponseEntity(e.message, e.status)
+        return ResponseEntity(ErrorResponse(e), e.status)
     }
 }

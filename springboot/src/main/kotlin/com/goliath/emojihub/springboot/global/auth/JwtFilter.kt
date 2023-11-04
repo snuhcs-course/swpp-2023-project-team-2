@@ -20,12 +20,17 @@ class JwtFilter(private val jwtTokenProvider: JwtTokenProvider) : OncePerRequest
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        if (!shouldExclude(request)) {
-            val authToken: String = jwtTokenProvider.resolveToken(request)
-            if (jwtTokenProvider.validateToken(authToken)) {
-                val authentication = jwtTokenProvider.getAuthentication(authToken)
-                SecurityContextHolder.getContext().authentication = authentication
+        try {
+            if (!shouldExclude(request)) {
+                val authToken: String = jwtTokenProvider.resolveToken(request)
+                if (jwtTokenProvider.validateToken(authToken)) {
+                    val authentication = jwtTokenProvider.getAuthentication(authToken)
+                    SecurityContextHolder.getContext().authentication = authentication
+                }
             }
+        } catch (e: Exception) {
+            request.setAttribute("exception", e)
+            throw e
         }
         filterChain.doFilter(request, response)
     }

@@ -16,7 +16,7 @@ class FirebaseConfig {
             val serviceAccount = FileInputStream("springboot/src/main/resources/serviceAccountKey.json")
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-//                .setStorageBucket("emojihub-e2023.appspot.com")
+                .setStorageBucket("emojihub-e2023.appspot.com")
                 .build()
             if (FirebaseApp.getApps().isEmpty() ){
                 FirebaseApp.initializeApp(options)

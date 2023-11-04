@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.global.config
 
 import com.goliath.emojihub.springboot.global.auth.JwtFilter
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
+import com.goliath.emojihub.springboot.global.exception.CustomEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -25,21 +26,18 @@ class SecurityConfig(
     @Bean
     fun ignoringCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer { web: WebSecurity ->
-            web.ignoring()
-                .requestMatchers(HttpMethod.POST, *POST_WHITELIST)
+            web.ignoring().requestMatchers(HttpMethod.POST, *POST_WHITELIST)
         }
     }
 
     @Bean
     fun securityFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
-        return httpSecurity
-            .httpBasic { httpBasic -> httpBasic.disable() }
-            .csrf { csrf -> csrf.disable() }
+        return httpSecurity.httpBasic { httpBasic -> httpBasic.disable() }.csrf { csrf -> csrf.disable() }
             .sessionManagement { sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authorizeHttpRequests ->
-                authorizeHttpRequests
-                    .requestMatchers("/api/**").permitAll()
+                authorizeHttpRequests.requestMatchers("/api/**").permitAll()
             }
+            .exceptionHandling { exceptionHandling -> exceptionHandling.authenticationEntryPoint(CustomEntryPoint()) }
             .addFilterBefore(JwtFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }

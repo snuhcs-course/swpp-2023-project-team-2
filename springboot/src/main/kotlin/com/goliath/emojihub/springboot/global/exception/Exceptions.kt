@@ -1,8 +1,18 @@
-package com.goliath.emojihub.springboot.global.common
+package com.goliath.emojihub.springboot.global.exception
 
 import org.springframework.http.HttpStatus
 
 open class CustomHttpException(msg: String, val status: HttpStatus) : RuntimeException(msg)
+
+data class ErrorResponse(
+    val errorCode: Int,
+    val detail: String?
+) {
+    constructor(customHttpException: CustomHttpException): this(
+        errorCode = customHttpException.status.value(),
+        detail = customHttpException.message
+    )
+}
 
 class CustomHttp400(msg: String) : CustomHttpException(msg, HttpStatus.BAD_REQUEST)
 
