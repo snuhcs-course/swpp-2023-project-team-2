@@ -190,7 +190,7 @@ class X3dDataSourceImpl @Inject constructor(
     }
 
     override fun assetFilePath(assetName: String): String {
-        val file = File(context.filesDir, assetName)
+        val file = File(context.filesDir, assetName.split("/").last())
         // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
 //        if (file.exists() && file.length() > 0) {
 //            return file.absolutePath
