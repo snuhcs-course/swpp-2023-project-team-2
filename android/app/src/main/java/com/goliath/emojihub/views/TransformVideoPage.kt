@@ -16,11 +16,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +32,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.viewmodels.EmojiViewModel
-import com.goliath.emojihub.views.components.CircularIndeterminateProgressBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +50,6 @@ fun TransformVideoPage(
     }
 
     var resultEmoji by remember { mutableStateOf<Pair<String, String>?>(null) }
-    val isLoading = viewModel.loading.collectAsState()
 
     Scaffold(
         topBar = {
@@ -70,13 +67,9 @@ fun TransformVideoPage(
                 },
                 actions = {
                     TextButton(
-                        onClick = { // FIXME: seems like createEmoji() blocks progress bar from spinning
-                            viewModel.updateStateTrue() // start spinning progress bar
-
+                        onClick = {
                             resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-
                             Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
-                            viewModel.updateStateFalse() // Stop spinning progress bar
                         },
                     ) {
                         Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
@@ -99,8 +92,6 @@ fun TransformVideoPage(
                     .fillMaxSize()
             )
 
-            CircularIndeterminateProgressBar(isDisplayed = isLoading.value)
-
             if (resultEmoji != null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -122,6 +113,5 @@ fun TransformVideoPage(
                 }
             }
         }
-
     }
 }

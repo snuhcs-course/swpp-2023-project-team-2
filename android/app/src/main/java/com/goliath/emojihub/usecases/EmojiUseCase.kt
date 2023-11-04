@@ -20,7 +20,7 @@ class EmojiUseCaseImpl @Inject constructor(
         repository.fetchEmojiList()
     }
 
-    override fun createEmoji(videoUri: Uri) : Pair<String, String>? {
+    override fun createEmoji(videoUri: Uri): Pair<String, String>? {
         return model.createEmoji(videoUri)
     }
 }
