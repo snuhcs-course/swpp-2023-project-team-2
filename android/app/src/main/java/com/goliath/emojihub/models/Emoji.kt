@@ -33,6 +33,21 @@ val dummyEmoji = Emoji(
         savedCount = 1600,
         videoLink = "https://firebasestorage.googleapis.com/v0/b/emojihub-e2023.appspot.com/o/sample_videos%2Fthumbs%20up.mp4?alt=media&token=9526818f-6ccb-499f-84b2-e6e1f6924704",
         unicode = "U+1F44D"
-
     )
 )
+
+val dummyUsernames = listOf("channn", "doggydog", "meow_0w0", "mpunchmm", "kick_back")
+val dummyUnicodes = listOf("U+1F44D", "U+1F600", "U+1F970", "U+1F60E", "U+1F621", "U+1F63A", "U+1F496", "U+1F415")
+val dummySavedCounts = 0..2000
+
+fun createDummyEmoji(): Emoji {
+    return Emoji(
+        EmojiDto(
+            createdBy = dummyUsernames.random(),
+            createdAt = "2023.09.16",
+            savedCount = dummySavedCounts.random(),
+            videoLink = "",
+            unicode = dummyUnicodes.random()
+        )
+    )
+}
