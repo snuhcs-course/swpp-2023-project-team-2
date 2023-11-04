@@ -27,4 +27,12 @@ class UserViewModel @Inject constructor(
     suspend fun registerUser(email: String, username: String, password: String) {
         userUseCase.registerUser(email, username, password)
     }
+
+    fun logout() {
+        userUseCase.logout()
+    }
+
+    fun signOut() {
+        userUseCase.signOut()
+    }
 }
