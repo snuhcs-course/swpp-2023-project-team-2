@@ -57,8 +57,8 @@ class X3dDataSourceImpl @Inject constructor(
         const val CROP_SIZE = 160
         const val NUM_CHANNELS = 3
         private const val FRAMES_PER_SECOND = 30
-        private const val SAMPLING_RATE = 12
-        const val COUNT_OF_FRAMES_PER_INFERENCE = 4
+        private const val SAMPLING_RATE = 6
+        const val COUNT_OF_FRAMES_PER_INFERENCE = 13
         private const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
     }
 

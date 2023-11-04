@@ -17,16 +17,16 @@ class X3dRepositoryImpl @Inject constructor(
     private val x3dDataSource: X3dDataSource
 ): X3dRepository {
     companion object{
-        const val SCORE_THRESHOLD = 0.5F
+        const val SCORE_THRESHOLD = 0.4F
         const val DEFAULT_EMOJI_NAME = "love it"
         const val DEFAULT_EMOJI_UNICODE = "U+0FE0F"
     }
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
-        val x3dModule = x3dDataSource.loadModule("kinetics/efficient_x3d_xs_tutorial_float.pt")
+        val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
             ?: return null
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
-            "kinetics/kinetics_id_to_classname.json",
-            "kinetics/kinetics_classname_to_unicode.json"
+            "hagrid_id_to_classname.json",
+            "hagrid_classname_to_unicode.json"
         )?: return null
         val videoTensor = loadVideoTensor(videoUri) ?: return null
         return predictEmojiClass(x3dModule, videoTensor, classNameFilePath, classUnicodeFilePath)
