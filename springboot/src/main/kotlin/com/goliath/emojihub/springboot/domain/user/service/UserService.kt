@@ -1,8 +1,8 @@
 package com.goliath.emojihub.springboot.domain.user.service
 
-import com.goliath.emojihub.springboot.global.common.CustomHttp401
-import com.goliath.emojihub.springboot.global.common.CustomHttp404
-import com.goliath.emojihub.springboot.global.common.CustomHttp409
+import com.goliath.emojihub.springboot.global.exception.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
 import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest

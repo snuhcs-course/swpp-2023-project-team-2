@@ -3,6 +3,7 @@ package com.goliath.emojihub.springboot.domain.emoji.controller
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
+import com.goliath.emojihub.springboot.domain.user.model.CurrentUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -36,11 +37,11 @@ class EmojiController (private val emojiService: EmojiService){
 
     @PostMapping("/upload")
     fun postEmoji(
-//        @CurrentUser username: String,
+        @CurrentUser username: String,
         @RequestPart(value = "file") file: MultipartFile,
         @RequestPart postEmojiRequest: PostEmojiRequest
     ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(file, postEmojiRequest), HttpStatus.CREATED)
+        return ResponseEntity(emojiService.postEmoji(username, file, postEmojiRequest), HttpStatus.CREATED)
     }
 
     @PutMapping("/save")

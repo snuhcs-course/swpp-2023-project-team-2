@@ -1,6 +1,6 @@
 package com.goliath.emojihub.springboot.domain.emoji.service
 
-import com.goliath.emojihub.springboot.global.common.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
@@ -19,8 +19,8 @@ class EmojiService (private val emojiDao: EmojiDao) {
         return emojiDao.getEmoji(emojiId)
     }
 
-    fun postEmoji(file: MultipartFile, postEmojiRequest: PostEmojiRequest) {
-        emojiDao.postEmoji(file, postEmojiRequest)
+    fun postEmoji(username: String, file: MultipartFile, postEmojiRequest: PostEmojiRequest) {
+        emojiDao.postEmoji(username, file, postEmojiRequest)
     }
 
     fun saveEmoji(userId: String, emojiId: String) {
