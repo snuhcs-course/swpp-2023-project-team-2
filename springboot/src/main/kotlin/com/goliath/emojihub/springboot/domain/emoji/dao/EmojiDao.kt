@@ -84,18 +84,21 @@ class EmojiDao {
         userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
     }
 
-    fun deleteEmoji(emojiId: String) {
+    fun deleteEmoji(username: String, emojiId: String) {
         val db: Firestore = FirestoreClient.getFirestore()
-        // delete emoji from emojiDB
-        db.collection(EMOJI_COLLECTION_NAME).document(emojiId).delete()
         // delete emoji from all users' saved_emojis
         val usersWithDeletedEmoji = db.collection(USER_COLLECTION_NAME)
                                         .whereArrayContains("saved_emojis", emojiId)
                                         .get().get().documents
-        // TODO: 이런거 한 번에 수정하는 방법은 없나?
         for(user in usersWithDeletedEmoji) {
             user.reference.update("saved_emojis", FieldValue.arrayRemove(emojiId))
         }
+        // delete emoji from the user's(who created this emoji) created_emojis
+        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        userRef.update("created_emojis", FieldValue.arrayRemove(emojiId))
+        // delete emoji from emojiDB
+        db.collection(EMOJI_COLLECTION_NAME).document(emojiId).delete()
+        // TODO: firebase storage에서 해당 영상 제거
     }
 
     fun existsEmoji(emojiId: String): Boolean {
