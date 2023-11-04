@@ -62,20 +62,20 @@ class X3DDataSourceAndRepositoryImplTest {
     fun assetManager_efficientX3dXsTutorialInt8_returnFileInputStream() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val assetManager = appContext.assets
-        val inputStream = assetManager.open("efficient_x3d_xs_tutorial_int8.pt")
+        val inputStream = assetManager.open("efficient_x3d_xs_tutorial_float.pt")
         Log.e("X3dRepositoryImplTest", "inputStream: $inputStream")
         assertNotNull(assetManager)
     }
 
     @Test
-    fun assetFilePath_efficientX3dXsTutorialInt8_returnFilePath() {
+    fun assetFilePath_efficientX3dXsTutorialFloat_returnFilePath() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSource = X3dDataSourceImpl(appContext)
-        val filePath = x3DDataSource.assetFilePath("efficient_x3d_xs_tutorial_int8.pt")
+        val filePath = x3DDataSource.assetFilePath("efficient_x3d_xs_tutorial_float.pt")
         // NOTE!: Module.load 에 absolute path 가 사용되므로 assetFilePath 는
         //       assets 폴더의 파일을 context.filesDir 에 복사해 그 파일의 absolute path 를 반환한다.
         assertEquals(
-            "/data/user/0/com.goliath.emojihub/files/efficient_x3d_xs_tutorial_int8.pt",
+            "/data/user/0/com.goliath.emojihub/files/efficient_x3d_xs_tutorial_float.pt",
             filePath
         )
     }
