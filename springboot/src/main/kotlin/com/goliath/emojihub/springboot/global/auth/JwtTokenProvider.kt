@@ -1,7 +1,7 @@
 package com.goliath.emojihub.springboot.global.auth
 
-import com.goliath.emojihub.springboot.global.common.CustomHttp400
-import com.goliath.emojihub.springboot.global.common.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.CustomHttp400
+import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts

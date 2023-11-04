@@ -1,14 +1,15 @@
 package com.goliath.emojihub.springboot.domain.user.service
 
-import com.goliath.emojihub.springboot.global.common.CustomHttp401
-import com.goliath.emojihub.springboot.global.common.CustomHttp404
-import com.goliath.emojihub.springboot.global.common.CustomHttp409
+import com.goliath.emojihub.springboot.global.exception.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
 import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 interface UserService {
@@ -21,6 +22,7 @@ interface UserService {
 class UserServiceImpl(
     private val userDao: UserDao,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val passwordEncoder: PasswordEncoder,
     ) : UserService {
     override fun getUsers(): List<UserDto> {
         return userDao.getUsers()
@@ -30,6 +32,7 @@ class UserServiceImpl(
         if (userDao.existUser(signUpRequest.username)) {
             throw CustomHttp409("Id already exists.")
         }
+        signUpRequest.password = passwordEncoder.encode(signUpRequest.password)
         userDao.insertUser(signUpRequest)
         val authToken = jwtTokenProvider.createToken(signUpRequest.username)
         return UserDto.AuthToken(authToken)
@@ -37,7 +40,7 @@ class UserServiceImpl(
 
     override fun login(loginRequest: LoginRequest): ResponseEntity<UserDto.AuthToken> {
         val user = userDao.getUser(loginRequest.username) ?: throw CustomHttp404("Id doesn't exist.")
-        if (loginRequest.password != user.password) {
+        if (!passwordEncoder.matches(loginRequest.password, user.password)) {
             throw CustomHttp401("Password is incorrect.")
         }
         val authToken = jwtTokenProvider.createToken(user.username)

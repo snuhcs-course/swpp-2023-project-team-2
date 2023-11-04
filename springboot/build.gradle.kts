@@ -38,6 +38,7 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
 	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
 	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("com.google.code.gson:gson:2.10.1")
 
     implementation("org.projectlombok:lombok:1.18.30")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
