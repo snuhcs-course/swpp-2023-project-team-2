@@ -25,7 +25,9 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun uploadPost(content: String): Boolean {
         val dto = UploadPostDto(content)
-        return postApi.uploadPost(dto).isSuccessful
+        val result = postApi.uploadPost(dto)
+        Log.d("Response Uploading post", result.raw().toString())
+        return result.isSuccessful
     }
 
     override suspend fun getPostWithId(id: String): PostDto? {

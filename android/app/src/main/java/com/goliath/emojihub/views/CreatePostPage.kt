@@ -1,8 +1,11 @@
 package com.goliath.emojihub.views
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
@@ -14,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.LocalNavController
@@ -31,35 +35,52 @@ fun CreatePostPage(
     val coroutineScope = rememberCoroutineScope()
 
     var content by remember { mutableStateOf(TextFieldValue("")) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
-    Column {
-        TopNavigationBar(
-            navigate = { navController.popBackStack() }
-        ) {
-            TextButton(onClick = {
-                coroutineScope.launch {
-                    val success = viewModel.uploadPost(content.text)
-                    if (success) {
-                        navController.popBackStack()
+    Box(Modifier.fillMaxSize()) {
+        Column {
+            TopNavigationBar(
+                navigate = { navController.popBackStack() }
+            ) {
+                TextButton(onClick = {
+                    coroutineScope.launch {
+                        val success = viewModel.uploadPost(content.text)
+                        if (success) {
+                            showSuccessDialog = true
+                        }
                     }
+                }) {
+                    Text(text = "작성", color = Color.Black)
                 }
-            }) {
-                Text(text = "작성", color = Color.Black)
             }
+
+            TextField(
+                modifier = Modifier.fillMaxSize().padding(bottom = 16.dp),
+                value = content,
+                onValueChange = { content = it },
+                placeholder = { Text("오늘 무슨 일이 있었나요?") },
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.White,
+                    placeholderColor = Color.LightGray,
+                    cursorColor = Color.Black,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
         }
 
-        TextField(
-            modifier = Modifier.fillMaxSize().padding(bottom = 16.dp),
-            value = content,
-            onValueChange = { content = it },
-            placeholder = { Text("오늘 무슨 일이 있었나요?") },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.White,
-                placeholderColor = Color.LightGray,
-                cursorColor = Color.Black,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text(text = "완료", fontWeight = FontWeight.Bold) },
+                text = { Text(text = "포스트 업로드가 완료되었습니다.") },
+                shape = RoundedCornerShape(20.dp),
+                confirmButton = {
+                    TextButton(onClick = { navController.popBackStack() }) {
+                        Text(text = "확인")
+                    }
+                }
             )
-        )
+        }
     }
 }

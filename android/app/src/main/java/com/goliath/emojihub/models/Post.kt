@@ -10,6 +10,7 @@ class Post(
     val modifiedAt: String = dto.modifiedAt
     val createdBy: String = dto.createdBy
     val content: String = dto.content
+    val reaction: List<String> = listOf()
     //val reaction: List<String> = dto.reaction
 }
 

@@ -16,7 +16,6 @@ import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import java.lang.reflect.Type
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,7 +27,6 @@ object NetworkModule {
     private const val accessToken: String = ""
 
     @Provides
-    @Singleton
     fun provideRetrofit(
 
     ): Retrofit {
@@ -41,7 +39,6 @@ object NetworkModule {
     }
 
     @Provides
-    @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(AuthInterceptor(accessToken))
