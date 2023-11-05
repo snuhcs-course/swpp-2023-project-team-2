@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 interface PostRepository {
     suspend fun fetchPostList(numLimit: Int): List<PostDto>
-    suspend fun uploadPost(content: String)
+    suspend fun uploadPost(content: String): Boolean
     suspend fun getPostWithId(id: String): PostDto?
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
@@ -23,9 +23,9 @@ class PostRepositoryImpl @Inject constructor(
         return postApi.fetchPostList(numLimit).body() ?: listOf()
     }
 
-    override suspend fun uploadPost(content: String) {
+    override suspend fun uploadPost(content: String): Boolean {
         val dto = UploadPostDto(content)
-        postApi.uploadPost(dto)
+        return postApi.uploadPost(dto).isSuccessful
     }
 
     override suspend fun getPostWithId(id: String): PostDto? {

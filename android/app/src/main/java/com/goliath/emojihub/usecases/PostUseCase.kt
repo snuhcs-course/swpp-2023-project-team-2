@@ -9,7 +9,7 @@ import javax.inject.Inject
 sealed interface PostUseCase {
     val postState: StateFlow<Post?>
     suspend fun fetchPostList(numLimit: Int)
-    suspend fun uploadPost(content: String)
+    suspend fun uploadPost(content: String): Boolean
     suspend fun getPostWithId(id: String)
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
@@ -25,8 +25,8 @@ class PostUseCaseImpl @Inject constructor(
         repository.fetchPostList(numLimit)
     }
 
-    override suspend fun uploadPost(content: String) {
-        repository.uploadPost(content)
+    override suspend fun uploadPost(content: String): Boolean {
+        return repository.uploadPost(content)
     }
 
     override suspend fun getPostWithId(id: String) {

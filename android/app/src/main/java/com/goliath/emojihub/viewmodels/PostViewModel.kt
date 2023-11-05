@@ -9,8 +9,8 @@ import javax.inject.Inject
 class PostViewModel @Inject constructor(
     private val postUseCase: PostUseCase
 ): ViewModel() {
-    suspend fun uploadPost(content: String) {
-        postUseCase.uploadPost(content)
+    suspend fun uploadPost(content: String): Boolean {
+        return postUseCase.uploadPost(content)
     }
 
     suspend fun fetchPostList(numLimit: Int) {

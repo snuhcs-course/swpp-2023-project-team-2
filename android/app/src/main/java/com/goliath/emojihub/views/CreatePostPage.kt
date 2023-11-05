@@ -38,7 +38,10 @@ fun CreatePostPage(
         ) {
             TextButton(onClick = {
                 coroutineScope.launch {
-                    viewModel.uploadPost(content.text)
+                    val success = viewModel.uploadPost(content.text)
+                    if (success) {
+                        navController.popBackStack()
+                    }
                 }
             }) {
                 Text(text = "작성", color = Color.Black)
