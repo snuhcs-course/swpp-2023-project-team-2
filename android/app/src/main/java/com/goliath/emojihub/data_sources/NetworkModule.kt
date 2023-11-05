@@ -1,6 +1,5 @@
 package com.goliath.emojihub.data_sources
 
-import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.data_sources.api.PostApi

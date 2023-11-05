@@ -37,8 +37,6 @@ class UserRepositoryImpl @Inject constructor(
             val accessToken = result.body()?.accessToken
             Log.d("Login Success", accessToken.toString())
             return accessToken
-        } else {
-            Log.d("Login Failure", result.raw().toString())
         }
         return null
     }

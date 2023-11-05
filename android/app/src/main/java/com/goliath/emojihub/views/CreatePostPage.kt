@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.PostViewModel
+import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.TopNavigationBar
 import kotlinx.coroutines.launch
 
@@ -55,7 +56,9 @@ fun CreatePostPage(
             }
 
             TextField(
-                modifier = Modifier.fillMaxSize().padding(bottom = 16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 16.dp),
                 value = content,
                 onValueChange = { content = it },
                 placeholder = { Text("오늘 무슨 일이 있었나요?") },
@@ -70,16 +73,10 @@ fun CreatePostPage(
         }
 
         if (showSuccessDialog) {
-            AlertDialog(
-                onDismissRequest = {},
-                title = { Text(text = "완료", fontWeight = FontWeight.Bold) },
-                text = { Text(text = "포스트 업로드가 완료되었습니다.") },
-                shape = RoundedCornerShape(20.dp),
-                confirmButton = {
-                    TextButton(onClick = { navController.popBackStack() }) {
-                        Text(text = "확인")
-                    }
-                }
+            CustomDialog(
+                title = "완료",
+                body = "포스트 업로드가 완료되었습니다.",
+                confirm = { navController.popBackStack() }
             )
         }
     }
