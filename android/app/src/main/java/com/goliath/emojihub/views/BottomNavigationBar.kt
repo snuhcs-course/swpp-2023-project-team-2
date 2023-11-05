@@ -45,6 +45,14 @@ fun BottomNavigationBar(
             val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
             CreatePostPage(postViewModel)
         }
+
+        composable(NavigationDestination.AddReactionBottomSheet) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Feed.screenRoute)
+            }
+            val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+            AddReactionBottomSheet()
+        }
     }
 }
 

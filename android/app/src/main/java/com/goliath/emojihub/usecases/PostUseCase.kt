@@ -11,6 +11,7 @@ sealed interface PostUseCase {
     val postState: StateFlow<Post?>
     suspend fun fetchPostList()
     suspend fun uploadPost(content: String)
+    suspend fun addReaction()
 }
 class PostUseCaseImpl @Inject constructor(
     private val repository: PostRepository
@@ -23,5 +24,9 @@ class PostUseCaseImpl @Inject constructor(
     }
     override suspend fun uploadPost(content: String) {
         Log.d("Post", content)
+    }
+
+    override suspend fun addReaction() {
+        TODO("Not yet implemented")
     }
 }

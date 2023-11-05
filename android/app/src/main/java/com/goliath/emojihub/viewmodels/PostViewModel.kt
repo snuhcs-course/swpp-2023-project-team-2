@@ -14,4 +14,7 @@ class PostViewModel @Inject constructor(
     suspend fun uploadPost(content: String) {
         postUseCase.uploadPost(content)
     }
+    suspend fun addReaction() {
+        postUseCase.addReaction()
+    }
 }
