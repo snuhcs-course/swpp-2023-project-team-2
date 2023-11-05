@@ -18,8 +18,9 @@ from pytorchvideo.losses.cosine_annealing_with_warmup import CosineAnnealingWarm
 from pytorch_lightning.callbacks import (
     LearningRateMonitor,
     RichProgressBar,
-    ModelCheckpoint
+    ModelCheckpoint,
 )
+from pytorch_lightning.profiler import AdvancedProfiler, SimpleProfiler
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     Normalize,
@@ -75,7 +76,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         super().__init__()
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
         #############
         # PTV Model #
@@ -101,6 +102,15 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 )
                 print("Pretrained weights loaded")
 
+                # _state_dict = torch.load(
+                #     "./lightning_logs/version_12/epoch=29-step=1800.ckpt",
+                # )['state_dict']
+                # for key, value in _state_dict.copy().items():
+                #     _state_dict[key.replace('model.', '', 1)] = value
+                #     del _state_dict[key]
+                # self.model.load_state_dict(_state_dict, strict=True)
+                print("load weights from checkpoint")
+
                 #  Due to the classes mismatch between the pretrained model and the
                 #  dataset, we need to remove the last layer of the pretrained model.
                 del _state_dict["projection.model.weight"]
@@ -122,14 +132,14 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 #     expansion='S',
                 #     head_act='identity'
                 # )
-                # _state_dict = torch.load(
-                #     "./lightning_logs/version_11/epoch=0-step=14000.ckpt",
-                # )['state_dict']
-                # for key, value in _state_dict.copy().items():
-                #     _state_dict[key.replace('model.', '')] = value
-                #     del _state_dict[key]
-                # self.model.load_state_dict(_state_dict, strict=False)
-                # print("load weights from checkpoint")
+                _state_dict = torch.load(
+                    "./lightning_logs/version_11/epoch=0-step=14000.ckpt",
+                )['state_dict']
+                for key, value in _state_dict.copy().items():
+                    _state_dict[key.replace('model.', '', 1)] = value
+                    del _state_dict[key]
+                self.model.load_state_dict(_state_dict, strict=True)
+                print("load weights from checkpoint")
 
                 for name, p in self.model.named_parameters():
                     if 's5.pathway0' in name or 'head' in name or 'projection' in name:
@@ -241,7 +251,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         #     eta_max=self.args.lr, T_up=0, gamma=0.7
         # )
         scheduler = CosineAnnealingWarmRestarts(
-            optimizer, T_0=2, T_mult=2, last_epoch=-1
+            optimizer, T_0=1, T_mult=2, last_epoch=-1
         )
         # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 2000}]
         return [optimizer], [scheduler]
@@ -382,7 +392,7 @@ def main():
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model parameters.
-    parser.add_argument("--lr", "--learning-rate", default=0.001, type=float)
+    parser.add_argument("--lr", "--learning-rate", default=2e-04, type=float)
     parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--betas", default=(0.9,0.999), type=tuple)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
@@ -420,16 +430,17 @@ def main():
     parser.set_defaults(
         accelerator='gpu',
         devices=1,
-        max_epochs=30,
+        max_epochs=100,
         callbacks=[
             # EarlyStopping('val_loss'),
-            # ModelCheckpoint(
-            #     dirpath="./lightning_logs/version_12/",
-            #     save_last=True,
-            # ),
+            ModelCheckpoint(
+                dirpath="./lightning_logs/version_13/",
+                save_last=True,
+            ),
             LearningRateMonitor(),
             RichProgressBar(leave=True),
         ],
+        profiler=SimpleProfiler(),
         replace_sampler_ddp=False,
     )
 
