@@ -109,7 +109,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 #     _state_dict[key.replace('model.', '', 1)] = value
                 #     del _state_dict[key]
                 # self.model.load_state_dict(_state_dict, strict=True)
-                print("load weights from checkpoint")
+                # print("load weights from checkpoint")
 
                 #  Due to the classes mismatch between the pretrained model and the
                 #  dataset, we need to remove the last layer of the pretrained model.
@@ -253,8 +253,8 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         scheduler = CosineAnnealingWarmRestarts(
             optimizer, T_0=1, T_mult=2, last_epoch=-1
         )
-        # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 2000}]
-        return [optimizer], [scheduler]
+        return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 100}]
+        # return [optimizer], [scheduler]
 
 
 class HagridDataModule(pytorch_lightning.LightningDataModule):
@@ -406,12 +406,12 @@ def main():
 
     # Data parameters.
     parser.add_argument("--path_images",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/subsample',
+                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/train_val',
                         type=str, required=False)  # temporarily changed: required=True -> False
     parser.add_argument("--path_annotation",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_subsample',
+                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_train_val',
                         type=str, required=False)  # temporarily changed: required=True -> False
-    parser.add_argument("--workers", default=8, type=int)
+    parser.add_argument("--workers", default=10, type=int)
     parser.add_argument("--batch_size", default=24, type=int)
     # parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
@@ -420,9 +420,9 @@ def main():
     parser.add_argument("--video_num_subsampled", default=13, type=int)
     parser.add_argument("--video_means", default=(0.45, 0.45, 0.45), type=tuple)
     parser.add_argument("--video_stds", default=(0.225, 0.225, 0.225), type=tuple)
-    parser.add_argument("--video_crop_size", default=224, type=int)
-    parser.add_argument("--video_min_short_side_scale", default=256, type=int)
-    parser.add_argument("--video_max_short_side_scale", default=320, type=int)
+    parser.add_argument("--video_crop_size", default=160, type=int)
+    parser.add_argument("--video_min_short_side_scale", default=180, type=int)
+    parser.add_argument("--video_max_short_side_scale", default=226, type=int)
     parser.add_argument("--video_horizontal_flip_p", default=0.5, type=float)
 
     # Trainer parameters.
@@ -430,11 +430,12 @@ def main():
     parser.set_defaults(
         accelerator='gpu',
         devices=1,
-        max_epochs=100,
+        max_epochs=2,
         callbacks=[
             # EarlyStopping('val_loss'),
             ModelCheckpoint(
-                dirpath="./lightning_logs/version_13/",
+                dirpath="./lightning_logs/version_14/",
+                every_n_train_steps=3000,
                 save_last=True,
             ),
             LearningRateMonitor(),
