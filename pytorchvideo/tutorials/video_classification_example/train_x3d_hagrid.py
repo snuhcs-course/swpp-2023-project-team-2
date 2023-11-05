@@ -7,7 +7,7 @@ import logging
 import pytorch_lightning
 import torchmetrics
 from torch.hub import load_state_dict_from_url
-from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
 from pytorchvideo.data.hagrid import GestureDataset
 import pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d as efficient_x3d
@@ -75,6 +75,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         super().__init__()
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
+        self.save_hyperparameters()
 
         #############
         # PTV Model #
@@ -107,15 +108,35 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 self.model.load_state_dict(_state_dict, strict=False)
 
                 for name, p in self.model.named_parameters():
+                    if 'projection' in name:
+                        p.requires_grad = True
+                    else:
+                        p.requires_grad = False
+                print("Training only last layer: projection")
+            else:
+                self.model = VideoClassificationLightningModule.load_from_checkpoint(
+                    "./lightning_logs/version_13/epoch=0-step=14000.ckpt"
+                )
+                # self.model = efficient_x3d.create_x3d(
+                #     num_classes=19,
+                #     expansion='S',
+                #     head_act='identity'
+                # )
+                # _state_dict = torch.load(
+                #     "./lightning_logs/version_11/epoch=0-step=14000.ckpt",
+                # )['state_dict']
+                # for key, value in _state_dict.copy().items():
+                #     _state_dict[key.replace('model.', '')] = value
+                #     del _state_dict[key]
+                # self.model.load_state_dict(_state_dict, strict=False)
+                # print("load weights from checkpoint")
+
+                for name, p in self.model.named_parameters():
                     if 's5.pathway0' in name or 'head' in name or 'projection' in name:
                         p.requires_grad = True
                     else:
                         p.requires_grad = False
                 print("Training from s5.pathway0 to projection")
-            else:
-                self.model = VideoClassificationLightningModule.load_from_checkpoint(
-                    "./lightning_logs/version_5/checkpoints/epoch=49-step=1150.ckpt"
-                )
 
             self.batch_key = "video"
         else:
@@ -212,10 +233,17 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
             weight_decay=self.args.weight_decay,
         )
         # scheduler = ExponentialLR(optimizer, gamma=0.9)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,  T_max=self.args.max_epochs//10, last_epoch=-1
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        #     optimizer,  T_max=self.args.max_epochs//10, last_epoch=-1
+        # )
+        # scheduler = CosineAnnealingWarmUpRestarts(
+        #     optimizer, T_0=2, T_mult=2,
+        #     eta_max=self.args.lr, T_up=0, gamma=0.7
+        # )
+        scheduler = CosineAnnealingWarmRestarts(
+            optimizer, T_0=2, T_mult=2, last_epoch=-1
         )
-        # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 6000}]
+        # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 2000}]
         return [optimizer], [scheduler]
 
 
@@ -354,7 +382,7 @@ def main():
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model parameters.
-    parser.add_argument("--lr", "--learning-rate", default=0.0005, type=float)
+    parser.add_argument("--lr", "--learning-rate", default=0.001, type=float)
     parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--betas", default=(0.9,0.999), type=tuple)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
@@ -373,8 +401,8 @@ def main():
     parser.add_argument("--path_annotation",
                         default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_subsample',
                         type=str, required=False)  # temporarily changed: required=True -> False
-    parser.add_argument("--workers", default=10, type=int)
-    parser.add_argument("--batch_size", default=16, type=int)
+    parser.add_argument("--workers", default=8, type=int)
+    parser.add_argument("--batch_size", default=24, type=int)
     # parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
         "--data_type", default="video", choices=["video"], type=str
@@ -392,13 +420,13 @@ def main():
     parser.set_defaults(
         accelerator='gpu',
         devices=1,
-        max_epochs=100,
+        max_epochs=30,
         callbacks=[
             # EarlyStopping('val_loss'),
-            ModelCheckpoint(
-                dirpath="./lightning_logs/version_9/",
-                every_n_epochs=10,
-            ),
+            # ModelCheckpoint(
+            #     dirpath="./lightning_logs/version_12/",
+            #     save_last=True,
+            # ),
             LearningRateMonitor(),
             RichProgressBar(leave=True),
         ],
