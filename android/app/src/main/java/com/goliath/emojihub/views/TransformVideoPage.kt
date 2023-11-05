@@ -99,7 +99,7 @@ fun TransformVideoPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = String(Character.toChars(resultEmoji!!.second.substring(2).toInt(16))),
+                        text = resultEmoji!!.second,
                         fontSize = 48.sp
                     )
                     Text (

@@ -13,6 +13,14 @@ class EmojiViewModel @Inject constructor(
     var videoUri: Uri = Uri.EMPTY
 
     fun createEmoji(videoUri: Uri): Pair<String, String>? {
-        return emojiUseCase.createEmoji(videoUri)
+        val (emojiName, emojiUnicode) = emojiUseCase.createEmoji(videoUri)?: return null
+
+        val emojiCharArray = emojiUnicode.replace("U+", "")
+            .split(" ").map {
+            val codePoint = it.toInt(16)
+                codePoint.toChar()
+        }.toCharArray()
+        val emoji = String(emojiCharArray)
+        return Pair(emojiName, emoji)
     }
 }

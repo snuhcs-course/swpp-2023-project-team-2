@@ -59,7 +59,7 @@ class X3DDataSourceAndRepositoryImplTest {
     }
 
     @Test
-    fun assetManager_efficientX3dXsTutorialInt8_returnFileInputStream() {
+    fun assetManager_efficientX3dXsTutorialFloat_returnFileInputStream() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val assetManager = appContext.assets
         val inputStream = assetManager.open("kinetics/efficient_x3d_xs_tutorial_float.pt")
@@ -92,10 +92,28 @@ class X3DDataSourceAndRepositoryImplTest {
     fun checkAnnotationFilesExist_kinetics400_returnPairOfFilePaths() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
-        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist()
+        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist(
+            "kinetics/kinetics_id_to_classname.json",
+            "kinetics/kinetics_classname_to_unicode.json"
+        )
         assertEquals(
             Pair("/data/user/0/com.goliath.emojihub/files/kinetics_id_to_classname.json",
                 "/data/user/0/com.goliath.emojihub/files/kinetics_classname_to_unicode.json"),
+            filePaths
+        )
+    }
+
+    @Test
+    fun checkAnnotaionFilesExist_hagrid_returnPairOfFilePaths() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
+        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist(
+            "hagrid_id_to_classname.json",
+            "hagrid_classname_to_unicode.json"
+        )
+        assertEquals(
+            Pair("/data/user/0/com.goliath.emojihub/files/hagrid_id_to_classname.json",
+                "/data/user/0/com.goliath.emojihub/files/hagrid_classname_to_unicode.json"),
             filePaths
         )
     }
@@ -197,7 +215,10 @@ class X3DDataSourceAndRepositoryImplTest {
     fun indexToEmojiInfo_0_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3DDataSourceImpl = X3dDataSourceImpl(appContext)
-        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist()
+        val filePaths = x3DDataSourceImpl.checkAnnotationFilesExist(
+            "kinetics/kinetics_id_to_classname.json",
+            "kinetics/kinetics_classname_to_unicode.json"
+        )
         if (filePaths == null){
             Log.e("X3dRepositoryImplTest", "checkAnnotationFilesExist() returns null")
             return

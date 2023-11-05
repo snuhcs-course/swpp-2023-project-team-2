@@ -19,13 +19,15 @@ class X3dRepositoryImpl @Inject constructor(
     companion object{
         const val SCORE_THRESHOLD = 0.5F
         const val DEFAULT_EMOJI_NAME = "love it"
-        const val DEFAULT_EMOJI_UNICODE = "0x0FE0F"
+        const val DEFAULT_EMOJI_UNICODE = "U+0FE0F"
     }
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_xs_tutorial_float.pt")
             ?: return null
-        val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist()
-            ?: return null
+        val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
+            "hagrid_id_to_classname.json",
+            "hagrid_classname_to_unicode.json"
+        )?: return null
         val videoTensor = loadVideoTensor(videoUri) ?: return null
         return predictEmojiClass(x3dModule, videoTensor, classNameFilePath, classUnicodeFilePath)
     }
