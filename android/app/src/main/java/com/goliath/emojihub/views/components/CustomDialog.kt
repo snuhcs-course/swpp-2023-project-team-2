@@ -15,16 +15,22 @@ fun CustomDialog(
     body: String = "",
     confirmText: String = "확인",
     isDestructive: Boolean = false,
+    needsCancelButton: Boolean = false,
     onDismissRequest: () -> Unit = {},
     confirm: () -> Unit = {},
     dismiss: () -> Unit = {}
 ) {
-    if (dismiss == {}) {
+    if (needsCancelButton) {
         AlertDialog(
             onDismissRequest = { onDismissRequest() },
             title = { Text(title, fontWeight = FontWeight.Bold) },
             text = { Text(body) },
             shape = RoundedCornerShape(20.dp),
+            dismissButton = {
+                TextButton(onClick = { dismiss() }) {
+                    Text(text = "취소", color = Color.EmojiHubLabel)
+                }
+            },
             confirmButton = {
                 TextButton(onClick = { confirm() }) {
                     Text(text = confirmText, color =
@@ -40,11 +46,6 @@ fun CustomDialog(
             title = { Text(title, fontWeight = FontWeight.Bold) },
             text = { Text(body) },
             shape = RoundedCornerShape(20.dp),
-            dismissButton = {
-                TextButton(onClick = { dismiss() }) {
-                    Text(text = "취소", color = Color.EmojiHubLabel)
-                }
-            },
             confirmButton = {
                 TextButton(onClick = { confirm() }) {
                     Text(text = confirmText, color =

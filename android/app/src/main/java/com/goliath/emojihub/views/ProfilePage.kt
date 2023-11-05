@@ -100,6 +100,7 @@ fun ProfilePage(
                     CustomDialog(
                         title = "로그아웃",
                         body = "로그아웃하시겠습니까?",
+                        needsCancelButton = true,
                         onDismissRequest = { showLogoutDialog = false },
                         dismiss = { showLogoutDialog = false },
                         confirm = { userViewModel.logout() }
@@ -112,6 +113,7 @@ fun ProfilePage(
                         body = "계정을 삭제하시겠습니까?",
                         confirmText = "삭제",
                         isDestructive = true,
+                        needsCancelButton = true,
                         onDismissRequest = { showSignOutDialog = false },
                         dismiss = { showSignOutDialog = false },
                         confirm = { userViewModel.signOut() }
