@@ -2,7 +2,7 @@ package com.goliath.emojihub.springboot.domain.user.service
 
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.model.UserAdapter
-import com.goliath.emojihub.springboot.global.common.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service

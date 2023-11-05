@@ -19,6 +19,8 @@ sealed interface UserUseCase {
     suspend fun fetchUser(id: String)
     suspend fun registerUser(email: String, name: String, password: String)
     suspend fun login(name: String, password: String)
+    fun logout()
+    fun signOut()
 }
 
 @Singleton
@@ -52,5 +54,13 @@ class UserUseCaseImpl @Inject constructor(
             Log.d("Login Success: Access token", accessToken)
             _userState.update { User(UserDto(accessToken, name)) }
         }
+    }
+
+    override fun logout() {
+        _userState.update { null }
+    }
+
+    override fun signOut() {
+        _userState.update { null }
     }
 }

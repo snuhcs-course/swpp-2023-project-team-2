@@ -8,9 +8,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
-import com.goliath.emojihub.models.dummyEmoji
+import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 
 @Composable
 fun BottomNavigationBar(
@@ -22,7 +23,7 @@ fun BottomNavigationBar(
         }
 
         composable(PageItem.Emoji.screenRoute) {
-            EmojiPage((1..10).map{ dummyEmoji})
+            EmojiPage((1..10).map{ createDummyEmoji() })
         }
 
         composable(PageItem.Profile.screenRoute) {
@@ -35,6 +36,14 @@ fun BottomNavigationBar(
             }
             val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
             TransformVideoPage(emojiViewModel)
+        }
+
+        composable(NavigationDestination.CreatePost) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Feed.screenRoute)
+            }
+            val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+            CreatePostPage(postViewModel)
         }
     }
 }

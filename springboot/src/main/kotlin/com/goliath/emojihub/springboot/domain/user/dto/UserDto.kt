@@ -4,8 +4,8 @@ data class UserDto (
     var email: String = "",
     var username: String = "",
     var password: String = "",
-    var created_emojis: MutableList<String>? = null,
-    var liked_emojis: MutableList<String>? = null
+    var created_emojis: MutableList<String>? = mutableListOf(),
+    var saved_emojis: MutableList<String>? = mutableListOf(),
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

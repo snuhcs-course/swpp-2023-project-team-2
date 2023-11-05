@@ -18,6 +18,8 @@ class X3dRepositoryImpl @Inject constructor(
 ): X3dRepository {
     companion object{
         const val SCORE_THRESHOLD = 0.5F
+        const val DEFAULT_EMOJI_NAME = "love it"
+        const val DEFAULT_EMOJI_UNICODE = "0x0FE0F"
     }
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_xs_tutorial_float.pt")
@@ -40,8 +42,8 @@ class X3dRepositoryImpl @Inject constructor(
     ): Pair<String, String>? {
         val (maxScoreIdx, maxScore) = x3dDataSource.runInference(x3dModule, videoTensor)
         if (maxScore < SCORE_THRESHOLD) {
-            Log.e("X3d Repository", "Score is lower than threshold")
-            return null
+            Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
+            return Pair(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE)
         }
         return x3dDataSource.indexToEmojiInfo(
             maxScoreIdx, classNameFilePath, classUnicodeFilePath
