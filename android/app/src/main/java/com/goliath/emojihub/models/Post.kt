@@ -24,7 +24,7 @@ data class PostDto(
 )
 
 data class UploadPostDto(
-    val content: String
+    @SerializedName("content") val content: String
 )
 
 val dummyPost = Post(

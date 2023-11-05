@@ -1,6 +1,7 @@
 package com.goliath.emojihub.usecases
 
 import android.util.Log
+import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
@@ -53,6 +54,7 @@ class UserUseCaseImpl @Inject constructor(
         if (!accessToken.isNullOrEmpty()) {
             Log.d("Login Success: Access token", accessToken)
             _userState.update { User(UserDto(accessToken, name)) }
+            EmojiHubApplication.preferences.accessToken = accessToken
         }
     }
 
