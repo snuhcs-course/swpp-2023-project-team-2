@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.TextButton
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,12 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.ui.theme.Color
-import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
-import com.goliath.emojihub.ui.theme.Color.EmojiHubLabel
-import com.goliath.emojihub.ui.theme.Color.EmojiHubRed
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.EmptyProfile
 import com.goliath.emojihub.views.components.ProfileMenuCell
 import com.goliath.emojihub.views.components.TopNavigationBar
@@ -102,40 +97,24 @@ fun ProfilePage(
                 }
 
                 if (showLogoutDialog) {
-                    AlertDialog(
+                    CustomDialog(
+                        title = "로그아웃",
+                        body = "로그아웃하시겠습니까?",
                         onDismissRequest = { showLogoutDialog = false },
-                        title = { Text(text = "로그아웃", fontWeight = FontWeight.Bold) },
-                        text = { Text(text = "로그아웃하시겠습니까?") },
-                        shape = RoundedCornerShape(20.dp),
-                        dismissButton = {
-                            TextButton(onClick = { showLogoutDialog = false }) {
-                                Text(text = "취소", color = EmojiHubLabel)
-                            }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = { userViewModel.logout() }) {
-                                Text(text = "확인", color = Black)
-                            }
-                        }
+                        dismiss = { showLogoutDialog = false },
+                        confirm = { userViewModel.logout() }
                     )
                 }
 
                 if (showSignOutDialog) {
-                    AlertDialog(
+                    CustomDialog(
+                        title = "회원 탈퇴",
+                        body = "계정을 삭제하시겠습니까?",
+                        confirmText = "삭제",
+                        isDestructive = true,
                         onDismissRequest = { showSignOutDialog = false },
-                        title = { Text(text = "회원 탈퇴", fontWeight = FontWeight.Bold) },
-                        text = { Text(text = "계정을 삭제하시겠습니까?") },
-                        shape = RoundedCornerShape(20.dp),
-                        dismissButton = {
-                            TextButton(onClick = { showSignOutDialog = false }) {
-                                Text(text = "취소", color = EmojiHubLabel)
-                            }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = { userViewModel.signOut() }) {
-                                Text(text = "삭제", color = EmojiHubRed)
-                            }
-                        }
+                        dismiss = { showSignOutDialog = false },
+                        confirm = { userViewModel.signOut() }
                     )
                 }
             } else {
