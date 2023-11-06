@@ -98,7 +98,6 @@ class EmojiDao {
         userRef.update("created_emojis", FieldValue.arrayRemove(emojiId))
         // delete emoji from emojiDB
         db.collection(EMOJI_COLLECTION_NAME).document(emojiId).delete()
-        // TODO: firebase storage에서 해당 영상 제거
     }
 
     fun existsEmoji(emojiId: String): Boolean {
@@ -106,5 +105,11 @@ class EmojiDao {
         val future = db.collection(EMOJI_COLLECTION_NAME).document(emojiId).get()
         val document: DocumentSnapshot = future.get()
         return document.exists()
+    }
+
+    fun deleteFileInStorage(blobName: String) {
+        val emojiVideoStorage : Storage = StorageClient.getInstance().bucket().storage
+        val blobId = BlobId.of(EMOJI_STORAGE_BUCKET_NAME, blobName)
+        emojiVideoStorage.delete(blobId)
     }
 }
