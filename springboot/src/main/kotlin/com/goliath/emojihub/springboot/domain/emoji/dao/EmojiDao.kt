@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain.emoji.dao
 
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
+import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
@@ -72,6 +73,10 @@ class EmojiDao(
 
     fun saveEmoji(userId: String, emojiId: String) {
         val userRef = db.collection(USER_COLLECTION_NAME).document(userId)
+        val user = userRef.get().get().toObject(UserDto::class.java)!!
+        if (user.saved_emojis?.contains(emojiId) == true) {//or in user.created_emojis)
+            return
+        }
         userRef.update("saved_emojis", FieldValue.arrayUnion(emojiId))
         val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
         emojiRef.update("num_saved", FieldValue.increment(1))
@@ -79,9 +84,12 @@ class EmojiDao(
 
     fun unSaveEmoji(userId: String, emojiId: String) {
         val userRef = db.collection(USER_COLLECTION_NAME).document(userId)
-        userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
-        val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
-        emojiRef.update("num_saved", FieldValue.increment(-1))
+        val user = userRef.get().get().toObject(UserDto::class.java)!!
+        if (user.saved_emojis?.contains(emojiId) == true) {
+            userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
+            val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
+            emojiRef.update("num_saved", FieldValue.increment(-1))
+        }
     }
 
     fun deleteEmoji(username: String, emojiId: String) {
