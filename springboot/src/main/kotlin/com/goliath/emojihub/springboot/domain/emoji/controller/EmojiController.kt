@@ -61,7 +61,7 @@ class EmojiController (private val emojiService: EmojiService){
         return ResponseEntity(emojiService.unSaveEmoji(username, emojiId), HttpStatus.OK)
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     fun deleteEmoji(
         @CurrentUser username: String,
         @RequestParam(value = "emojiId", defaultValue = "") emojiId: String,

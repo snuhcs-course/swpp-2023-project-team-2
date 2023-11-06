@@ -39,6 +39,8 @@ class EmojiService(private val emojiDao: EmojiDao) {
     fun deleteEmoji(username: String, emojiId: String) {
         val emoji = emojiDao.getEmoji(emojiId) ?: throw CustomHttp404("Emoji doesn't exist.")
         if (username != emoji.created_by) throw CustomHttp403("You can't delete this emoji.")
+        val blobName = username + "_" + emoji.created_at + ".mp4"
+        emojiDao.deleteFileInStorage(blobName)
         emojiDao.deleteEmoji(username, emojiId)
     }
 }
