@@ -74,8 +74,14 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         """
         self.args = args
         super().__init__()
-        self.train_accuracy = torchmetrics.Accuracy()
-        self.val_accuracy = torchmetrics.Accuracy()
+        self.train_accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=19)
+        self.val_accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=19)
+        self.train_accuracy_top5 = torchmetrics.Accuracy(
+            task="multiclass", num_classes=19, top_k=5
+        )
+        self.val_accuracy_top5 = torchmetrics.Accuracy(
+            task="multiclass", num_classes=19, top_k=5
+        )
         # self.save_hyperparameters()
 
         #############
@@ -124,16 +130,14 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                         p.requires_grad = False
                 print("Training only last layer: projection")
             else:
-                self.model = VideoClassificationLightningModule.load_from_checkpoint(
-                    "./lightning_logs/version_13/epoch=0-step=14000.ckpt"
+                self.model = efficient_x3d.create_x3d(
+                    num_classes=19,
+                    expansion='S',
+                    head_act='identity'
                 )
-                # self.model = efficient_x3d.create_x3d(
-                #     num_classes=19,
-                #     expansion='S',
-                #     head_act='identity'
-                # )
+
                 _state_dict = torch.load(
-                    "./lightning_logs/version_11/epoch=0-step=14000.ckpt",
+                    "./lightning_logs/version_14/epoch=1-step=33000.ckpt",
                 )['state_dict']
                 for key, value in _state_dict.copy().items():
                     _state_dict[key.replace('model.', '', 1)] = value
@@ -142,7 +146,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 print("load weights from checkpoint")
 
                 for name, p in self.model.named_parameters():
-                    if 's5.pathway0' in name or 'head' in name or 'projection' in name:
+                    if ('s5.pathway0' in name) or ('head' in name) or ('projection' in name):
                         p.requires_grad = True
                     else:
                         p.requires_grad = False
@@ -193,9 +197,13 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         y_hat = self.model(x)
         loss = F.cross_entropy(y_hat, batch["label"])
         acc = self.train_accuracy(F.softmax(y_hat, dim=-1), batch["label"])
+        top5_acc = self.train_accuracy_top5(F.softmax(y_hat, dim=-1), batch["label"])
         self.log("train_loss", loss)
         self.log(
             "train_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
+        )
+        self.log(
+            "train_acc_top5", top5_acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
         )
         return loss
 
@@ -209,9 +217,13 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         y_hat = self.model(x)
         loss = F.cross_entropy(y_hat, batch["label"])
         acc = self.val_accuracy(F.softmax(y_hat, dim=-1), batch["label"])
+        top5_acc = self.val_accuracy_top5(F.softmax(y_hat, dim=-1), batch["label"])
         self.log("val_loss", loss)
         self.log(
             "val_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
+        )
+        self.log(
+            "val_acc_top5", top5_acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
         )
         return loss
 
@@ -392,7 +404,7 @@ def main():
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model parameters.
-    parser.add_argument("--lr", "--learning-rate", default=2e-04, type=float)
+    parser.add_argument("--lr", "--learning-rate", default=3e-05, type=float)
     parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--betas", default=(0.9,0.999), type=tuple)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
@@ -406,13 +418,13 @@ def main():
 
     # Data parameters.
     parser.add_argument("--path_images",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/train_val',
+                        default='/home/wooyeol0519/hagrid_dataset_512/train_val',
                         type=str, required=False)  # temporarily changed: required=True -> False
     parser.add_argument("--path_annotation",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_train_val',
+                        default='/home/wooyeol0519/hagrid_dataset_512/annotations/ann_train_val',
                         type=str, required=False)  # temporarily changed: required=True -> False
-    parser.add_argument("--workers", default=10, type=int)
-    parser.add_argument("--batch_size", default=24, type=int)
+    parser.add_argument("--workers", default=8, type=int)
+    parser.add_argument("--batch_size", default=48, type=int)
     # parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
         "--data_type", default="video", choices=["video"], type=str
@@ -434,7 +446,7 @@ def main():
         callbacks=[
             # EarlyStopping('val_loss'),
             ModelCheckpoint(
-                dirpath="./lightning_logs/version_14/",
+                dirpath="./lightning_logs/version_15/",
                 every_n_train_steps=3000,
                 save_last=True,
             ),
