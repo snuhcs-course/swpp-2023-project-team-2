@@ -52,7 +52,7 @@ class UserUseCaseImpl @Inject constructor(
     override suspend fun login(name: String, password: String) {
         val dto = LoginUserDto(name, password)
         val response = repository.login(dto)
-        response?.let {
+        response.let {
             if (it.isSuccessful) {
                 val accessToken = it.body()?.accessToken
                 _userState.update { User(UserDto(accessToken ?: "", name)) }

@@ -23,14 +23,7 @@ class ApiErrorControllerImpl @Inject constructor(
 
     override fun setErrorState(errorCode: Int) {
         _apiErrorState.update {
-            when (errorCode) {
-                CustomError.BAD_REQUEST.ordinal -> CustomError.BAD_REQUEST
-                CustomError.UNAUTHORIZED.ordinal -> CustomError.UNAUTHORIZED
-                CustomError.FORBIDDEN.ordinal -> CustomError.FORBIDDEN
-                CustomError.NOT_FOUND.ordinal -> CustomError.NOT_FOUND
-                CustomError.CONFLICT.ordinal -> CustomError.CONFLICT
-                else -> CustomError.BAD_REQUEST
-            }
+            CustomError.getBy(errorCode)
         }
     }
 
@@ -40,7 +33,7 @@ class ApiErrorControllerImpl @Inject constructor(
 }
 
 enum class CustomError(
-    statusCode: Int
+    val statusCode: Int
 ) {
     BAD_REQUEST(400) {
         override fun body(): String = "잘못된 요청입니다."
@@ -57,6 +50,10 @@ enum class CustomError(
     CONFLICT(409) {
         override fun body(): String = "이미 있는 계정입니다."
     };
+
+    companion object {
+        fun getBy(statusCode: Int) = values().firstOrNull { it.statusCode == statusCode }
+    }
 
     abstract fun body(): String
 }
