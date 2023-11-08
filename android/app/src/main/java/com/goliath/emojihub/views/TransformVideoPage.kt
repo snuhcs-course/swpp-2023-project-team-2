@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +33,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.views.components.CustomDialog
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +44,8 @@ fun TransformVideoPage(
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -68,8 +74,22 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-                            Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                            if (resultEmoji == null) {
+                                resultEmoji = viewModel.createEmoji(viewModel.videoUri)
+                                Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                            }
+                            else {
+                                val videoFile = File(viewModel.videoUri.path)
+                                Log.d("TransformVideoPage", "videopath: ${videoFile.absolutePath}")
+                                coroutineScope.launch {
+                                    val success = viewModel.uploadEmoji(resultEmoji!!.second, resultEmoji!!.first, videoFile)
+                                    Log.d("TransformVideoPage", "success: $success")
+                                    if (success) {
+                                        showSuccessDialog = true
+                                    }
+                                    Log.d("TransformVideoPage", "video uploaded to server")
+                                }
+                            }
                         },
                     ) {
                         Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
@@ -111,6 +131,14 @@ fun TransformVideoPage(
                         fontSize = 24.sp,
                     )
                 }
+            }
+
+            if (showSuccessDialog) {
+                CustomDialog(
+                    title = "완료",
+                    body = "동영상 업로드가 완료되었습니다.",
+                    confirm = { navController.popBackStack() }
+                )
             }
         }
     }
