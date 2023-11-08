@@ -1,9 +1,7 @@
 package com.goliath.emojihub.usecases
 
-import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User

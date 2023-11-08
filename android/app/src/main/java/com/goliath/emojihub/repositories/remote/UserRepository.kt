@@ -13,7 +13,7 @@ interface UserRepository {
     suspend fun fetchUserList(): Array<UserDtoList>
     fun fetchUser(name: String)
     suspend fun registerUser(dto: RegisterUserDto)
-    suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>?
+    suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
 }
 
 @Singleton
@@ -32,7 +32,7 @@ class UserRepositoryImpl @Inject constructor(
         userApi.registerUser(dto)
     }
 
-    override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>? {
+    override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto> {
         return userApi.login(dto)
     }
 }
