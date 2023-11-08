@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 sealed interface ApiErrorController {
     val apiErrorState: StateFlow<CustomError?>
-    fun setErrorState(error: CustomError)
+    fun setErrorState(errorCode: Int)
     fun dismiss()
 }
 
@@ -21,8 +21,17 @@ class ApiErrorControllerImpl @Inject constructor(
     override val apiErrorState: StateFlow<CustomError?>
         get() = _apiErrorState
 
-    override fun setErrorState(error: CustomError) {
-        _apiErrorState.update { error }
+    override fun setErrorState(errorCode: Int) {
+        _apiErrorState.update {
+            when (errorCode) {
+                CustomError.BAD_REQUEST.ordinal -> CustomError.BAD_REQUEST
+                CustomError.UNAUTHORIZED.ordinal -> CustomError.UNAUTHORIZED
+                CustomError.FORBIDDEN.ordinal -> CustomError.FORBIDDEN
+                CustomError.NOT_FOUND.ordinal -> CustomError.NOT_FOUND
+                CustomError.CONFLICT.ordinal -> CustomError.CONFLICT
+                else -> CustomError.BAD_REQUEST
+            }
+        }
     }
 
     override fun dismiss() {
