@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 sealed interface ApiErrorController {
     val apiErrorState: StateFlow<CustomError?>
-    fun setErrorState(error: CustomError)
+    fun setErrorState(errorCode: Int)
     fun dismiss()
 }
 
@@ -21,8 +21,10 @@ class ApiErrorControllerImpl @Inject constructor(
     override val apiErrorState: StateFlow<CustomError?>
         get() = _apiErrorState
 
-    override fun setErrorState(error: CustomError) {
-        _apiErrorState.update { error }
+    override fun setErrorState(errorCode: Int) {
+        _apiErrorState.update {
+            CustomError.getBy(errorCode)
+        }
     }
 
     override fun dismiss() {
@@ -31,7 +33,7 @@ class ApiErrorControllerImpl @Inject constructor(
 }
 
 enum class CustomError(
-    statusCode: Int
+    val statusCode: Int
 ) {
     BAD_REQUEST(400) {
         override fun body(): String = "잘못된 요청입니다."
@@ -48,6 +50,10 @@ enum class CustomError(
     CONFLICT(409) {
         override fun body(): String = "이미 있는 계정입니다."
     };
+
+    companion object {
+        fun getBy(statusCode: Int) = values().firstOrNull { it.statusCode == statusCode }
+    }
 
     abstract fun body(): String
 }
