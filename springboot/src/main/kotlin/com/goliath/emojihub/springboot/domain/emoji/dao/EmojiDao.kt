@@ -88,12 +88,9 @@ class EmojiDao(
 
     fun unSaveEmoji(userId: String, emojiId: String) {
         val userRef = db.collection(USER_COLLECTION_NAME).document(userId)
-        val user = userRef.get().get().toObject(UserDto::class.java)!!
-        if (user.saved_emojis?.contains(emojiId) == true) {
-            userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
-            val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
-            emojiRef.update("num_saved", FieldValue.increment(-1))
-        }
+        userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
+        val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
+        emojiRef.update("num_saved", FieldValue.increment(-1))
     }
 
     fun deleteEmoji(username: String, emojiId: String) {
