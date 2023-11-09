@@ -4,19 +4,22 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
+import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 @Service
-class EmojiService(private val emojiDao: EmojiDao) {
+class EmojiService(
+    private val emojiDao: EmojiDao,
+    private val userDao: UserDao,
+) {
     fun getEmojis(numLimit: Int): List<EmojiDto> {
         return emojiDao.getEmojis(numLimit)
     }
 
     fun getEmoji(emojiId: String): EmojiDto? {
-        if (emojiDao.existsEmoji(emojiId).not())
-            throw CustomHttp404("Emoji doesn't exist.")
+        if (emojiDao.existsEmoji(emojiId).not()) throw CustomHttp404("Emoji doesn't exist.")
         return emojiDao.getEmoji(emojiId)
     }
 
@@ -27,12 +30,22 @@ class EmojiService(private val emojiDao: EmojiDao) {
     fun saveEmoji(username: String, emojiId: String) {
         if (emojiDao.existsEmoji(emojiId).not())
             throw CustomHttp404("Emoji doesn't exist.")
+        val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
+        if (user.created_emojis?.contains(emojiId) == true)
+            throw CustomHttp403("User created this emoji.")
+        if (user.saved_emojis?.contains(emojiId) == true)
+            throw CustomHttp403("User already saved this emoji.")
         emojiDao.saveEmoji(username, emojiId)
     }
 
     fun unSaveEmoji(username: String, emojiId: String) {
         if (emojiDao.existsEmoji(emojiId).not())
             throw CustomHttp404("Emoji doesn't exist.")
+        val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
+        if (user.created_emojis?.contains(emojiId) == true)
+            throw CustomHttp403("User created this emoji.")
+        if (user.saved_emojis == null || !user.saved_emojis!!.contains(emojiId))
+            throw CustomHttp403("User already unsaved this emoji.")
         emojiDao.unSaveEmoji(username, emojiId)
     }
 
