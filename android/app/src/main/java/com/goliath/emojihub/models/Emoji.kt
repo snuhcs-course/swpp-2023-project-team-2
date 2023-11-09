@@ -28,10 +28,10 @@ data class EmojiMetaDataDto(
     @SerializedName("used_at") val usedAt: String
 )
 
-data class uploadEmojiDto(
+data class UploadEmojiDto(
     @SerializedName("emoji_unicode") val emojiUnicode: String,
     @SerializedName("emoji_label") val emojiLabel: String,
-    @SerializedName("video_file") val videoFile: File //TODO: is this the correct data type?
+    // @SerializedName("video_file") val videoFile: File //TODO: is this the correct data type?
 )
 
 val dummyEmoji = Emoji(

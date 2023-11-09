@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,15 +80,25 @@ fun TransformVideoPage(
                                 Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
                             }
                             else {
-                                val videoFile = File(viewModel.videoUri.path)
-                                Log.d("TransformVideoPage", "videopath: ${videoFile.absolutePath}")
+                                var realPath: String? = null
+                                // Query to get the actual file path
+                                val projection = arrayOf(MediaStore.Images.Media.DATA)
+                                val cursor = context.contentResolver.query(viewModel.videoUri, projection, null, null, null)
+
+                                cursor?.use {
+                                    val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                                    it.moveToFirst()
+                                    realPath = it.getString(columnIndex)
+                                }
+
+                                val videoFile = File(realPath)
+                                Log.d("TransformVideoPage", "videoPath: $realPath")
                                 coroutineScope.launch {
                                     val success = viewModel.uploadEmoji(resultEmoji!!.second, resultEmoji!!.first, videoFile)
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
                                         showSuccessDialog = true
                                     }
-                                    Log.d("TransformVideoPage", "video uploaded to server")
                                 }
                             }
                         },

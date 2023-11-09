@@ -1,8 +1,10 @@
 package com.goliath.emojihub.data_sources.api
 
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
@@ -23,18 +25,9 @@ interface EmojiApi {
     @POST("emoji")
     suspend fun uploadEmoji(
         @Part file: MultipartBody.Part,
-        @Part emojiUnicode: MultipartBody.Part,
-        @Part emojiLabel: MultipartBody.Part
+        @Part("PostEmojiRequest") emojiDto: RequestBody
     ): Response<Unit>
 
-    companion object {
-        val instance by lazy {
-            Retrofit.Builder()
-                .baseUrl("http://43.202.132.141:8080/api/")
-                .build()
-                .create(EmojiApi::class.java)
-        }
-    }
     @POST("emoji")
     suspend fun saveEmoji(
 

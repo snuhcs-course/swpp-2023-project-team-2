@@ -1,6 +1,7 @@
 package com.goliath.emojihub.usecases
 
 import android.net.Uri
+import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import java.io.File
@@ -28,6 +29,7 @@ class EmojiUseCaseImpl @Inject constructor(
     }
 
     override suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
-        return repository.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
+        val dto = UploadEmojiDto(emojiUnicode, emojiLabel)
+        return repository.uploadEmoji(videoFile, dto)
     }
 }
