@@ -5,6 +5,7 @@ import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.Firestore
+import com.google.cloud.firestore.Query
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Repository
@@ -27,10 +28,12 @@ class PostDao(
             .set(post)
     }
 
-    fun getPosts(numLimit: Int): List<PostDto> {
+    fun getPosts(index: Int, count: Int): List<PostDto> {
         val list = mutableListOf<PostDto>()
-        val postColl = db.collection(POST_COLLECTION_NAME).get()
-        val documents: List<QueryDocumentSnapshot> = postColl.get().documents
+        // 정렬
+        val postQuery = db.collection(POST_COLLECTION_NAME).orderBy("created_at", Query.Direction.DESCENDING)
+        // 페이지네이션
+        val documents: List<QueryDocumentSnapshot> = postQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(PostDto::class.java))
         }

@@ -18,6 +18,8 @@ class EmojiService(
     fun getEmojis(sortByDate: Int, index: Int, count: Int): List<EmojiDto> {
         // index는 양의 정수여야 함
         if (index <= 0) throw CustomHttp400("Index should be positive integer.")
+        // count는 0보다 커야 함
+        if (count < 0) throw CustomHttp400("Count should be bigger than 0.")
         return emojiDao.getEmojis(sortByDate, index, count)
     }
 

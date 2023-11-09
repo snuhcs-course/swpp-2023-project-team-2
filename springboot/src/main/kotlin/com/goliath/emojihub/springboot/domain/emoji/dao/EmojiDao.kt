@@ -29,7 +29,7 @@ class EmojiDao(
 
     fun getEmojis(sortByDate: Int, index: Int, count: Int): List<EmojiDto> {
         val list = mutableListOf<EmojiDto>()
-        //sortByDate 값에 따른 쿼리 실행
+        // sortByDate 값에 따른 정렬
         val emojiQuery = if (sortByDate == 0) {
             db.collection(EMOJI_COLLECTION_NAME)
                 .orderBy("num_saved", Query.Direction.DESCENDING)
@@ -38,7 +38,7 @@ class EmojiDao(
             db.collection(EMOJI_COLLECTION_NAME)
                 .orderBy("created_at", Query.Direction.DESCENDING)
         }
-        //가져온 Query를 DTO로 변경하여 return
+        // 페이지네이션
         val documents: List<QueryDocumentSnapshot> = emojiQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(EmojiDto::class.java))
