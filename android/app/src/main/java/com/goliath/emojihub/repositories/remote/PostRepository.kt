@@ -4,12 +4,13 @@ import android.util.Log
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface PostRepository {
     suspend fun fetchPostList(numLimit: Int): List<PostDto>
-    suspend fun uploadPost(content: String): Boolean
+    suspend fun uploadPost(dto: UploadPostDto): Response<Unit>
     suspend fun getPostWithId(id: String): PostDto?
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
@@ -23,9 +24,8 @@ class PostRepositoryImpl @Inject constructor(
         return postApi.fetchPostList(numLimit).body() ?: listOf()
     }
 
-    override suspend fun uploadPost(content: String): Boolean {
-        val dto = UploadPostDto(content)
-        return postApi.uploadPost(dto).isSuccessful
+    override suspend fun uploadPost(dto: UploadPostDto): Response<Unit> {
+        return postApi.uploadPost(dto)
     }
 
     override suspend fun getPostWithId(id: String): PostDto? {

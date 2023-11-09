@@ -1,6 +1,8 @@
 package com.goliath.emojihub.usecases
 
+import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Post
+import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +17,8 @@ sealed interface PostUseCase {
     suspend fun deletePost(id: String)
 }
 class PostUseCaseImpl @Inject constructor(
-    private val repository: PostRepository
+    private val repository: PostRepository,
+    private val errorController: ApiErrorController
 ): PostUseCase {
     private val _postState = MutableStateFlow<Post?>(null)
     override val postState: StateFlow<Post?>
@@ -26,7 +29,14 @@ class PostUseCaseImpl @Inject constructor(
     }
 
     override suspend fun uploadPost(content: String): Boolean {
-        return repository.uploadPost(content)
+        val dto = UploadPostDto(content)
+        val response = repository.uploadPost(dto)
+        return if (response.isSuccessful) {
+            true
+        } else {
+            errorController.setErrorState(response.code())
+            false
+        }
     }
 
     override suspend fun getPostWithId(id: String) {

@@ -19,6 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.reflect.Type
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -44,14 +45,17 @@ object NetworkModule {
             .build()
 
     @Provides
+    @Singleton
     fun providesUserRestApi(retrofit: Retrofit): UserApi =
         retrofit.create(UserApi::class.java)
 
     @Provides
+    @Singleton
     fun providesEmojiRestApi(retrofit: Retrofit): EmojiApi =
         retrofit.create(EmojiApi::class.java)
 
     @Provides
+    @Singleton
     fun providesPostRestApi(retrofit: Retrofit): PostApi =
         retrofit.create(PostApi::class.java)
 
