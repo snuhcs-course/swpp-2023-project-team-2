@@ -73,11 +73,15 @@ class EmojiDao(
     fun saveEmoji(userId: String, emojiId: String) {
         val userRef = db.collection(USER_COLLECTION_NAME).document(userId)
         userRef.update("saved_emojis", FieldValue.arrayUnion(emojiId))
+        val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
+        emojiRef.update("num_saved", FieldValue.increment(1))
     }
 
     fun unSaveEmoji(userId: String, emojiId: String) {
         val userRef = db.collection(USER_COLLECTION_NAME).document(userId)
         userRef.update("saved_emojis", FieldValue.arrayRemove(emojiId))
+        val emojiRef = db.collection(EMOJI_COLLECTION_NAME).document(emojiId)
+        emojiRef.update("num_saved", FieldValue.increment(-1))
     }
 
     fun deleteEmoji(username: String, emojiId: String) {
