@@ -1,20 +1,13 @@
 package com.goliath.emojihub.springboot.domain.emoji.controller
 
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.emoji.dto.GetEmojisRequest
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import com.goliath.emojihub.springboot.domain.user.model.CurrentUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
@@ -24,9 +17,9 @@ class EmojiController (private val emojiService: EmojiService){
     // Get randomly selected emojis with a limit of `numLimit`
     @GetMapping
     fun getEmojis(
-        @RequestParam(value = "numLimit", defaultValue = "10") numLimit: Int
+        @RequestBody getEmojisRequest: GetEmojisRequest
     ): ResponseEntity<List<EmojiDto>> {
-        return ResponseEntity.ok(emojiService.getEmojis(numLimit))
+        return ResponseEntity.ok(emojiService.getEmojis(getEmojisRequest.sortByDate, getEmojisRequest.index, getEmojisRequest.count))
     }
 
     @GetMapping("/{id}")

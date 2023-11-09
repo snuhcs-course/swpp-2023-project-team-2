@@ -4,10 +4,7 @@ import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
-import com.google.cloud.firestore.DocumentSnapshot
-import com.google.cloud.firestore.FieldValue
-import com.google.cloud.firestore.Firestore
-import com.google.cloud.firestore.QueryDocumentSnapshot
+import com.google.cloud.firestore.*
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
@@ -30,11 +27,19 @@ class EmojiDao(
         const val EMOJI_STORAGE_BUCKET_NAME = "emojihub-e2023.appspot.com"
     }
 
-    // TODO: numLimit 아직 반영 X
-    fun getEmojis(numLimit: Int): List<EmojiDto> {
+    fun getEmojis(sortByDate: Int, index: Int, count: Int): List<EmojiDto> {
         val list = mutableListOf<EmojiDto>()
-        val emojiColl = db.collection(EMOJI_COLLECTION_NAME).get()
-        val documents: List<QueryDocumentSnapshot> = emojiColl.get().documents
+        //sortByDate 값에 따른 쿼리 실행
+        val emojiQuery = if (sortByDate == 0) {
+            db.collection(EMOJI_COLLECTION_NAME)
+                .orderBy("num_saved", Query.Direction.DESCENDING)
+                .orderBy("created_at", Query.Direction.DESCENDING)
+        } else {
+            db.collection(EMOJI_COLLECTION_NAME)
+                .orderBy("created_at", Query.Direction.DESCENDING)
+        }
+        //가져온 Query를 DTO로 변경하여 return
+        val documents: List<QueryDocumentSnapshot> = emojiQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(EmojiDto::class.java))
         }
@@ -47,7 +52,6 @@ class EmojiDao(
         return document.toObject(EmojiDto::class.java)
     }
 
-    // TODO: 이 부분은 좀 더 고민해봐야 할 것 같다.
     fun postEmoji(username: String, file: MultipartFile, postEmojiRequest: PostEmojiRequest) {
         // NOTE: created_by(username)을 video이름으로 넣어주어 유저별로 올린 비디오를 구분할 수 있게 한다.
         val dateTime = getDateTimeNow()
