@@ -1,10 +1,11 @@
 package com.goliath.emojihub.repositories.remote
 
-import android.util.Log
 import com.goliath.emojihub.data_sources.api.UserApi
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.UserDtoList
+import com.goliath.emojihub.models.responses.LoginResponseDto
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ interface UserRepository {
     suspend fun fetchUserList(): Array<UserDtoList>
     fun fetchUser(name: String)
     suspend fun registerUser(dto: RegisterUserDto)
-    suspend fun login(dto: LoginUserDto): String?
+    suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
 }
 
 @Singleton
@@ -31,15 +32,7 @@ class UserRepositoryImpl @Inject constructor(
         userApi.registerUser(dto)
     }
 
-    override suspend fun login(dto: LoginUserDto): String? {
-        val result = userApi.login(dto)
-        if (result.isSuccessful) {
-            val accessToken = result.body()?.accessToken
-            Log.d("Login Success", accessToken.toString())
-            return accessToken
-        } else {
-            Log.d("Login Failure", result.raw().toString())
-        }
-        return null
+    override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto> {
+        return userApi.login(dto)
     }
 }

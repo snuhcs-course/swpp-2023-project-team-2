@@ -1,5 +1,6 @@
 package com.goliath.emojihub.data_sources
 
+import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.data_sources.api.UserApi
@@ -16,7 +17,6 @@ import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import java.lang.reflect.Type
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,10 +25,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val baseURL = API_BASE_URL
-    private const val accessToken: String = ""
 
     @Provides
-    @Singleton
     fun provideRetrofit(
 
     ): Retrofit {
@@ -41,10 +39,9 @@ object NetworkModule {
     }
 
     @Provides
-    @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(accessToken))
+            .addInterceptor(AuthInterceptor(EmojiHubApplication.preferences.accessToken))
             .build()
 
     @Provides
@@ -89,12 +86,12 @@ object NetworkModule {
 }
 
 class AuthInterceptor @Inject constructor(
-    private val accessToken: String
+    private val accessToken: String?
 ): Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
-        if (accessToken.isNotEmpty()) {
-            request.header("accessToken", "Bearer $accessToken")
+        if (accessToken?.isNotEmpty() == true) {
+            request.header("Authorization", "Bearer $accessToken")
         }
         return chain.proceed(request.build())
     }

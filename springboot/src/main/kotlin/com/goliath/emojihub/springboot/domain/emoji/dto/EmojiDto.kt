@@ -9,7 +9,8 @@ class EmojiDto (
     var video_url: String = "",
     var emoji_unicode: String = "",
     var emoji_label: String = "",
-    var created_at: String = ""
+    var created_at: String = "",
+    var num_saved: Long = 0,
 ){
     constructor(username: String, postEmojiRequest: PostEmojiRequest, emojiVideoUrl: String, dateTime: String) : this() {
         // TODO: 이 constructor도 완전 의식의 흐름대로 만들었다... 수정 필요
@@ -25,5 +26,6 @@ class EmojiDto (
         emoji_unicode = postEmojiRequest.emoji_unicode
         emoji_label = postEmojiRequest.emoji_label
         created_at = dateTime
+        num_saved = 0
     }
 }

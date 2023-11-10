@@ -6,13 +6,23 @@ import logging
 
 import pytorch_lightning
 import torchmetrics
+from torch.hub import load_state_dict_from_url
+from torch.optim.lr_scheduler import StepLR
 
 from pytorchvideo.data.hagrid import GestureDataset
 import pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d as efficient_x3d
+import pytorchvideo.models.hub.efficient_x3d_mobile_cpu as hub_efficient_x3d
 import torch
 import torch.nn.functional as F
 from pytorchvideo.losses.cosine_annealing_with_warmup import CosineAnnealingWarmUpRestarts
-from pytorch_lightning.callbacks import LearningRateMonitor, RichProgressBar
+from pytorch_lightning.callbacks import (
+    LearningRateMonitor,
+    RichProgressBar,
+    EarlyStopping,
+    ModelCheckpoint,
+    RichModelSummary,
+    BackboneFinetuning
+)
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     Normalize,
@@ -77,13 +87,35 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         # ResNet that works with Kinetics (e.g. 400 num_classes). For your application,
         # this could be changed to any other PyTorchVideo model (e.g. for SlowFast use
         # create_slowfast).
-        # num_classes=18 : depends on gesture dataset
+        # num_classes=19 : depends on gesture dataset
         if self.args.arch == "video_x3d":
+            print("Using EfficientX3d_S")
             self.model = efficient_x3d.create_x3d(
                 num_classes=19,
                 expansion='S',
                 head_act='identity'
             )
+            _state_dict = load_state_dict_from_url(
+                hub_efficient_x3d._checkpoint_paths["efficient_x3d_s"],
+                progress=True,
+                map_location="gpu",
+            )
+            print("Pretrained weights loaded")
+
+            #  Due to the classes mismatch between the pretrained model and the
+            #  dataset, we need to remove the last layer of the pretrained model.
+            del _state_dict["projection.model.weight"]
+            del _state_dict["projection.model.bias"]
+            self.model.load_state_dict(_state_dict, strict=False)
+
+            # At first time, freeze all layers except the last layer
+            for name, p in self.model.named_parameters():
+                if 'projection.model' in name:
+                    p.requires_grad = True
+                else:
+                    p.requires_grad = False
+            print("Froze all layers except the last layer")
+
             self.batch_key = "video"
         else:
             raise Exception("{self.args.arch} not supported")
@@ -133,6 +165,9 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         self.log(
             "train_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
         )
+        # if (batch_idx + 1) % 7000 == 0:
+        #     scheduler = self.lr_schedulers()
+        #     scheduler.step()
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -155,16 +190,25 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         """
         We use the SGD optimizer with per step cosine annealing scheduler.
         """
-        optimizer = torch.optim.Adam(
-            self.parameters(),
+        # optimizer = torch.optim.Adam(
+        #     self.parameters(),
+        #     lr=self.args.lr,
+        #     betas=self.args.betas,
+        #     weight_decay=self.args.weight_decay,
+        # )
+        parameters = []
+        for p in self.parameters():
+            if p.requires_grad:
+                parameters.append(p)
+
+        optimizer = torch.optim.SGD(
+            parameters,
             lr=self.args.lr,
-            betas=self.args.betas,
+            momentum=self.args.momentum,
             weight_decay=self.args.weight_decay,
         )
-        scheduler = CosineAnnealingWarmUpRestarts(
-            optimizer, T_0=self.args.max_epochs//10, gamma=0.5,
-        )
-        return [optimizer], [scheduler]
+        scheduler = StepLR(optimizer, step_size=1, gamma=0.8)
+        return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 6000}]
 
 
 class HagridDataModule(pytorch_lightning.LightningDataModule):
@@ -302,7 +346,8 @@ def main():
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model parameters.
-    parser.add_argument("--lr", "--learning-rate", default=0, type=float)
+    parser.add_argument("--lr", "--learning-rate", default=2e-05, type=float)
+    parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--betas", default=(0.9,0.999), type=tuple)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
     parser.add_argument(
@@ -314,13 +359,13 @@ def main():
 
     # Data parameters.
     parser.add_argument("--path_images",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/train_val',
+                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/subsample',
                         type=str, required=False)  # temporarily changed: required=True -> False
     parser.add_argument("--path_annotation",
-                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_train_val',
+                        default='/home/thisiswooyeol/Downloads/hagrid_dataset_512/annotations/ann_subsample',
                         type=str, required=False)  # temporarily changed: required=True -> False
-    parser.add_argument("--workers", default=6, type=int)
-    parser.add_argument("--batch_size", default=8, type=int)
+    parser.add_argument("--workers", default=10, type=int)
+    parser.add_argument("--batch_size", default=16, type=int)
     parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
         "--data_type", default="video", choices=["video"], type=str
@@ -338,8 +383,14 @@ def main():
     parser.set_defaults(
         accelerator='gpu',
         devices=1,
-        max_epochs=100,
-        callbacks=[LearningRateMonitor(), RichProgressBar(leave=True)],
+        max_epochs=10,
+        callbacks=[
+            EarlyStopping('val_loss'),
+            # ModelCheckpoint(dirpath=)
+            LearningRateMonitor(),
+            RichModelSummary(),
+            RichProgressBar(leave=True),
+        ],
         replace_sampler_ddp=False,
     )
 
