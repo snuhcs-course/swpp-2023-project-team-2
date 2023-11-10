@@ -20,7 +20,9 @@ import kotlin.math.exp
 
 interface X3dDataSource {
     fun loadModule(moduleName: String): Module?
-    fun checkAnnotationFilesExist(): Pair<String, String>?
+    fun checkAnnotationFilesExist(
+        idToClassFileName: String, classToUnicodeFileName: String
+    ): Pair<String, String>?
     fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
     fun runInference(x3dModule: Module, videoTensor: Tensor): Pair<Int, Float>
@@ -55,8 +57,8 @@ class X3dDataSourceImpl @Inject constructor(
         const val CROP_SIZE = 160
         const val NUM_CHANNELS = 3
         private const val FRAMES_PER_SECOND = 30
-        private const val SAMPLING_RATE = 12
-        const val COUNT_OF_FRAMES_PER_INFERENCE = 4
+        private const val SAMPLING_RATE = 6
+        const val COUNT_OF_FRAMES_PER_INFERENCE = 13
         private const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
     }
 
@@ -69,16 +71,18 @@ class X3dDataSourceImpl @Inject constructor(
         return null
     }
 
-    override fun checkAnnotationFilesExist(): Pair<String, String>? {
+    override fun checkAnnotationFilesExist(
+        idToClassFileName: String, classToUnicodeFileName: String
+    ): Pair<String, String>? {
         try {
-            val classNameFile = File(assetFilePath("kinetics_id_to_classname.json"))
+            val classNameFile = File(assetFilePath(idToClassFileName))
             if (!classNameFile.exists()) {
-                Log.e("X3dDataSource", "kinetics_id_to_classname.json does not exist")
+                Log.e("X3dDataSource", "$idToClassFileName does not exist")
                 return null
             }
-            val unicodeFile = File(assetFilePath("kinetics_classname_to_unicode.json"))
+            val unicodeFile = File(assetFilePath(classToUnicodeFileName))
             if (!unicodeFile.exists()) {
-                Log.e("X3dDataSource", "kinetics_classname_to_unicode.json does not exist")
+                Log.e("X3dDataSource", "$classToUnicodeFileName does not exist")
                 return null
             }
             return Pair(classNameFile.absolutePath, unicodeFile.absolutePath)
@@ -186,7 +190,7 @@ class X3dDataSourceImpl @Inject constructor(
     }
 
     override fun assetFilePath(assetName: String): String {
-        val file = File(context.filesDir, assetName)
+        val file = File(context.filesDir, assetName.split("/").last())
         // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
 //        if (file.exists() && file.length() > 0) {
 //            return file.absolutePath

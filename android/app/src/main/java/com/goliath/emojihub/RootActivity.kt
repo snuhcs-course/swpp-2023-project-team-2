@@ -16,29 +16,29 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginPage
+import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
-
-val LocalNavController = compositionLocalOf<NavController> {
-    throw RuntimeException("")
-}
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class RootActivity : ComponentActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
+
+    @Inject
+    lateinit var apiErrorController: ApiErrorController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,10 +51,20 @@ class RootActivity : ComponentActivity() {
                         .background(Color.White)
                 ) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
+                    val error by apiErrorController.apiErrorState.collectAsState()
                     if (token.isNullOrEmpty()) {
                         LoginPage()
                     } else {
                         RootView()
+                    }
+
+                    if (!error?.body().isNullOrEmpty()) {
+                        CustomDialog(
+                            title = "에러",
+                            body = error?.body() ?: "",
+                            onDismissRequest = { apiErrorController.dismiss() },
+                            confirm = { apiErrorController.dismiss() }
+                        )
                     }
                 }
             }

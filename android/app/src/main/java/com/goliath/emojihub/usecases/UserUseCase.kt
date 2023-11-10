@@ -1,6 +1,7 @@
 package com.goliath.emojihub.usecases
 
-import android.util.Log
+import com.goliath.emojihub.EmojiHubApplication
+import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
@@ -25,7 +26,8 @@ sealed interface UserUseCase {
 
 @Singleton
 class UserUseCaseImpl @Inject constructor(
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val errorController: ApiErrorController
 ): UserUseCase {
 
     private val _userState = MutableStateFlow<User?>(null)
@@ -49,10 +51,15 @@ class UserUseCaseImpl @Inject constructor(
 
     override suspend fun login(name: String, password: String) {
         val dto = LoginUserDto(name, password)
-        val accessToken = repository.login(dto)
-        if (!accessToken.isNullOrEmpty()) {
-            Log.d("Login Success: Access token", accessToken)
-            _userState.update { User(UserDto(accessToken, name)) }
+        val response = repository.login(dto)
+        response.let {
+            if (it.isSuccessful) {
+                val accessToken = it.body()?.accessToken
+                _userState.update { User(UserDto(accessToken ?: "", name)) }
+                EmojiHubApplication.preferences.accessToken = accessToken
+            } else {
+                errorController.setErrorState(it.code())
+            }
         }
     }
 
