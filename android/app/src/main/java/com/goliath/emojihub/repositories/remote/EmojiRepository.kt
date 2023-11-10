@@ -34,20 +34,14 @@ class EmojiRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
     override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
-        //val emojiUnicodeBody = MultipartBody.Part.createFormData("emoji_unicode", emojiUnicode)
-        //val emojiLabelBody = MultipartBody.Part.createFormData("emoji_label", emojiLabel)
-
         val emojiDtoJson = Gson().toJson(emojiDto)
-        val requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), emojiDtoJson)
-        val emojiDtoBody = MultipartBody.Part.createFormData("jsonObject", null, requestBody)
+        val emojiDtoRequestBody = RequestBody.create(MediaType.parse("application/json"), emojiDtoJson)
 
-        val requestVideoFile = RequestBody.create(MediaType.parse("video/mp4"), videoFile)
-        val videoFileBody = MultipartBody.Part.createFormData("file", videoFile.name, requestVideoFile)
+        val videoFileRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile)
+        val videoFileMultipartBody = MultipartBody.Part.createFormData("file", videoFile.name, videoFileRequestBody)
 
         return try {
-//            Log.d("EmojiRepository", "emojiDtoBody: ${emojiDtoBody.body().contentType()}")
-//            Log.d("EmojiRepository", "videoFileBody: ${videoFileBody.body().contentType()}")
-            emojiApi.uploadEmoji(videoFileBody, requestBody)
+            emojiApi.uploadEmoji(videoFileMultipartBody, emojiDtoRequestBody)
             true
         }
         catch (e: IOException) {

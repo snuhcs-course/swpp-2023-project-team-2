@@ -1,8 +1,6 @@
 package com.goliath.emojihub.models
 
 import com.google.gson.annotations.SerializedName
-import okhttp3.MultipartBody
-import java.io.File
 
 class Emoji(
     dto: EmojiDto
@@ -30,8 +28,7 @@ data class EmojiMetaDataDto(
 
 data class UploadEmojiDto(
     @SerializedName("emoji_unicode") val emojiUnicode: String,
-    @SerializedName("emoji_label") val emojiLabel: String,
-    // @SerializedName("video_file") val videoFile: File //TODO: is this the correct data type?
+    @SerializedName("emoji_label") val emojiLabel: String
 )
 
 val dummyEmoji = Emoji(
