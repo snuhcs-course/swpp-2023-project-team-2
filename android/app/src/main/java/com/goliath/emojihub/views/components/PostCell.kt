@@ -20,17 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.goliath.emojihub.LocalNavController
-import com.goliath.emojihub.NavigationDestination
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
 fun PostCell(
     post: Post
 ) {
-    val navController = LocalNavController.current
+    val viewModel = hiltViewModel<EmojiViewModel>()
 
     Box(
         modifier = Modifier
@@ -76,7 +76,7 @@ fun PostCell(
                     color = EmojiHubDetailLabel
                 )
                 IconButton(onClick = {
-                    navController.navigate(NavigationDestination.AddReactionBottomSheet)
+                    viewModel.isBottomSheetShown = true
                 }) {
                     Icon(
                         imageVector = Icons.Filled.AddReaction,
