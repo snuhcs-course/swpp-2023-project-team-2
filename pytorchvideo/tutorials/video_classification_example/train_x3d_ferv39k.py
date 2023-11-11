@@ -3,13 +3,14 @@
 import argparse
 import itertools
 import logging
+import os
 
 import pytorch_lightning
 import torchmetrics
 from torch.hub import load_state_dict_from_url
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
-from pytorchvideo.data.hagrid import GestureDataset
+import pytorchvideo
 import pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d as efficient_x3d
 import pytorchvideo.models.hub.efficient_x3d_mobile_cpu as hub_efficient_x3d
 import torch
@@ -28,7 +29,8 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
-from slurm import copy_and_run_with_config
+# from slurm import copy_and_run_with_config
+from torch.utils.data import DistributedSampler, RandomSampler
 from torchvision.transforms import (
     CenterCrop,
     Compose,
@@ -81,7 +83,6 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         self.val_accuracy_top5 = torchmetrics.Accuracy(
             task="multiclass", num_classes=19, top_k=5
         )
-        # self.save_hyperparameters()
 
         #############
         # PTV Model #
@@ -95,7 +96,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
             print("Using EfficientX3d_S")
             if self.args.cold_start_training:
                 self.model = efficient_x3d.create_x3d(
-                    num_classes=19,
+                    num_classes=7,
                     expansion='S',
                     head_act='identity'
                 )
@@ -120,7 +121,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
 
             else:
                 self.model = efficient_x3d.create_x3d(
-                    num_classes=19,
+                    num_classes=7,
                     expansion='S',
                     head_act='identity'
                 )
@@ -151,8 +152,8 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         that shuffling is done correctly
         """
         epoch = self.trainer.current_epoch
-        # if self.trainer.use_ddp:
-        #     self.trainer.datamodule.train_dataset.dataset.video_sampler.set_epoch(epoch)
+        if self.trainer.use_ddp:
+            self.trainer.datamodule.train_dataset.dataset.video_sampler.set_epoch(epoch)
 
     def forward(self, x):
         """
@@ -234,11 +235,11 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         scheduler = CosineAnnealingWarmRestarts(
             optimizer, T_0=1, T_mult=2, last_epoch=-1
         )
-        return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 100}]
-        # return [optimizer], [scheduler]
+        # return [optimizer], [{"scheduler": scheduler, "interval": "step", "frequency": 100}]
+        return [optimizer], [scheduler]
 
 
-class HagridDataModule(pytorch_lightning.LightningDataModule):
+class Ferv39kDataModule(pytorch_lightning.LightningDataModule):
     """
     This LightningDataModule implementation constructs a PyTorchVideo Kinetics dataset for both
     the train and val partitions. It defines each partition's augmentation and
@@ -318,39 +319,67 @@ class HagridDataModule(pytorch_lightning.LightningDataModule):
         """
         Defines the train DataLoader that the PyTorch Lightning Trainer trains/tests with.
         """
-        # sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
+        sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
         train_transform = self._make_transforms(mode="train")
-        self.train_dataset = GestureDataset(
-            path_images=self.args.path_images,
-            path_annotation=self.args.path_annotation,
-            is_train=True,
-            transform=train_transform,
+        self.train_dataset = LimitDataset(
+            pytorchvideo.data.Ferv39k(
+                data_path=os.path.join(self.args.data_path, "0_7_LabelClips_test"),
+                clip_sampler=pytorchvideo.data.make_clip_sampler(
+                    "random", self.args.clip_duration
+                ),
+                video_path_prefix=self.args.video_path_prefix,
+                transform=train_transform,
+                video_sampler=sampler,
+            )
         )
         return torch.utils.data.DataLoader(
             self.train_dataset,
             batch_size=self.args.batch_size,
             num_workers=self.args.workers,
-            shuffle=True,
         )
 
     def val_dataloader(self):
         """
         Defines the train DataLoader that the PyTorch Lightning Trainer trains/tests with.
         """
-        # sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
+        sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
         val_transform = self._make_transforms(mode="val")
-        self.val_dataset = GestureDataset(
-            path_images=self.args.path_images,
-            path_annotation=self.args.path_annotation,
-            is_train=False,
+        self.val_dataset = pytorchvideo.data.Ferv39k(
+            data_path=os.path.join(self.args.data_path, "0_7_LabelClips_test"),
+            clip_sampler=pytorchvideo.data.make_clip_sampler(
+                "uniform", self.args.clip_duration
+            ),
+            video_path_prefix=self.args.video_path_prefix,
             transform=val_transform,
+            video_sampler=sampler,
         )
         return torch.utils.data.DataLoader(
             self.val_dataset,
             batch_size=self.args.batch_size,
             num_workers=self.args.workers,
-            shuffle=False,
         )
+
+
+class LimitDataset(torch.utils.data.Dataset):
+    """
+    To ensure a constant number of samples are retrieved from the dataset we use this
+    LimitDataset wrapper. This is necessary because several of the underlying videos
+    may be corrupted while fetching or decoding, however, we always want the same
+    number of steps per epoch.
+    """
+
+    def __init__(self, dataset):
+        super().__init__()
+        self.dataset = dataset
+        self.dataset_iter = itertools.chain.from_iterable(
+            itertools.repeat(iter(dataset), 2)
+        )
+
+    def __getitem__(self, index):
+        return next(self.dataset_iter)
+
+    def __len__(self):
+        return self.dataset.num_videos
 
 
 def main():
@@ -364,7 +393,7 @@ def main():
     setup_logger()
 
     pytorch_lightning.trainer.seed_everything()
-    parser = argparse.ArgumentParser(description="Train EfficientX3d on Hagrid dataset.")
+    parser = argparse.ArgumentParser(description="Train EfficientX3d on FERV39k dataset.")
 
     #  Cluster parameters.
     parser.add_argument("--on_cluster", action="store_true")
@@ -386,15 +415,12 @@ def main():
     )
 
     # Data parameters.
-    parser.add_argument("--path_images",
-                        default='/home/wooyeol0519/hagrid_dataset_512/train_val',
+    parser.add_argument("--data_path", default='/home/thisiswooyeol/Downloads/',
                         type=str, required=False)  # temporarily changed: required=True -> False
-    parser.add_argument("--path_annotation",
-                        default='/home/wooyeol0519/hagrid_dataset_512/annotations/ann_train_val',
-                        type=str, required=False)  # temporarily changed: required=True -> False
+    parser.add_argument("--video_path_prefix", default="", type=str)
     parser.add_argument("--workers", default=8, type=int)
-    parser.add_argument("--batch_size", default=48, type=int)
-    # parser.add_argument("--clip_duration", default=2, type=float)
+    parser.add_argument("--batch_size", default=32, type=int)
+    parser.add_argument("--clip_duration", default=2, type=float)
     parser.add_argument(
         "--data_type", default="video", choices=["video"], type=str
     )
@@ -415,7 +441,7 @@ def main():
         callbacks=[
             # EarlyStopping('val_loss'),
             ModelCheckpoint(
-                dirpath="./lightning_logs/version_15/",
+                dirpath="./lightning_logs/FERV39k/version_0",
                 every_n_train_steps=3000,
                 save_last=True,
             ),
@@ -423,6 +449,7 @@ def main():
             RichProgressBar(leave=True),
         ],
         profiler=SimpleProfiler(),
+        use_ddp=False,
         replace_sampler_ddp=False,
     )
 
@@ -451,7 +478,7 @@ def main():
 def train(args):
     trainer = pytorch_lightning.Trainer.from_argparse_args(args)
     classification_module = VideoClassificationLightningModule(args)
-    data_module = HagridDataModule(args)
+    data_module = Ferv39kDataModule(args)
     trainer.fit(classification_module, data_module)
 
 
