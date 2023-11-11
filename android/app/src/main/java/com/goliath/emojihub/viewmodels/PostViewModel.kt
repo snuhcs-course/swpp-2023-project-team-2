@@ -28,7 +28,4 @@ class PostViewModel @Inject constructor(
     suspend fun deletePost(id: String) {
         postUseCase.deletePost(id)
     }
-    suspend fun addReaction() {
-        postUseCase.addReaction()
-    }
 }

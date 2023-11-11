@@ -13,10 +13,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -95,12 +97,13 @@ fun FeedPage(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             // TODO: fetch user's emojis and display
                         },
                         modifier = Modifier
                             .padding(horizontal = 15.dp),
+                        shape = RoundedCornerShape(50.dp),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = androidx.compose.ui.graphics.Color.White,
                             contentColor = androidx.compose.ui.graphics.Color.Black
@@ -112,12 +115,13 @@ fun FeedPage(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             // TODO: fetch user's saved emojis and display
                         },
                         modifier = Modifier
                             .padding(horizontal = 15.dp),
+                        shape = RoundedCornerShape(50.dp),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = androidx.compose.ui.graphics.Color.White,
                             contentColor = androidx.compose.ui.graphics.Color.Black

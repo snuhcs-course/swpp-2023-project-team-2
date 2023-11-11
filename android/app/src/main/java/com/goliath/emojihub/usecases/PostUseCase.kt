@@ -50,8 +50,4 @@ class PostUseCaseImpl @Inject constructor(
     override suspend fun deletePost(id: String) {
         repository.deletePost(id)
     }
-
-    override suspend fun addReaction() {
-        TODO("Not yet implemented")
-    }
 }
