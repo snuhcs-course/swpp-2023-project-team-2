@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,15 +20,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.dummyPost
-import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
 fun PostCell(
     post: Post
 ) {
+    val viewModel = hiltViewModel<EmojiViewModel>()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,24 +75,14 @@ fun PostCell(
                     fontSize = 13.sp,
                     color = EmojiHubDetailLabel
                 )
-                Button(
-                    onClick = { /* TODO Handle Login Click*/ },
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(32.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White
-                    ), content = {
-                        Text(
-                            text = "로그인",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                )
+                IconButton(onClick = {
+                    viewModel.isBottomSheetShown = true
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.AddReaction,
+                        contentDescription = ""
+                    )
+                }
             }
         }
     }
