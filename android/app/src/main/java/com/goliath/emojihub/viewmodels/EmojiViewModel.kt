@@ -5,8 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,5 +29,9 @@ class EmojiViewModel @Inject constructor(
         }.toCharArray()
         val emoji = String(emojiCharArray)
         return Pair(emojiName, emoji)
+    }
+
+    suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
+        return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
     }
 }

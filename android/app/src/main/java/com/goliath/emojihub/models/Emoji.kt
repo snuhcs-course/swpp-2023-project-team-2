@@ -26,6 +26,11 @@ data class EmojiMetaDataDto(
     @SerializedName("used_at") val usedAt: String
 )
 
+data class UploadEmojiDto(
+    @SerializedName("emoji_unicode") val emojiUnicode: String,
+    @SerializedName("emoji_label") val emojiLabel: String
+)
+
 val dummyEmoji = Emoji(
     EmojiDto(
         createdBy = "channn",
