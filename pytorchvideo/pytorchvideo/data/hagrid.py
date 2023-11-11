@@ -49,7 +49,7 @@ class GestureDataset(torch.utils.data.Dataset):
         self.labels = {label: num for (label, num) in
                        zip(CLASS_NAMES, range(len(CLASS_NAMES)))}
         self.annotations = self._read_annotations(self.path_annotation)
-        self._NUM_FRAMES = 4
+        self._NUM_FRAMES = 13
         self._MAX_SIDE = 512
 
     def _read_annotations(self, path):
@@ -106,8 +106,7 @@ class GestureDataset(torch.utils.data.Dataset):
         row = self.annotations.iloc[[index]].to_dict('records')[0]
         image_pth = os.path.join(self.path_images, row["target"], row["name"])
         image = Image.open(image_pth).convert("RGB")
-        image = self._pad_image(image, _size=(self._MAX_SIDE, self._MAX_SIDE))
-        # FIXME: find out suitable _num_frames
+        image = self._resize_image(image, _size=self._MAX_SIDE)
         video = self._image_to_video(image, _num_frames=self._NUM_FRAMES)
 
         # calibrate labels: only use labels that are not "no_gesture"
@@ -141,12 +140,13 @@ class GestureDataset(torch.utils.data.Dataset):
         return files
 
     @staticmethod
-    def _pad_image(image: Image.Image, _size: Tuple[int, int]):
+    def _resize_image(image: Image.Image, _size: int):
         # convert PIL image  (H, W, C) -> (C, H, W)
         image = T.ToTensor()(image)
-        padded_image = torch.zeros((3, *_size))
-        padded_image[:, :image.shape[1], :image.shape[2]] = image
-        return padded_image
+        ratio = min(image.shape[1], image.shape[2]) / _size
+        resized_image = T.Resize((int(image.shape[1] / ratio), int(image.shape[2] / ratio)))(image)
+        cropped_image = T.RandomCrop(_size)(resized_image)
+        return cropped_image
 
     @staticmethod
     def _image_to_video(image: torch.Tensor, _num_frames: int):
