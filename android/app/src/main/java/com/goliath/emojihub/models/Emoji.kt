@@ -6,6 +6,7 @@ class Emoji(
     dto: EmojiDto
 ) {
     val createdBy: String = dto.createdBy
+    var isSaved: Boolean = false
     val createdAt: String = dto.createdAt
     val savedCount: Int = dto.savedCount
     val videoLink: String = dto.videoLink
