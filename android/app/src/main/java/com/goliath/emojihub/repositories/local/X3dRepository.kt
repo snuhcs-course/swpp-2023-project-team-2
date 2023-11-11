@@ -19,7 +19,7 @@ class X3dRepositoryImpl @Inject constructor(
     companion object{
         const val SCORE_THRESHOLD = 0.4F
         const val DEFAULT_EMOJI_NAME = "love it"
-        const val DEFAULT_EMOJI_UNICODE = "U+0FE0F"
+        const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
