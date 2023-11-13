@@ -1,6 +1,7 @@
 package com.goliath.emojihub.views.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import com.goliath.emojihub.models.Emoji
 import androidx.compose.foundation.layout.Box
@@ -31,10 +32,11 @@ fun getEmoji(unicode: Int): String {
 
 @Composable
 fun EmojiCell (
-    emoji: Emoji
+    emoji: Emoji,
+    onSelected: (Emoji) -> Unit
 ) {
     Card (
-        modifier = Modifier.fillMaxWidth().height(292.dp),
+        modifier = Modifier.fillMaxWidth().height(292.dp).clickable { onSelected(emoji) },
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp
     ) {

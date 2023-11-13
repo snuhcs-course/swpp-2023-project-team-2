@@ -1,6 +1,7 @@
 package com.goliath.emojihub.views.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ fun TopNavigationBar(
     actions: @Composable () -> Unit = {},
 ) {
     Surface(
+        color = Color.Transparent,
         shape = RectangleShape,
         elevation = 1.dp,
         modifier = Modifier.height(64.dp),
@@ -64,14 +66,15 @@ fun TopNavigationBar(
             } else {
                 // TopNavigationBar for `PlayEmojiView`
                 Row(
-                    modifier = Modifier.fillMaxSize().background(Color.Transparent),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     if (shouldNavigate) {
                         IconButton(onClick = { navigate() }) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,
-                                tint = White,
+                                tint = Color.White,
                                 contentDescription = ""
                             )
                         }
@@ -85,6 +88,8 @@ fun TopNavigationBar(
                         color = White)
 
                     Spacer(modifier = Modifier.weight(1f))
+
+                    Spacer(modifier = Modifier.weight(0.2f))
 
                     actions()
                 }

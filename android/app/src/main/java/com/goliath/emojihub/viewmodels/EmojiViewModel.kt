@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
@@ -15,6 +16,7 @@ class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
     var videoUri: Uri = Uri.EMPTY
+    var currentEmoji: Emoji? = null
     var isBottomSheetShown by mutableStateOf(false)
 
     fun createEmoji(videoUri: Uri): Pair<String, String>? {
