@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -144,8 +144,11 @@ fun FeedPage(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    items(emojiList.size) {index ->
-                        EmojiCell(emoji = emojiList[index])
+                    items(emojiList, key = { it.id }) { emoji ->
+                        EmojiCell(emoji = emoji) {
+                            viewModel.currentEmoji = emoji
+                            navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        }
                     }
                 }
             }

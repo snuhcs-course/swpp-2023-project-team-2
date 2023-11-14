@@ -1,6 +1,7 @@
 package com.goliath.emojihub.views.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import com.goliath.emojihub.models.Emoji
 import androidx.compose.foundation.layout.Box
@@ -20,22 +21,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.White
 
-fun getEmoji(unicode: Int): String {
-    return String(Character.toChars(unicode))
-}
-
 @Composable
 fun EmojiCell (
-    emoji: Emoji
+    emoji: Emoji,
+    onSelected: (Emoji) -> Unit
 ) {
     Card (
-        modifier = Modifier.fillMaxWidth().height(292.dp),
+        modifier = Modifier.fillMaxWidth().height(292.dp).clickable { onSelected(emoji) },
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp
     ) {
@@ -80,7 +78,7 @@ fun EmojiCell (
 
         Box(contentAlignment = Alignment.Center) {
             Text(
-                text = getEmoji(emoji.unicode.substring(2).toInt(16)),
+                text = emoji.unicode.toEmoji(),
                 fontSize = 44.sp
             )
         }
