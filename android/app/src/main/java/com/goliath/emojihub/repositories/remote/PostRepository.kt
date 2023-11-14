@@ -21,7 +21,23 @@ class PostRepositoryImpl @Inject constructor(
     private val postApi: PostApi
 ): PostRepository {
     override suspend fun fetchPostList(numLimit: Int): List<PostDto> {
-        return postApi.fetchPostList(numLimit).body() ?: listOf()
+        try {
+            val response = postApi.fetchPostList(numLimit)
+
+            if (response.isSuccessful && response.body() != null) {
+                // Log success and the size of the fetched list
+                Log.d("PostRepository", "Successfully fetched ${response.body()!!.size} posts")
+                return response.body()!!
+            } else {
+                // Log failure with the response error body or a default message
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                Log.d("PostRepository", "Failed to fetch posts: $errorBody")
+            }
+        } catch (e: Exception) {
+            // Log exception
+            Log.e("PostRepository", "Error fetching posts", e)
+        }
+        return listOf()
     }
 
     override suspend fun uploadPost(dto: UploadPostDto): Response<Unit> {
