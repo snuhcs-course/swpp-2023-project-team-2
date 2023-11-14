@@ -23,12 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.White
-
-fun getEmoji(unicode: Int): String {
-    return String(Character.toChars(unicode))
-}
 
 @Composable
 fun EmojiCell (
@@ -81,7 +78,7 @@ fun EmojiCell (
 
         Box(contentAlignment = Alignment.Center) {
             Text(
-                text = getEmoji(emoji.unicode.substring(2).toInt(16)),
+                text = emoji.unicode.toEmoji(),
                 fontSize = 44.sp
             )
         }

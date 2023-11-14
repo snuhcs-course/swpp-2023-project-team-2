@@ -1,6 +1,5 @@
 package com.goliath.emojihub.views.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -74,7 +73,7 @@ fun TopNavigationBar(
                         IconButton(onClick = { navigate() }) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,
-                                tint = Color.White,
+                                tint = White,
                                 contentDescription = ""
                             )
                         }

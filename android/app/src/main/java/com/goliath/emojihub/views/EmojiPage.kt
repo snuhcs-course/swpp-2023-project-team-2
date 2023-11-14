@@ -22,10 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,7 +37,6 @@ import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
-import com.goliath.emojihub.views.components.PlayEmojiView
 import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
@@ -50,8 +45,6 @@ fun EmojiPage(
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
-
-    var selectedEmoji by remember { mutableStateOf<Emoji?>(null) }
 
     val viewModel = hiltViewModel<EmojiViewModel>()
 

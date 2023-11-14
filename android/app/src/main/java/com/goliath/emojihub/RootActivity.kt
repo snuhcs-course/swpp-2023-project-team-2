@@ -68,7 +68,6 @@ class RootActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()

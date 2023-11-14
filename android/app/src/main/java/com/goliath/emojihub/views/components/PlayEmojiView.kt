@@ -32,6 +32,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import kotlinx.coroutines.launch
@@ -112,7 +113,7 @@ fun PlayEmojiView(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = getEmoji(viewModel.currentEmoji!!.unicode.substring(2).toInt(16)),
+                        text = viewModel.currentEmoji!!.unicode.toEmoji(),
                         modifier = Modifier.drawBehind {
                             drawCircle(color = Color.White)
                         }.padding(10.dp),
