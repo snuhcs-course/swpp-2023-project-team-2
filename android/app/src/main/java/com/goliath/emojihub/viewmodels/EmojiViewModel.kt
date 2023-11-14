@@ -5,9 +5,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
@@ -18,6 +24,19 @@ class EmojiViewModel @Inject constructor(
     var videoUri: Uri = Uri.EMPTY
     var currentEmoji: Emoji? = null
     var isBottomSheetShown by mutableStateOf(false)
+
+    private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
+    val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
+
+    fun fetchEmojiList(numInt: Int)
+    {
+        viewModelScope.launch {
+            emojiUseCase.fetchEmojiList(numInt)
+
+            val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
+            _emojiList.emit(emojis)
+        }
+    }
 
     fun createEmoji(videoUri: Uri): Pair<String, String>? {
         val (emojiName, emojiUnicode) = emojiUseCase.createEmoji(videoUri)?: return null

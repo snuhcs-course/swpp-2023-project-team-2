@@ -35,7 +35,8 @@ class EmojiUseCaseImpl @Inject constructor(
 
     private val _emojiListState = MutableStateFlow<List<EmojiDto>>(emptyList())
     override val emojiListState: StateFlow<List<EmojiDto>>
-        get() = _emojiListState
+        get() = _emojiListState.asStateFlow()
+
     override suspend fun fetchEmojiList(numInt: Int) {
         try{
             val emojiList = repository.fetchEmojiList(numInt)

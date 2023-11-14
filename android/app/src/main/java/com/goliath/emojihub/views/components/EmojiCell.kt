@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ fun EmojiCell (
     emoji: Emoji,
     onSelected: (Emoji) -> Unit
 ) {
+    Log.d("EmojiCell", "Emoji passed: ${emoji.id}")
     Card (
         modifier = Modifier.fillMaxWidth().height(292.dp).clickable { onSelected(emoji) },
         shape = RoundedCornerShape(4.dp),
