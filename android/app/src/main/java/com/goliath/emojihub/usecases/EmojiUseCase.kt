@@ -16,6 +16,7 @@ interface EmojiUseCase {
 
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
+    suspend fun unSaveEmoji(id: String): Boolean
 }
 
 @Singleton
@@ -39,6 +40,19 @@ class EmojiUseCaseImpl @Inject constructor(
 
     override suspend fun saveEmoji(id: String): Boolean {
         val response = repository.saveEmoji(id)
+        response.let {
+            if (it.isSuccessful) {
+                Log.d("Emoji Saved", "Emoji Id: $id")
+                return true
+            } else {
+                errorController.setErrorState(it.code())
+                return false
+            }
+        }
+    }
+
+    override suspend fun unSaveEmoji(id: String): Boolean {
+        val response = repository.unSaveEmoji(id)
         response.let {
             if (it.isSuccessful) {
                 Log.d("Emoji Saved", "Emoji Id: $id")

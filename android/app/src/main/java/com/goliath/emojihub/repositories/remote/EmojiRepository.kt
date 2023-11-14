@@ -31,9 +31,11 @@ class EmojiRepositoryImpl @Inject constructor(
     override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
         TODO("Not yet implemented")
     }
+
     override suspend fun getEmojiWithId(id: String): EmojiDto? {
         TODO("Not yet implemented")
     }
+
     override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
         val emojiDtoJson = Gson().toJson(emojiDto)
         val emojiDtoRequestBody = RequestBody.create(MediaType.parse("application/json"), emojiDtoJson)
@@ -56,12 +58,15 @@ class EmojiRepositoryImpl @Inject constructor(
             false
         }
     }
+
     override suspend fun saveEmoji(id: String): Response<Unit> {
         return emojiApi.saveEmoji(id)
     }
+
     override suspend fun unSaveEmoji(id: String): Response<Unit> {
-        TODO("Not yet implemented")
+        return emojiApi.unSaveEmoji(id)
     }
+
     override suspend fun deleteEmoji(id: String): Response<Unit> {
         TODO("Not yet implemented")
     }

@@ -16,8 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileDownloadOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -46,9 +49,13 @@ fun PlayEmojiView(
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
 
+    val currentEmoji = viewModel.currentEmoji!!
+
+    var showUnsaveDialog by remember { mutableStateOf(false) }
+
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(viewModel.currentEmoji!!.videoLink))
+            setMediaItem(MediaItem.fromUri(currentEmoji.videoLink))
             repeatMode = Player.REPEAT_MODE_ALL
             prepare()
         }
@@ -64,7 +71,9 @@ fun PlayEmojiView(
             )
     ) {
         AndroidView(
-            modifier = Modifier.fillMaxSize().background(Color.EmojiHubRed),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.EmojiHubRed),
             factory = {
                 PlayerView(it).apply {
                     player = exoPlayer
@@ -73,7 +82,7 @@ fun PlayEmojiView(
         )
 
         TopNavigationBar(
-            title = "@" + viewModel.currentEmoji!!.createdBy,
+            title = "@" + currentEmoji.createdBy,
             largeTitle = false,
             navigate = { navController.popBackStack() }
         ) {}
@@ -88,15 +97,22 @@ fun PlayEmojiView(
                     IconButton(
                         modifier = Modifier.size(40.dp),
                         onClick = {
-                            coroutineScope.launch { viewModel.saveEmoji(viewModel.currentEmoji!!.id) }
+                            if (currentEmoji.isSaved) {
+                                showUnsaveDialog = true
+                            } else {
+                                coroutineScope.launch {
+                                    viewModel.saveEmoji(currentEmoji.id)
+                                }
+                            }
                         }
                     ) {
                         Icon(
                             imageVector =
-                            if (viewModel.currentEmoji!!.isSaved) {
+                            if (currentEmoji.isSaved) {
                                 Icons.Default.FileDownloadOff
                             } else {
-                                Icons.Default.FileDownload },
+                                Icons.Default.FileDownload
+                            },
                             tint = Color.White,
                             contentDescription = ""
                         )
@@ -105,7 +121,7 @@ fun PlayEmojiView(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = viewModel.currentEmoji!!.savedCount.toString(),
+                        text = currentEmoji.savedCount.toString(),
                         fontSize = 14.sp,
                         color = Color.White
                     )
@@ -113,16 +129,34 @@ fun PlayEmojiView(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = viewModel.currentEmoji!!.unicode.toEmoji(),
-                        modifier = Modifier.drawBehind {
-                            drawCircle(color = Color.White)
-                        }.padding(10.dp),
+                        text = currentEmoji.unicode.toEmoji(),
+                        modifier = Modifier
+                            .drawBehind {
+                                drawCircle(color = Color.White)
+                            }
+                            .padding(10.dp),
                         fontSize = 28.sp,
                     )
                 }
 
                 Spacer(modifier = Modifier.padding(bottom = 32.dp))
             }
+        }
+        
+        if (showUnsaveDialog) {
+            CustomDialog(
+                title = "삭제",
+                body = "저장된 이모지에서 삭제하시겠습니까?",
+                confirmText = "삭제",
+                isDestructive = true,
+                needsCancelButton = true,
+                onDismissRequest = { showUnsaveDialog = false },
+                confirm = {
+                    coroutineScope.launch {
+                        viewModel.unSaveEmoji(currentEmoji.id)
+                    } },
+                dismiss = { showUnsaveDialog = false }
+            )
         }
     }
 }

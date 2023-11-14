@@ -38,4 +38,8 @@ class EmojiViewModel @Inject constructor(
     suspend fun saveEmoji(id: String) {
         emojiUseCase.saveEmoji(id)
     }
+
+    suspend fun unSaveEmoji(id: String) {
+        emojiUseCase.saveEmoji(id)
+    }
 }
