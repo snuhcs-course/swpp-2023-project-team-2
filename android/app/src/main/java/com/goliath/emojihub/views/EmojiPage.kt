@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.views.components.EmojiCell
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -62,7 +63,7 @@ fun EmojiPage(
         }
     }
 
-    Column(Modifier.background(White)) {
+    Column(Modifier.testTag("emojiPage").background(White)) {
         TopNavigationBar("Emoji", shouldNavigate = false) {
             IconButton(onClick = {
                 when (PackageManager.PERMISSION_GRANTED) {

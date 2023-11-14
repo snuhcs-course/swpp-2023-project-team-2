@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +43,7 @@ fun SignUpPage() {
 
     Box(
         modifier = Modifier
+            .testTag("SignUpPage")
             .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
@@ -84,6 +86,7 @@ fun SignUpPage() {
             Button(
                 onClick = { /* TODO Handle Sign Up Click */ },
                 modifier = Modifier
+                    .testTag("signUpButton")
                     .fillMaxWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(50),

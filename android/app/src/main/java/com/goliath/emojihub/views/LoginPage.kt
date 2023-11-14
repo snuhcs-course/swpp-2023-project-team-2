@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +62,7 @@ fun LoginPage() {
 
     Box(
         modifier = Modifier
+            .testTag("LoginPage")
             .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
@@ -102,6 +104,7 @@ fun LoginPage() {
                       }
                 },
                 modifier = Modifier
+                    .testTag("LoginButton")
                     .padding(top = 24.dp)
                     .fillMaxWidth()
                     .height(44.dp),
@@ -126,6 +129,7 @@ fun LoginPage() {
                     }
                 },
                 modifier = Modifier
+                    .testTag("RegisterButton")
                     .fillMaxWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(50),
@@ -154,6 +158,7 @@ fun LoginPage() {
                 color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier
+                    .testTag("GuestModeButton")
                     .clickable {
                         /* TODO Handle 비회원 모드 Click*/
                         coroutineScope.launch {
