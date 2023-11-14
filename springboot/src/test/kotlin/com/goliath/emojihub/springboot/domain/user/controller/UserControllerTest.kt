@@ -153,6 +153,5 @@ internal class UserControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
         verify(userService, times(1)).signOut(username)
-
     }
 }
