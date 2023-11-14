@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository
 
 @Repository
 @Slf4j
-class UserDao (
+class UserDao(
     private val db: Firestore
-        ){
+) {
 
     companion object {
         const val USER_COLLECTION_NAME = "Users"
