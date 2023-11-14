@@ -51,7 +51,7 @@ fun PlayEmojiView(
 
     val currentEmoji = viewModel.currentEmoji!!
 
-    var showUnsaveDialog by remember { mutableStateOf(false) }
+    var showUnSaveDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -98,7 +98,7 @@ fun PlayEmojiView(
                         modifier = Modifier.size(40.dp),
                         onClick = {
                             if (currentEmoji.isSaved) {
-                                showUnsaveDialog = true
+                                showUnSaveDialog = true
                             } else {
                                 coroutineScope.launch {
                                     viewModel.saveEmoji(currentEmoji.id)
@@ -143,19 +143,19 @@ fun PlayEmojiView(
             }
         }
         
-        if (showUnsaveDialog) {
+        if (showUnSaveDialog) {
             CustomDialog(
                 title = "삭제",
                 body = "저장된 이모지에서 삭제하시겠습니까?",
                 confirmText = "삭제",
                 isDestructive = true,
                 needsCancelButton = true,
-                onDismissRequest = { showUnsaveDialog = false },
+                onDismissRequest = { showUnSaveDialog = false },
                 confirm = {
                     coroutineScope.launch {
                         viewModel.unSaveEmoji(currentEmoji.id)
                     } },
-                dismiss = { showUnsaveDialog = false }
+                dismiss = { showUnSaveDialog = false }
             )
         }
     }
