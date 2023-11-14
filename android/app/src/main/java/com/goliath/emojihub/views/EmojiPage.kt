@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,6 +62,11 @@ fun EmojiPage(
             viewModel.videoUri = uri
             navController.navigate(NavigationDestination.TransformVideo)
         }
+    }
+
+    LaunchedEffect(Unit)
+    {
+        viewModel.fetchEmojiList(10)
     }
 
     val emojiList = viewModel.emojiList.collectAsState().value
