@@ -26,6 +26,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 //import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +54,12 @@ fun FeedPage(
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
     val emojiList = (1..10).map { createDummyEmoji() }
+
+    LaunchedEffect(Unit)
+    {
+        postViewModel.fetchPostList(10)
+    }
+
     val postList = postViewModel.postList.collectAsState().value
 
     Column (
