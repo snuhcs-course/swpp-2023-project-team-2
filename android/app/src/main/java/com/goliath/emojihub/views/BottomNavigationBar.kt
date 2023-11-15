@@ -20,7 +20,7 @@ fun BottomNavigationBar(
 ) {
     NavHost(navController, startDestination = PageItem.Feed.screenRoute) {
         composable(PageItem.Feed.screenRoute) {
-            FeedPage((1..10).map { dummyPost })
+            FeedPage()
         }
 
         composable(PageItem.Emoji.screenRoute) {
