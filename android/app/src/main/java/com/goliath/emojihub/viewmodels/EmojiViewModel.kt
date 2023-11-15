@@ -41,15 +41,7 @@ class EmojiViewModel @Inject constructor(
     }
 
     fun createEmoji(videoUri: Uri): Pair<String, String>? {
-        val (emojiName, emojiUnicode) = emojiUseCase.createEmoji(videoUri)?: return null
-
-        val emojiCharArray = emojiUnicode.replace("U+", "")
-            .split(" ").map {
-            val codePoint = it.toInt(16)
-                codePoint.toChar()
-        }.toCharArray()
-        val emoji = String(emojiCharArray)
-        return Pair(emojiName, emoji)
+        return emojiUseCase.createEmoji(videoUri)
     }
 
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
