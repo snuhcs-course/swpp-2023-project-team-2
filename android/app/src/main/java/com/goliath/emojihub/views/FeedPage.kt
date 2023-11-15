@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
@@ -46,9 +45,7 @@ import com.goliath.emojihub.views.components.TopNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedPage(
-//    postList: List<Post>
-) {
+fun FeedPage() {
     val navController = LocalNavController.current
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
@@ -163,9 +160,3 @@ fun FeedPage(
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun FeedPagePreview() {
-//    FeedPage(postList = (1..10).map { dummyPost })
-//}
