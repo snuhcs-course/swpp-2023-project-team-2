@@ -1,6 +1,7 @@
 package com.goliath.emojihub.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -35,6 +36,7 @@ class EmojiViewModel @Inject constructor(
 
             val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
             _emojiList.emit(emojis)
+            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
         }
     }
 

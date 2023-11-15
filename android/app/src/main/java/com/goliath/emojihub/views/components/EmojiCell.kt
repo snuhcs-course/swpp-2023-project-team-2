@@ -33,7 +33,8 @@ fun EmojiCell (
     emoji: Emoji,
     onSelected: (Emoji) -> Unit
 ) {
-    Log.d("EmojiCell", "Emoji passed: ${emoji.id}")
+    Log.d("Fetch_E_L", "Emoji passed: ${emoji.id}")
+    Log.d("Fetch_E_L", "unicode is: ${emoji.unicode}")
     Card (
         modifier = Modifier.fillMaxWidth().height(292.dp).clickable { onSelected(emoji) },
         shape = RoundedCornerShape(4.dp),

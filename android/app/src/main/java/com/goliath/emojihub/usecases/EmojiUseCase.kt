@@ -41,6 +41,7 @@ class EmojiUseCaseImpl @Inject constructor(
         try{
             val emojiList = repository.fetchEmojiList(numInt)
             _emojiListState.emit(emojiList)
+            Log.d("Fetch_E_L", "USECASE DONE: $emojiList")
         } catch (e: Exception) {
             errorController.setErrorState(-1)
         }

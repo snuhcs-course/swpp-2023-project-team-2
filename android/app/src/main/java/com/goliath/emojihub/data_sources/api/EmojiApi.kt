@@ -17,7 +17,9 @@ import retrofit2.http.Query
 interface EmojiApi {
     @GET("emoji")
     suspend fun fetchEmojiList(
-        @Body body: FetchEmojiListDto
+        @Query("sortByDate") sortByDate: Int,
+        @Query("index") index: Int,
+        @Query("count") count: Int
     ): Response<List<EmojiDto>>
 
     @GET("emoji")

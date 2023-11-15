@@ -107,7 +107,6 @@ fun EmojiPage(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Log.d("asdf", "asdfasdf: $emojiList")
                 items(emojiList, key = { it.id }) { emoji ->
                     EmojiCell(emoji = emoji) {
                         viewModel.currentEmoji = emoji
