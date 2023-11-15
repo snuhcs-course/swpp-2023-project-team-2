@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.post.controller
 
-import com.goliath.emojihub.springboot.domain.post.dto.GetPostsRequest
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.domain.post.service.PostService
@@ -23,9 +22,10 @@ class PostController(private val postService: PostService) {
 
     @GetMapping
     fun getPosts(
-        @RequestBody getPostsRequest: GetPostsRequest
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
     ): ResponseEntity<List<PostDto>> {
-        return ResponseEntity.ok(postService.getPosts(getPostsRequest.index, getPostsRequest.count))
+        return ResponseEntity.ok(postService.getPosts(index, count))
     }
 
     @GetMapping("/{id}")
