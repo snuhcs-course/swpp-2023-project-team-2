@@ -5,6 +5,6 @@ fun String.toEmoji(): String {
         this.trim().split(" ").map { it.removePrefix("U+").toInt(16) }
             .joinToString("") { Character.toChars(it).joinToString("") }
     } catch (e: Exception){
-        "\u26A0\uFE0F"
+        "\u2764\uFE0F"
     }
 }
