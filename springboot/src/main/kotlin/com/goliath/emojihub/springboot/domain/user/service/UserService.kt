@@ -1,6 +1,7 @@
 package com.goliath.emojihub.springboot.domain.user.service
 
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
+import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
@@ -27,6 +28,7 @@ class UserServiceImpl(
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder,
     private val emojiDao: EmojiDao,
+    private val postDao: PostDao,
     ) : UserService {
     override fun getUsers(): List<UserDto> {
         return userDao.getUsers()
@@ -57,13 +59,23 @@ class UserServiceImpl(
 
     override fun signOut(username: String) {
         val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
-        val emojiIds = user.created_emojis ?: return userDao.deleteUser(username)
-        for (emojiId in emojiIds) {
-            val emoji = emojiDao.getEmoji(emojiId) ?: continue
-            if (username != emoji.created_by) throw CustomHttp403("You can't delete this emoji.")
-            val blobName = username + "_" + emoji.created_at + ".mp4"
-            emojiDao.deleteFileInStorage(blobName)
-            emojiDao.deleteEmoji(username, emojiId)
+        val emojiIds = user.created_emojis
+        val postIds = user.created_posts
+        if (emojiIds != null) {
+            for (emojiId in emojiIds) {
+                val emoji = emojiDao.getEmoji(emojiId) ?: continue
+                if (username != emoji.created_by) throw CustomHttp403("You can't delete this emoji.")
+                val blobName = username + "_" + emoji.created_at + ".mp4"
+                emojiDao.deleteFileInStorage(blobName)
+                emojiDao.deleteEmoji(username, emojiId)
+            }
+        }
+        if (postIds != null) {
+            for (postId in postIds) {
+                val post = postDao.getPost(postId) ?: continue
+                if (username != post.created_by) throw CustomHttp403("You can't delete this post.")
+                postDao.deletePost(postId)
+            }
         }
         return userDao.deleteUser(username)
     }

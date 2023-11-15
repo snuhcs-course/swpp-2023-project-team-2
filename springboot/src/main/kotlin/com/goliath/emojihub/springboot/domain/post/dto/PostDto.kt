@@ -9,7 +9,7 @@ class PostDto(
     var created_at: String = "",
     var modified_at: String = "",
 ) {
-    constructor(username: String, postRequest: PostRequest, dateTime: String) : this() {
+    constructor(username: String, content: String, dateTime: String) : this() {
         val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         val outputStrLength: Long = 20
         id = java.util.Random().ints(outputStrLength, 0, source.length)
@@ -17,7 +17,7 @@ class PostDto(
             .map(source::get)
             .joinToString("")
         created_by = username
-        content = postRequest.content
+        this.content = content
         created_at = dateTime
         modified_at = dateTime
     }
