@@ -3,13 +3,17 @@ package com.goliath.emojihub.springboot.domain.post.service
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
+import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import org.springframework.stereotype.Service
 
 @Service
-class PostService(private val postDao: PostDao) {
+class PostService(
+    private val postDao: PostDao,
+    private val userDao: UserDao
+) {
     fun postPost(username: String, postRequest: PostRequest) {
         postDao.postPost(username, postRequest)
     }
@@ -38,6 +42,7 @@ class PostService(private val postDao: PostDao) {
         val post = postDao.getPost(id) ?: throw CustomHttp404("Post doesn't exist.")
         if (username != post.created_by)
             throw CustomHttp403("You can't delete this post.")
+        userDao.deleteCreatedPost(username, id)
         postDao.deletePost(id)
     }
 }

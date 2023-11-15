@@ -3,10 +3,7 @@ package com.goliath.emojihub.springboot.domain.post.dao
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
-import com.google.cloud.firestore.DocumentSnapshot
-import com.google.cloud.firestore.Firestore
-import com.google.cloud.firestore.Query
-import com.google.cloud.firestore.QueryDocumentSnapshot
+import com.google.cloud.firestore.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Repository
 
@@ -17,6 +14,7 @@ class PostDao(
 ) {
 
     companion object {
+        const val USER_COLLECTION_NAME = "Users"
         const val POST_COLLECTION_NAME = "Posts"
     }
 
@@ -26,6 +24,9 @@ class PostDao(
         db.collection(POST_COLLECTION_NAME)
             .document(post.id)
             .set(post)
+        db.collection(USER_COLLECTION_NAME)
+            .document(username)
+            .update("created_posts", FieldValue.arrayUnion(post.id))
     }
 
     fun getPosts(index: Int, count: Int): List<PostDto> {
