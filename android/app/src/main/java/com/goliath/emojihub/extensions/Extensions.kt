@@ -1,5 +1,10 @@
 package com.goliath.emojihub.extensions
 
 fun String.toEmoji(): String {
-    return String(Character.toChars(this.substring(2).toInt(16)))
+    return try {
+        this.trim().split(" ").map { it.removePrefix("U+").toInt(16) }
+            .joinToString("") { Character.toChars(it).joinToString("") }
+    } catch (e: Exception){
+        "\u26A0\uFE0F"
+    }
 }
