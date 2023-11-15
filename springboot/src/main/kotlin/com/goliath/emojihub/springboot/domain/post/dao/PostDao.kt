@@ -1,7 +1,6 @@
 package com.goliath.emojihub.springboot.domain.post.dao
 
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
-import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.*
 import lombok.extern.slf4j.Slf4j
@@ -18,9 +17,9 @@ class PostDao(
         const val POST_COLLECTION_NAME = "Posts"
     }
 
-    fun postPost(username: String, postRequest: PostRequest) {
+    fun postPost(username: String, content: String) {
         val dateTime = getDateTimeNow()
-        val post = PostDto(username, postRequest, dateTime)
+        val post = PostDto(username, content, dateTime)
         db.collection(POST_COLLECTION_NAME)
             .document(post.id)
             .set(post)
@@ -53,10 +52,10 @@ class PostDao(
         return document.exists()
     }
 
-    fun updatePost(id: String, postRequest: PostRequest) {
+    fun updatePost(id: String, content: String) {
         val dateTime = getDateTimeNow()
         val post = db.collection(POST_COLLECTION_NAME).document(id)
-        post.update("content", postRequest.content)
+        post.update("content", content)
         post.update("modified_at", dateTime)
     }
 

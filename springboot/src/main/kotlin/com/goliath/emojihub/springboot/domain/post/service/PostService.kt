@@ -2,7 +2,6 @@ package com.goliath.emojihub.springboot.domain.post.service
 
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
-import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -14,8 +13,8 @@ class PostService(
     private val postDao: PostDao,
     private val userDao: UserDao
 ) {
-    fun postPost(username: String, postRequest: PostRequest) {
-        postDao.postPost(username, postRequest)
+    fun postPost(username: String, content: String) {
+        postDao.postPost(username, content)
     }
 
     fun getPosts(index: Int, count: Int): List<PostDto> {
@@ -31,11 +30,11 @@ class PostService(
         return postDao.getPost(id)
     }
 
-    fun patchPost(username: String, id: String, postRequest: PostRequest) {
+    fun patchPost(username: String, id: String, content: String) {
         val post = postDao.getPost(id) ?: throw CustomHttp404("Post doesn't exist.")
         if (username != post.created_by)
             throw CustomHttp403("You can't update this post.")
-        postDao.updatePost(id, postRequest)
+        postDao.updatePost(id, content)
     }
 
     fun deletePost(username: String, id: String) {

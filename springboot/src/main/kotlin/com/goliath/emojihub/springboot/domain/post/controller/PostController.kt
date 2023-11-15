@@ -17,7 +17,9 @@ class PostController(private val postService: PostService) {
         @CurrentUser username: String,
         @RequestBody postRequest: PostRequest,
     ): ResponseEntity<Unit> {
-        return ResponseEntity(postService.postPost(username, postRequest), HttpStatus.CREATED)
+        return ResponseEntity(
+            postService.postPost(username, postRequest.content), HttpStatus.CREATED
+        )
     }
 
     @GetMapping
@@ -41,7 +43,9 @@ class PostController(private val postService: PostService) {
         @PathVariable(value = "id") id: String,
         @RequestBody postRequest: PostRequest,
     ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(postService.patchPost(username, id, postRequest))
+        return ResponseEntity.ok(
+            postService.patchPost(username, id, postRequest.content)
+        )
     }
 
     @DeleteMapping("/{id}")
