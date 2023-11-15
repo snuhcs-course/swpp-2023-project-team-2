@@ -8,7 +8,6 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
-import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -54,21 +53,28 @@ class UserService(
 
     fun signOut(username: String) {
         val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
-        val emojiIds = user.created_emojis
+        val createdEmojiIds = user.created_emojis
+        val savedEmojiIds = user.saved_emojis
         val postIds = user.created_posts
-        if (emojiIds != null) {
-            for (emojiId in emojiIds) {
+        if (createdEmojiIds != null) {
+            for (emojiId in createdEmojiIds) {
                 val emoji = emojiDao.getEmoji(emojiId) ?: continue
-                if (username != emoji.created_by) throw CustomHttp403("You can't delete this emoji.")
+                if (username != emoji.created_by) continue
                 val blobName = username + "_" + emoji.created_at + ".mp4"
                 emojiDao.deleteFileInStorage(blobName)
                 emojiDao.deleteEmoji(username, emojiId)
             }
         }
+        if (savedEmojiIds != null) {
+            for (emojiId in savedEmojiIds) {
+                if (!emojiDao.existsEmoji(emojiId)) continue
+                emojiDao.unSaveEmoji(username, emojiId)
+            }
+        }
         if (postIds != null) {
             for (postId in postIds) {
                 val post = postDao.getPost(postId) ?: continue
-                if (username != post.created_by) throw CustomHttp403("You can't delete this post.")
+                if (username != post.created_by) continue
                 postDao.deletePost(postId)
             }
         }

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Repository
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
+import java.util.concurrent.TimeUnit
 
 
 @Repository
@@ -63,10 +64,9 @@ class EmojiDao(
             .setContentType("video/mp4")
             .build()
         storage.createFrom(emojiVideoBlob, ByteArrayInputStream(file.bytes))
-        val emojiVideoUrl = storage.get(emojiVideoBlobId).mediaLink
-
+        val emojiVideoUrl = storage.get(emojiVideoBlobId).signUrl(100, TimeUnit.DAYS)
         // upload video thumbnail to emojiBucket
-        val emoji = EmojiDto(username, postEmojiRequest, emojiVideoUrl, dateTime)
+        val emoji = EmojiDto(username, postEmojiRequest, emojiVideoUrl.toString(), dateTime)
         db.collection(EMOJI_COLLECTION_NAME)
             .document(emoji.id)
             .set(emoji)
