@@ -3,7 +3,6 @@ package com.goliath.emojihub.springboot.domain.emoji.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.goliath.emojihub.springboot.domain.WithCustomUser
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
-import com.goliath.emojihub.springboot.domain.emoji.dto.GetEmojisRequest
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import org.hamcrest.Matchers
@@ -23,8 +22,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.nio.charset.StandardCharsets
 
 @WebMvcTest(EmojiController::class)
@@ -44,11 +42,9 @@ internal class EmojiControllerTest @Autowired constructor(
     @DisplayName("이모지 데이터 가져오기 테스트")
     fun getEmojis() {
         // given
-        val request = GetEmojisRequest(
-            sortByDate = 0,
-            index = 1,
-            count = 10
-        )
+        val sortByDate = 0
+        val index = 1
+        val count = 10
         val list = mutableListOf<EmojiDto>()
         val size = 2
         val id = "test_id"
@@ -81,22 +77,23 @@ internal class EmojiControllerTest @Autowired constructor(
         // when
         val result = this.mockMvc.perform(
             get("/api/emoji")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
+                .param("sortByDate", sortByDate.toString())
+                .param("index", index.toString())
+                .param("count", count.toString())
         )
 
         // then
         result.andExpect(status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(size)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(id + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].created_by").value(createdBy + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].video_url").value(videoUrl + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].emoji_unicode").value(emojiUnicode + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].emoji_label").value(emojiLabel + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].created_at").value(createdAt + 0))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].num_saved").value(0))
-        verify(emojiService).getEmojis(request.sortByDate, request.index, request.count)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$[0].id").value(id + 0))
+            .andExpect(jsonPath("$[0].created_by").value(createdBy + 0))
+            .andExpect(jsonPath("$[0].video_url").value(videoUrl + 0))
+            .andExpect(jsonPath("$[0].emoji_unicode").value(emojiUnicode + 0))
+            .andExpect(jsonPath("$[0].emoji_label").value(emojiLabel + 0))
+            .andExpect(jsonPath("$[0].created_at").value(createdAt + 0))
+            .andExpect(jsonPath("$[0].num_saved").value(0))
+        verify(emojiService).getEmojis(sortByDate, index, count)
 
     }
 
@@ -121,13 +118,13 @@ internal class EmojiControllerTest @Autowired constructor(
 
         // then
         result.andExpect(status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(emojiDto.id))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.created_by").value(emojiDto.created_by))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.video_url").value(emojiDto.video_url))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.emoji_unicode").value(emojiDto.emoji_unicode))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.emoji_label").value(emojiDto.emoji_label))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.created_at").value(emojiDto.created_at))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.num_saved").value(emojiDto.num_saved))
+            .andExpect(jsonPath("$.id").value(emojiDto.id))
+            .andExpect(jsonPath("$.created_by").value(emojiDto.created_by))
+            .andExpect(jsonPath("$.video_url").value(emojiDto.video_url))
+            .andExpect(jsonPath("$.emoji_unicode").value(emojiDto.emoji_unicode))
+            .andExpect(jsonPath("$.emoji_label").value(emojiDto.emoji_label))
+            .andExpect(jsonPath("$.created_at").value(emojiDto.created_at))
+            .andExpect(jsonPath("$.num_saved").value(emojiDto.num_saved))
         verify(emojiService).getEmoji(emojiDto.id)
     }
 
