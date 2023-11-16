@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +29,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.ui.theme.Color
+import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.UnderlinedTextField
+import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 @Composable
 fun SignUpPage() {
@@ -39,6 +46,10 @@ fun SignUpPage() {
 
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
+    val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
+    val userViewModel = hiltViewModel<UserViewModel>()
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -82,7 +93,14 @@ fun SignUpPage() {
             }
             Spacer(modifier = Modifier.height(32.dp))
             Button(
-                onClick = { /* TODO Handle Sign Up Click */ },
+                onClick = {
+                    coroutineScope.launch {
+                        if (userViewModel.registerUser(email.text, username.text, password.text)) {
+                            showDialog = true
+                        }
+                    }
+
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
@@ -98,6 +116,14 @@ fun SignUpPage() {
                         fontWeight = FontWeight.Bold
                     )
                 }
+            )
+        }
+
+        if (showDialog) {
+            CustomDialog(
+                title = "완료",
+                body = "계정 생성이 완료되었습니다.",
+                confirm = { navController.navigate("login") }
             )
         }
     }

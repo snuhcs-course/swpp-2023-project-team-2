@@ -34,9 +34,9 @@ data class UserDtoList(
 )
 
 class RegisterUserDto(
+    @SerializedName("email") val email: String,
     @SerializedName("username") val name: String,
-    val email: String,
-    val password: String,
+    @SerializedName("password") val password: String,
 )
 
 class LoginUserDto(

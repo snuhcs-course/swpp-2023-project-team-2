@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.R
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
@@ -58,6 +59,7 @@ fun LoginPage() {
 
     val userViewModel = hiltViewModel<UserViewModel>()
     val coroutineScope = rememberCoroutineScope()
+    val navController = LocalNavController.current
 
     Box(
         modifier = Modifier
@@ -122,7 +124,7 @@ fun LoginPage() {
             OutlinedButton(
                 onClick = {
                     coroutineScope.launch {
-
+                        navController.navigate("signup")
                     }
                 },
                 modifier = Modifier
