@@ -18,7 +18,7 @@ interface UserApi {
     @POST("user/signup")
     suspend fun registerUser(
         @Body body: RegisterUserDto
-    ): Response<String>
+    ): Response<LoginResponseDto>
 
     @POST("user/login")
     suspend fun login(

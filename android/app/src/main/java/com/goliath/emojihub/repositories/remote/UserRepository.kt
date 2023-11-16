@@ -12,7 +12,7 @@ import javax.inject.Singleton
 interface UserRepository {
     suspend fun fetchUserList(): Array<UserDtoList>
     fun fetchUser(name: String)
-    suspend fun registerUser(dto: RegisterUserDto)
+    suspend fun registerUser(dto: RegisterUserDto): Response<LoginResponseDto>
     suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
 }
 
@@ -28,8 +28,8 @@ class UserRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun registerUser(dto: RegisterUserDto) {
-        userApi.registerUser(dto)
+    override suspend fun registerUser(dto: RegisterUserDto): Response<LoginResponseDto> {
+        return userApi.registerUser(dto)
     }
 
     override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto> {

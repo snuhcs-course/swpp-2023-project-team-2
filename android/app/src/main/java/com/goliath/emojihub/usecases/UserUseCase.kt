@@ -18,7 +18,7 @@ sealed interface UserUseCase {
 
     suspend fun fetchUserList()
     suspend fun fetchUser(id: String)
-    suspend fun registerUser(email: String, name: String, password: String)
+    suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
     fun logout()
     fun signOut()
@@ -44,9 +44,10 @@ class UserUseCaseImpl @Inject constructor(
         repository.fetchUser(id)
     }
 
-    override suspend fun registerUser(email: String, name: String, password: String) {
+    override suspend fun registerUser(email: String, name: String, password: String): Boolean {
         val dto = RegisterUserDto(email, name, password)
-        repository.registerUser(dto)
+        val response = repository.registerUser(dto)
+        return response.isSuccessful
     }
 
     override suspend fun login(name: String, password: String) {
