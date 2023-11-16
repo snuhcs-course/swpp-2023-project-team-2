@@ -3,6 +3,7 @@ package com.goliath.emojihub.springboot.domain.user.dao
 import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.cloud.firestore.DocumentSnapshot
+import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import lombok.extern.slf4j.Slf4j
@@ -10,9 +11,9 @@ import org.springframework.stereotype.Repository
 
 @Repository
 @Slf4j
-class UserDao (
+class UserDao(
     private val db: Firestore
-        ){
+) {
 
     companion object {
         const val USER_COLLECTION_NAME = "Users"
@@ -53,5 +54,10 @@ class UserDao (
     fun deleteUser(username: String) {
         db.collection(POST_COLLECTION_NAME).whereEqualTo("created_by", username).get().get().documents
         db.collection(USER_COLLECTION_NAME).document(username).delete()
+    }
+
+    fun deleteCreatedPost(username: String, postId: String) {
+        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        userRef.update("created_posts", FieldValue.arrayRemove(postId))
     }
 }

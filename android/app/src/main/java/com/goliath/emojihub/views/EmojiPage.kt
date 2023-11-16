@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -97,8 +98,11 @@ fun EmojiPage(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(emojiList.size) {index ->
-                    EmojiCell(emoji = emojiList[index])
+                items(emojiList, key = { it.id }) { emoji ->
+                    EmojiCell(emoji = emoji) {
+                        viewModel.currentEmoji = emoji
+                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                    }
                 }
             }
         }

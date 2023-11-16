@@ -1,5 +1,4 @@
 package com.goliath.emojihub.views
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
@@ -25,32 +25,38 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.createDummyEmoji
-import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.views.components.EmojiCell
 import com.goliath.emojihub.views.components.PostCell
 import com.goliath.emojihub.views.components.TopNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedPage(
-    postList: List<Post>
-) {
+fun FeedPage() {
     val navController = LocalNavController.current
-    val viewModel = hiltViewModel<EmojiViewModel>()
+    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+    val postViewModel = hiltViewModel<PostViewModel>()
     val emojiList = (1..10).map { createDummyEmoji() }
+
+    LaunchedEffect(Unit)
+    {
+        postViewModel.fetchPostList(10)
+    }
+
+    val postList = postViewModel.postList.collectAsState().value
 
     Column (
         Modifier.background(Color.White)
@@ -75,7 +81,7 @@ fun FeedPage(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(postList) { post ->
+                items(postList, key = {it.id}) { post ->
                     PostCell(post = post)
                     Divider(color = EmojiHubDividerColor, thickness = 0.5.dp)
                 }
@@ -83,10 +89,10 @@ fun FeedPage(
         }
     }
 
-    if (viewModel.isBottomSheetShown) {
+    if (emojiViewModel.isBottomSheetShown) {
         ModalBottomSheet(
             onDismissRequest = {
-                viewModel.isBottomSheetShown = false
+                emojiViewModel.isBottomSheetShown = false
                 navController.popBackStack()
             }
         ) {
@@ -143,17 +149,14 @@ fun FeedPage(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    items(emojiList.size) {index ->
-                        EmojiCell(emoji = emojiList[index])
+                    items(emojiList, key = { it.id }) { emoji ->
+                        EmojiCell(emoji = emoji) {
+                            emojiViewModel.currentEmoji = emoji
+                            navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FeedPagePreview() {
-    FeedPage(postList = (1..10).map { dummyPost })
 }

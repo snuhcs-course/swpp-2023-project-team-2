@@ -47,11 +47,7 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-                ) {
+                Box(Modifier.fillMaxSize().background(Color.White)) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
                     val error by apiErrorController.apiErrorState.collectAsState()
                     if (token.isNullOrEmpty()) {
@@ -74,6 +70,7 @@ class RootActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun LoginView() {
     val navController = rememberNavController()
@@ -84,7 +81,7 @@ fun LoginView() {
         LoginNavigation(navController = navController)
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun RootView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()

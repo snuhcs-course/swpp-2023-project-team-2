@@ -9,6 +9,7 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -16,11 +17,11 @@ import javax.inject.Singleton
 
 interface EmojiRepository {
     suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto>
-    suspend fun getEmojiWithId(emojiId: String): EmojiDto?
+    suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
-    suspend fun saveEmoji(emojiId: String)
-    suspend fun unSaveEmoji(emojiId: String)
-    suspend fun deleteEmoji()
+    suspend fun saveEmoji(id: String): Response<Unit>
+    suspend fun unSaveEmoji(id: String): Response<Unit>
+    suspend fun deleteEmoji(id: String): Response<Unit>
 }
 
 @Singleton
@@ -30,9 +31,11 @@ class EmojiRepositoryImpl @Inject constructor(
     override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
         TODO("Not yet implemented")
     }
-    override suspend fun getEmojiWithId(emojiId: String): EmojiDto? {
+
+    override suspend fun getEmojiWithId(id: String): EmojiDto? {
         TODO("Not yet implemented")
     }
+
     override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
         val emojiDtoJson = Gson().toJson(emojiDto)
         val emojiDtoRequestBody = RequestBody.create(MediaType.parse("application/json"), emojiDtoJson)
@@ -55,13 +58,16 @@ class EmojiRepositoryImpl @Inject constructor(
             false
         }
     }
-    override suspend fun saveEmoji(emojiId: String) {
-        TODO("Not yet implemented")
+
+    override suspend fun saveEmoji(id: String): Response<Unit> {
+        return emojiApi.saveEmoji(id)
     }
-    override suspend fun unSaveEmoji(emojiId: String) {
-        TODO("Not yet implemented")
+
+    override suspend fun unSaveEmoji(id: String): Response<Unit> {
+        return emojiApi.unSaveEmoji(id)
     }
-    override suspend fun deleteEmoji() {
+
+    override suspend fun deleteEmoji(id: String): Response<Unit> {
         TODO("Not yet implemented")
     }
 }
