@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.UnderlinedTextField
 import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
@@ -48,6 +49,7 @@ fun SignUpPage() {
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     val userViewModel = hiltViewModel<UserViewModel>()
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -94,7 +96,7 @@ fun SignUpPage() {
                 onClick = {
                     coroutineScope.launch {
                         if (userViewModel.registerUser(email.text, username.text, password.text)) {
-                            navController.navigate("login")
+                            showDialog = true
                         }
                     }
 
@@ -114,6 +116,14 @@ fun SignUpPage() {
                         fontWeight = FontWeight.Bold
                     )
                 }
+            )
+        }
+
+        if (showDialog) {
+            CustomDialog(
+                title = "완료",
+                body = "계정 생성이 완료되었습니다.",
+                confirm = { navController.navigate("login") }
             )
         }
     }

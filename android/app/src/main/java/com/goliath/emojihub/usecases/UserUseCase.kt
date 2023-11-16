@@ -1,5 +1,6 @@
 package com.goliath.emojihub.usecases
 
+import androidx.compose.ui.window.Dialog
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
