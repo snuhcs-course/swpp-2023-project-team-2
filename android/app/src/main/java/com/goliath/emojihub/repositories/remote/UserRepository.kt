@@ -24,7 +24,7 @@ class UserRepositoryImpl @Inject constructor(
         return userApi.fetchUserList().body() ?: arrayOf()
     }
 
-    override fun fetchUser(id: String) {
+    override fun fetchUser(name: String) {
         TODO("Not yet implemented")
     }
 

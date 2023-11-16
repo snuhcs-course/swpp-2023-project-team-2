@@ -7,9 +7,6 @@ plugins {
     // hilt
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
-
-    // Add the Google services Gradle plugin
-    //id("com.google.gms.google-services")
 }
 
 android {
@@ -24,6 +21,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        //testInstrumentationRunner = "com.goliath.emojihub.dagger.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -99,10 +97,18 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test:rules:1.4.0")
 
     // hilt
     implementation("com.google.dagger:hilt-android:2.44")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    // test tools + hilt
+    implementation("com.google.dagger:hilt-android-testing:2.44")
+    kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.44")
+    implementation("androidx.test:runner:1.4.0")
 
     // navigation
     implementation("androidx.navigation:navigation-compose:2.5.3")
