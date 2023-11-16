@@ -77,7 +77,7 @@ internal class UserControllerTest @Autowired constructor(
             username = "test_username",
             password = "test_password"
         )
-        given(userService.signUp(any())).willReturn(authToken)
+        given(userService.signUp(any(), any(), any())).willReturn(authToken)
 
         // when
         val result = mockMvc.perform(
@@ -91,7 +91,7 @@ internal class UserControllerTest @Autowired constructor(
         result.andExpect(status().isCreated)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.accessToken").value(accessToken))
-        verify(userService, times(1)).signUp(any())
+        verify(userService, times(1)).signUp(request.email, request.username, request.password)
     }
 
     @Test
@@ -105,7 +105,7 @@ internal class UserControllerTest @Autowired constructor(
             username = "test_username",
             password = "test_password"
         )
-        given(userService.login(any())).willReturn(authToken)
+        given(userService.login(any(), any())).willReturn(authToken)
 
         // when
         val result = mockMvc.perform(
@@ -119,7 +119,7 @@ internal class UserControllerTest @Autowired constructor(
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.accessToken").value(accessToken))
-        verify(userService, times(1)).login(any())
+        verify(userService, times(1)).login(request.username, request.password)
     }
 
     @Test

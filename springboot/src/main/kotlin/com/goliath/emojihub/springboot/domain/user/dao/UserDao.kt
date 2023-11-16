@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.user.dao
 
-import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
@@ -45,10 +44,10 @@ class UserDao(
         return document.exists()
     }
 
-    fun insertUser(signUpRequest: SignUpRequest) {
+    fun insertUser(userDto: UserDto) {
         db.collection(USER_COLLECTION_NAME)
-            .document(signUpRequest.username)
-            .set(UserDto(signUpRequest))
+            .document(userDto.username)
+            .set(userDto)
     }
 
     fun deleteUser(username: String) {
