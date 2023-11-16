@@ -3,6 +3,7 @@ package com.goliath.emojihub.repositories.remote
 import android.util.Log
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
+import com.goliath.emojihub.models.FetchEmojiListDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.google.gson.Gson
 import okhttp3.MediaType
@@ -29,7 +30,21 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi
 ): EmojiRepository {
     override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
-        TODO("Not yet implemented")
+//        val fetchEmojiListDto = FetchEmojiListDto(1, 0, 10)
+        try {
+            val response = emojiApi.fetchEmojiList(1, 1, 10)
+
+            if(response.isSuccessful && response.body() != null) {
+                Log.d("Fetch_E_L", "Successfully fetched ${response.body()!!.size} emojis")
+                return response.body()!!
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                Log.d("Fetch_E_L", "Failed to fetch emojis: $errorBody")
+            }
+        } catch(e: Exception) {
+            Log.e("Fetch_E_L", "Error fetching emojis", e)
+        }
+        return listOf()
     }
 
     override suspend fun getEmojiWithId(id: String): EmojiDto? {

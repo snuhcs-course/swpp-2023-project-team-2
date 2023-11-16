@@ -3,14 +3,21 @@ package com.goliath.emojihub.usecases
 import android.net.Uri
 import android.util.Log
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.models.EmojiDto
+
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EmojiUseCase {
+    val emojiListState: StateFlow<List<EmojiDto>>
     suspend fun fetchEmojiList(numInt: Int)
     fun createEmoji(videoUri: Uri): Pair<String, String>?
 
@@ -25,8 +32,19 @@ class EmojiUseCaseImpl @Inject constructor(
     private val model: X3dRepository,
     private val errorController: ApiErrorController
 ): EmojiUseCase {
+
+    private val _emojiListState = MutableStateFlow<List<EmojiDto>>(emptyList())
+    override val emojiListState: StateFlow<List<EmojiDto>>
+        get() = _emojiListState.asStateFlow()
+
     override suspend fun fetchEmojiList(numInt: Int) {
-        repository.fetchEmojiList(numInt)
+        try{
+            val emojiList = repository.fetchEmojiList(numInt)
+            _emojiListState.emit(emojiList)
+            Log.d("Fetch_E_L", "USECASE DONE: $emojiList")
+        } catch (e: Exception) {
+            errorController.setErrorState(-1)
+        }
     }
 
     override fun createEmoji(videoUri: Uri): Pair<String, String>? {

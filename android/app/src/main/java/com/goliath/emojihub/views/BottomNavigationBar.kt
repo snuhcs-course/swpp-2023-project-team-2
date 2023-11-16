@@ -24,7 +24,7 @@ fun BottomNavigationBar(
         }
 
         composable(PageItem.Emoji.screenRoute) {
-            EmojiPage((1..10).map{ createDummyEmoji() })
+            EmojiPage()
         }
 
         composable(PageItem.Profile.screenRoute) {

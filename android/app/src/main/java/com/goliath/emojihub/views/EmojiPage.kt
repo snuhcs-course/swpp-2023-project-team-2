@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,7 +43,7 @@ import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
 fun EmojiPage(
-    emojiList: List<Emoji>
+//    emojiList: List<Emoji>
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -61,6 +63,13 @@ fun EmojiPage(
             navController.navigate(NavigationDestination.TransformVideo)
         }
     }
+
+    LaunchedEffect(Unit)
+    {
+        viewModel.fetchEmojiList(10)
+    }
+
+    val emojiList = viewModel.emojiList.collectAsState().value
 
     Column(Modifier.background(White)) {
         TopNavigationBar("Emoji", shouldNavigate = false) {
@@ -109,8 +118,8 @@ fun EmojiPage(
     }
 }
 
-@Preview
-@Composable
-fun EmojiPagePreview() {
-    EmojiPage(emojiList = (1..10).map { createDummyEmoji() })
-}
+//@Preview
+//@Composable
+//fun EmojiPagePreview() {
+//    EmojiPage(emojiList = (1..10).map { createDummyEmoji() })
+//}

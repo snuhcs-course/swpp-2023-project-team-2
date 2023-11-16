@@ -33,6 +33,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.views.components.CustomDialog
 import kotlinx.coroutines.launch
@@ -130,7 +131,7 @@ fun TransformVideoPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!!.second,
+                        text = resultEmoji!!.second.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
