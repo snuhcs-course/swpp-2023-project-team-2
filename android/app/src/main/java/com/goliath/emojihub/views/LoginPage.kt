@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,8 @@ fun LoginPagePreview() {
 fun LoginPage() {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
+
+    val isLoginButtonDisabled by remember { derivedStateOf { username.text.isEmpty() || password.text.isEmpty() } }
 
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -101,10 +104,8 @@ fun LoginPage() {
                           userViewModel.login(username.text, password.text)
                       }
                 },
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .fillMaxWidth()
-                    .height(44.dp),
+                modifier = Modifier.padding(top = 24.dp).fillMaxWidth().height(44.dp),
+                enabled = !isLoginButtonDisabled,
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -125,9 +126,7 @@ fun LoginPage() {
 
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp),
+                modifier = Modifier.fillMaxWidth().height(44.dp),
                 shape = RoundedCornerShape(50),
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
@@ -143,25 +142,6 @@ fun LoginPage() {
                 }
             )
             Spacer(modifier = Modifier.weight(1f))
-
-            // fetch entire user list
-            Text(
-                text = userViewModel.userState.collectAsState().value.toString()
-            )
-
-            Text(
-                text = "비회원 모드로 시작하기",
-                color = Color.DarkGray,
-                style = TextStyle(textDecoration = TextDecoration.Underline),
-                modifier = Modifier
-                    .clickable {
-                        /* TODO Handle 비회원 모드 Click*/
-                        coroutineScope.launch {
-                            userViewModel.fetchUserList()
-                        }
-                    }
-            )
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
