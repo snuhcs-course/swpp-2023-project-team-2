@@ -36,3 +36,16 @@ class UserRepositoryImpl @Inject constructor(
         return userApi.login(dto)
     }
 }
+
+// for test
+interface FakeUserRepository {
+    suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
+}
+
+class FakeUserRepositoryImpl @Inject constructor(
+    private val userApi: UserApi
+): FakeUserRepository {
+    override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto> {
+        return userApi.login(dto)
+    }
+}

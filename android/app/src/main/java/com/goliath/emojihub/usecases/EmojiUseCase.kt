@@ -6,6 +6,7 @@ import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
+import com.goliath.emojihub.repositories.remote.FakeEmojiRepository
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -63,4 +64,13 @@ class EmojiUseCaseImpl @Inject constructor(
             }
         }
     }
+}
+
+sealed interface FakeEmojiUseCase {
+}
+
+class FakeEmojiUseCaseImpl @Inject constructor(
+    private val repository: FakeEmojiRepository
+): FakeEmojiUseCase {
+
 }

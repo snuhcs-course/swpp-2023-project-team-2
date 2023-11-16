@@ -71,3 +71,13 @@ class EmojiRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 }
+
+interface FakeEmojiRepository {
+
+}
+
+class FakeEmojiRepositoryImpl @Inject constructor(
+    private val emojiApi: EmojiApi
+): FakeEmojiRepository {
+
+}

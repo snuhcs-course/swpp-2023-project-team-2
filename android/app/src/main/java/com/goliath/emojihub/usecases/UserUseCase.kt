@@ -6,6 +6,7 @@ import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
 import com.goliath.emojihub.models.UserDto
+import com.goliath.emojihub.repositories.remote.FakeUserRepository
 import com.goliath.emojihub.repositories.remote.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,4 +71,15 @@ class UserUseCaseImpl @Inject constructor(
     override fun signOut() {
         _userState.update { null }
     }
+}
+
+// for test
+sealed interface FakeUserUseCase {
+
+}
+
+class FakeUserUseCaseImpl @Inject constructor(
+    private val repository: FakeUserRepository
+): FakeUserUseCase {
+
 }
