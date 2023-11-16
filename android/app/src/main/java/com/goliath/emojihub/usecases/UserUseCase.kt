@@ -47,6 +47,10 @@ class UserUseCaseImpl @Inject constructor(
     override suspend fun registerUser(email: String, name: String, password: String): Boolean {
         val dto = RegisterUserDto(email, name, password)
         val response = repository.registerUser(dto)
+        response.let {
+            if(it.isSuccessful) return true
+            else errorController.setErrorState(it.code())
+        }
         return response.isSuccessful
     }
 
