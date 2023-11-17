@@ -1,5 +1,7 @@
 package com.goliath.emojihub.viewmodels
 
+import android.content.ContentResolver
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -29,6 +31,9 @@ class EmojiViewModel @Inject constructor(
     private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
     val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
 
+    private val _thumbnailState = MutableStateFlow<Bitmap?>(null)
+    val thumbnailState = _thumbnailState.asStateFlow()
+
     fun fetchEmojiList(numInt: Int)
     {
         viewModelScope.launch {
@@ -36,7 +41,6 @@ class EmojiViewModel @Inject constructor(
 
             val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
             _emojiList.emit(emojis)
-            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
         }
     }
 
@@ -54,5 +58,11 @@ class EmojiViewModel @Inject constructor(
 
     suspend fun unSaveEmoji(id: String) {
         emojiUseCase.saveEmoji(id)
+    }
+
+    fun createVideoThumbnail(videoUri: String, width: Int, height: Int) {
+        viewModelScope.launch {
+            _thumbnailState.value = emojiUseCase.createVideoThumbnail(videoUri, width, height)
+        }
     }
 }

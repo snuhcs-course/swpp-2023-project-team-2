@@ -1,7 +1,12 @@
 package com.goliath.emojihub.usecases
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import android.content.ContentResolver
+import android.media.MediaMetadataRetriever
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
@@ -9,9 +14,11 @@ import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,6 +31,8 @@ interface EmojiUseCase {
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
     suspend fun unSaveEmoji(id: String): Boolean
+
+    suspend fun createVideoThumbnail(videoUri: String, width: Int, height: Int): Bitmap?
 }
 
 @Singleton
@@ -41,7 +50,6 @@ class EmojiUseCaseImpl @Inject constructor(
         try{
             val emojiList = repository.fetchEmojiList(numInt)
             _emojiListState.emit(emojiList)
-            Log.d("Fetch_E_L", "USECASE DONE: $emojiList")
         } catch (e: Exception) {
             errorController.setErrorState(-1)
         }
@@ -80,5 +88,25 @@ class EmojiUseCaseImpl @Inject constructor(
                 return false
             }
         }
+    }
+
+    override suspend fun createVideoThumbnail(videoUri: String, width: Int, height: Int): Bitmap? {
+        val retriever = MediaMetadataRetriever()
+
+        try {
+            Log.d("create_TN", "Created : ${videoUri}")
+            retriever.setDataSource(videoUri, HashMap<String, String>())
+            return retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST)
+        } catch (e: Exception) {
+            Log.d("create_TN", "Fail to Create")
+            errorController.setErrorState(-1)
+        } finally {
+            try{
+                retriever.release()
+            } catch (e: Exception) {
+                errorController.setErrorState(-1)
+            }
+        }
+        return null
     }
 }

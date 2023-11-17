@@ -30,9 +30,8 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi
 ): EmojiRepository {
     override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
-//        val fetchEmojiListDto = FetchEmojiListDto(1, 0, 10)
         try {
-            val response = emojiApi.fetchEmojiList(1, 1, 10)
+            val response = emojiApi.fetchEmojiList(1, 1, 5)
 
             if(response.isSuccessful && response.body() != null) {
                 Log.d("Fetch_E_L", "Successfully fetched ${response.body()!!.size} emojis")
