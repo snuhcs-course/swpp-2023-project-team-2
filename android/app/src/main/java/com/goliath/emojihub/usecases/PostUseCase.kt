@@ -7,10 +7,14 @@ import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 sealed interface PostUseCase {
+    val postList: StateFlow<PagingData<Post>>
+    suspend fun updatePostList(data: PagingData<Post>)
     suspend fun fetchPostList(): Flow<PagingData<Post>>
     suspend fun uploadPost(content: String): Boolean
     suspend fun getPostWithId(id: String)
@@ -21,6 +25,14 @@ class PostUseCaseImpl @Inject constructor(
     private val repository: PostRepository,
     private val errorController: ApiErrorController
 ): PostUseCase {
+
+    private val _postList = MutableStateFlow<PagingData<Post>>(PagingData.empty())
+    override val postList: StateFlow<PagingData<Post>>
+        get() = _postList
+
+    override suspend fun updatePostList(data: PagingData<Post>) {
+        _postList.emit(data)
+    }
 
     override suspend fun fetchPostList(): Flow<PagingData<Post>> {
         return repository.fetchPostList().map { it.map { dto -> Post(dto) } }
