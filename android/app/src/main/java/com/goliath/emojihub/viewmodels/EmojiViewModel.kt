@@ -40,7 +40,12 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
+    fun createEmoji(videoUri: Uri): List<CreatedEmoji>?
+    {
+        viewModelScope.launch {
+            val createdEmojis = emojiUseCase.createEmoji(videoUri)
+            Log.d("Create_Emoji", "VIEWMODEL DONE: $createdEmojis")
+        }
         return emojiUseCase.createEmoji(videoUri)
     }
 
