@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
-import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +40,7 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    fun createEmoji(videoUri: Uri): CreatedEmoji? {
+    fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
         return emojiUseCase.createEmoji(videoUri)
     }
 

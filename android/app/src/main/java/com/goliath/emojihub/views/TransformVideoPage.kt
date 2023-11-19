@@ -58,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var resultEmoji by remember { mutableStateOf<CreatedEmoji?>(null) }
+    var resultEmoji by remember { mutableStateOf<List<CreatedEmoji>?>(null) }
 
     Scaffold(
         topBar = {
@@ -98,8 +98,9 @@ fun TransformVideoPage(
                                 val videoFile = File(realPath)
                                 Log.d("TransformVideoPage", "videoPath: $realPath")
                                 coroutineScope.launch {
+                                    // FIXME: add choose emoji dialog from topK emojis
                                     val success = viewModel.uploadEmoji(
-                                        resultEmoji!!.emojiUnicode, resultEmoji!!.emojiClassName, videoFile
+                                        resultEmoji!![0].emojiUnicode, resultEmoji!![0].emojiClassName, videoFile
                                     )
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
@@ -136,11 +137,11 @@ fun TransformVideoPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!!.emojiUnicode.toEmoji(),
+                        text = resultEmoji!![0].emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = resultEmoji!!.emojiClassName,
+                        text = resultEmoji!![0].emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (

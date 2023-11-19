@@ -10,7 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface X3dRepository {
-    fun createEmoji(videoUri: Uri): CreatedEmoji?
+    fun createEmoji(videoUri: Uri): List<CreatedEmoji>?
 }
 
 @Singleton
@@ -19,10 +19,11 @@ class X3dRepositoryImpl @Inject constructor(
 ): X3dRepository {
     companion object{
         const val SCORE_THRESHOLD = 0.4F
+        // FIXME: Default emojis should be topK different emojis
         const val DEFAULT_EMOJI_NAME = "love it"
         const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
-    override fun createEmoji(videoUri: Uri): CreatedEmoji? {
+    override fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
             ?: return null
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
@@ -40,16 +41,18 @@ class X3dRepositoryImpl @Inject constructor(
     }
 
     private fun predictEmojiClass(
-        x3dModule: Module, videoTensor: Tensor,
-        classNameFilePath: String, classUnicodeFilePath: String
-    ): CreatedEmoji? {
-        val (maxScoreIdx, maxScore) = x3dDataSource.runInference(x3dModule, videoTensor)
-        if (maxScore < SCORE_THRESHOLD) {
+        x3dModule: Module,
+        videoTensor: Tensor,
+        classNameFilePath: String,
+        classUnicodeFilePath: String
+    ): List<CreatedEmoji>? {
+        val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor)
+        if (inferenceResults.isEmpty() || inferenceResults[0].score < SCORE_THRESHOLD) {
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
-            return CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE)
+            return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))
         }
         return x3dDataSource.indexToEmojiInfo(
-            maxScoreIdx, classNameFilePath, classUnicodeFilePath
+            inferenceResults, classNameFilePath, classUnicodeFilePath
         )
     }
 }

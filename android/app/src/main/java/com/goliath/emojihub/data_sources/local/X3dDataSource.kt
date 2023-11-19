@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.X3dInferenceResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import org.pytorch.IValue
@@ -26,12 +27,12 @@ interface X3dDataSource {
     ): Pair<String, String>?
     fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
-    fun runInference(x3dModule: Module, videoTensor: Tensor): Pair<Int, Float>
+    fun runInference(x3dModule: Module, videoTensor: Tensor): List<X3dInferenceResult>
     fun indexToEmojiInfo(
-        maxScoreIdx: Int,
+        inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): CreatedEmoji?
+    ): List<CreatedEmoji>?
 }
 
 @Singleton
@@ -54,12 +55,13 @@ class X3dDataSourceImpl @Inject constructor(
         private const val SIDE_SIZE = 160
         val MEAN = floatArrayOf(0.45F, 0.45F, 0.45F)
         val STD = floatArrayOf(0.225F, 0.225F, 0.225F)
-        const val CROP_SIZE = 160
-        const val NUM_CHANNELS = 3
+        private const val CROP_SIZE = 160
+        private const val NUM_CHANNELS = 3
         private const val FRAMES_PER_SECOND = 30
         private const val SAMPLING_RATE = 6
-        const val COUNT_OF_FRAMES_PER_INFERENCE = 13
+        private const val COUNT_OF_FRAMES_PER_INFERENCE = 13
         private const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
+        private const val topK = 3
     }
 
     override fun loadModule(moduleName: String): Module? {
@@ -162,31 +164,34 @@ class X3dDataSourceImpl @Inject constructor(
         return null
     }
 
-    override fun runInference(x3dModule: Module, videoTensor: Tensor): Pair<Int, Float> {
+    override fun runInference(x3dModule: Module, videoTensor: Tensor): List<X3dInferenceResult> {
         val outputTensor = x3dModule.forward(IValue.from(videoTensor)).toTensor()
         val logits: FloatArray = outputTensor.dataAsFloatArray
         val scores = softMax(logits)
-        // for debug
+
         val sortedScores = scores.withIndex().toSortedSet(
             compareBy<IndexedValue<Float>>({ it.value },{ it.index }).reversed()
         )
-        Log.i("X3dDataSource", "sortedScores: $sortedScores")
-        val (maxScoreIdx, maxScore) = sortedScores.first()
-        Log.i("X3dDataSource", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
-        return Pair(maxScoreIdx, maxScore)
+        val topKScores = sortedScores.take(topK)
+        Log.i("X3dDataSource", "topKScores: $topKScores")
+        return topKScores.map { X3dInferenceResult(it.index, it.value) }
     }
 
     override fun indexToEmojiInfo(
-        maxScoreIdx: Int,
+        inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): CreatedEmoji? {
-        // TODO: after fine-tuning, map index to emoji unicode by 19 classes
-        val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
-            .getString(maxScoreIdx.toString()) ?: return null
-        val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
-            .getString(maxScoreClassName) ?: return null
-        return CreatedEmoji(maxScoreClassName, maxScoreClassUnicode)
+    ): List<CreatedEmoji>? {
+        val classNameJSONObject = JSONObject(File(classNameFilePath).readText())
+        val classUnicodeJSONObject = JSONObject(File(classUnicodeFilePath).readText())
+
+        val createdEmojis = mutableListOf<CreatedEmoji>()
+        for (result in inferenceResults) {
+            val className = classNameJSONObject.getString(result.scoreIdx.toString()) ?: return null
+            val classUnicode = classUnicodeJSONObject.getString(className) ?: return null
+            createdEmojis.add(CreatedEmoji(className, classUnicode))
+        }
+        return createdEmojis
     }
 
     fun assetFilePath(assetName: String): String {
