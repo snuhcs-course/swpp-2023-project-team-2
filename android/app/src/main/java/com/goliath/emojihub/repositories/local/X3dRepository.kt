@@ -3,13 +3,14 @@ package com.goliath.emojihub.repositories.local
 import android.net.Uri
 import android.util.Log
 import com.goliath.emojihub.data_sources.local.X3dDataSource
+import com.goliath.emojihub.models.CreatedEmoji
 import org.pytorch.Module
 import org.pytorch.Tensor
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface X3dRepository {
-    fun createEmoji(videoUri: Uri): Pair<String, String>?
+    fun createEmoji(videoUri: Uri): CreatedEmoji?
 }
 
 @Singleton
@@ -21,7 +22,7 @@ class X3dRepositoryImpl @Inject constructor(
         const val DEFAULT_EMOJI_NAME = "love it"
         const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
-    override fun createEmoji(videoUri: Uri): Pair<String, String>? {
+    override fun createEmoji(videoUri: Uri): CreatedEmoji? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
             ?: return null
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
@@ -41,11 +42,11 @@ class X3dRepositoryImpl @Inject constructor(
     private fun predictEmojiClass(
         x3dModule: Module, videoTensor: Tensor,
         classNameFilePath: String, classUnicodeFilePath: String
-    ): Pair<String, String>? {
+    ): CreatedEmoji? {
         val (maxScoreIdx, maxScore) = x3dDataSource.runInference(x3dModule, videoTensor)
         if (maxScore < SCORE_THRESHOLD) {
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
-            return Pair(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE)
+            return CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE)
         }
         return x3dDataSource.indexToEmojiInfo(
             maxScoreIdx, classNameFilePath, classUnicodeFilePath

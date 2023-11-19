@@ -3,6 +3,7 @@ package com.goliath.emojihub.usecases
 import android.net.Uri
 import android.util.Log
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 interface EmojiUseCase {
     val emojiListState: StateFlow<List<EmojiDto>>
     suspend fun fetchEmojiList(numInt: Int)
-    fun createEmoji(videoUri: Uri): Pair<String, String>?
+    fun createEmoji(videoUri: Uri): CreatedEmoji?
 
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
@@ -47,7 +48,7 @@ class EmojiUseCaseImpl @Inject constructor(
         }
     }
 
-    override fun createEmoji(videoUri: Uri): Pair<String, String>? {
+    override fun createEmoji(videoUri: Uri): CreatedEmoji? {
         return model.createEmoji(videoUri)
     }
 

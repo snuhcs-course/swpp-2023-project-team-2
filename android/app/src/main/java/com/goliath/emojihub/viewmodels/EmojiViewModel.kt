@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.usecases.EmojiUseCase
@@ -40,7 +41,7 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    fun createEmoji(videoUri: Uri): Pair<String, String>? {
+    fun createEmoji(videoUri: Uri): CreatedEmoji? {
         return emojiUseCase.createEmoji(videoUri)
     }
 

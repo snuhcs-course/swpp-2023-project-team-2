@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import com.goliath.emojihub.models.CreatedEmoji
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import org.pytorch.IValue
@@ -30,8 +31,7 @@ interface X3dDataSource {
         maxScoreIdx: Int,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): Pair<String, String>?
-    fun assetFilePath(assetName: String): String
+    ): CreatedEmoji?
 }
 
 @Singleton
@@ -118,7 +118,7 @@ class X3dDataSourceImpl @Inject constructor(
 
             val inTensorBuffer = Tensor.allocateFloatBuffer(MODEL_INPUT_SIZE)
             // uniformly sample from videoTensor
-//            val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
+            // val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
             val frameInterval = ((SAMPLING_RATE * 1000) / FRAMES_PER_SECOND).toLong()
             for (i in 0 until COUNT_OF_FRAMES_PER_INFERENCE) {
                 val frameTime = i * frameInterval
@@ -180,16 +180,16 @@ class X3dDataSourceImpl @Inject constructor(
         maxScoreIdx: Int,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): Pair<String, String>? {
+    ): CreatedEmoji? {
         // TODO: after fine-tuning, map index to emoji unicode by 19 classes
         val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
             .getString(maxScoreIdx.toString()) ?: return null
         val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
             .getString(maxScoreClassName) ?: return null
-        return Pair(maxScoreClassName, maxScoreClassUnicode)
+        return CreatedEmoji(maxScoreClassName, maxScoreClassUnicode)
     }
 
-    override fun assetFilePath(assetName: String): String {
+    fun assetFilePath(assetName: String): String {
         val file = File(context.filesDir, assetName.split("/").last())
         // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
 //        if (file.exists() && file.length() > 0) {

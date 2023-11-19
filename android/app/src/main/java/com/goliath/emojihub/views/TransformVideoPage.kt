@@ -34,6 +34,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.extensions.toEmoji
+import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.views.components.CustomDialog
 import kotlinx.coroutines.launch
@@ -57,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var resultEmoji by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var resultEmoji by remember { mutableStateOf<CreatedEmoji?>(null) }
 
     Scaffold(
         topBar = {
@@ -84,7 +85,9 @@ fun TransformVideoPage(
                                 var realPath: String? = null
                                 // Query to get the actual file path
                                 val projection = arrayOf(MediaStore.Images.Media.DATA)
-                                val cursor = context.contentResolver.query(viewModel.videoUri, projection, null, null, null)
+                                val cursor = context.contentResolver.query(
+                                    viewModel.videoUri, projection, null, null, null
+                                )
 
                                 cursor?.use {
                                     val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
@@ -95,7 +98,9 @@ fun TransformVideoPage(
                                 val videoFile = File(realPath)
                                 Log.d("TransformVideoPage", "videoPath: $realPath")
                                 coroutineScope.launch {
-                                    val success = viewModel.uploadEmoji(resultEmoji!!.second, resultEmoji!!.first, videoFile)
+                                    val success = viewModel.uploadEmoji(
+                                        resultEmoji!!.emojiUnicode, resultEmoji!!.emojiClassName, videoFile
+                                    )
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
                                         showSuccessDialog = true
@@ -131,11 +136,11 @@ fun TransformVideoPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!!.second.toEmoji(),
+                        text = resultEmoji!!.emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = resultEmoji!!.first,
+                        text = resultEmoji!!.emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (
