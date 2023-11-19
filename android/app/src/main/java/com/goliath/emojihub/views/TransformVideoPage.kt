@@ -58,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var resultEmoji by remember { mutableStateOf<List<CreatedEmoji>?>(null) }
+    var createdEmojiList by remember { mutableStateOf<List<CreatedEmoji>?>(null) }
 
     Scaffold(
         topBar = {
@@ -77,10 +77,10 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            if (resultEmoji == null) {
+                            if (createdEmojiList == null) {
                                 coroutineScope.launch {
-                                    resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-                                    Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                                    createdEmojiList = viewModel.createEmoji(viewModel.videoUri)
+                                    Log.d("TransformVideoPage", "createdEmojis: $createdEmojiList")
                                 }
                             }
                             else {
@@ -102,7 +102,7 @@ fun TransformVideoPage(
                                 coroutineScope.launch {
                                     // FIXME: add choose emoji dialog from topK emojis
                                     val success = viewModel.uploadEmoji(
-                                        resultEmoji!![0].emojiUnicode, resultEmoji!![0].emojiClassName, videoFile
+                                        createdEmojiList!![0].emojiUnicode, createdEmojiList!![0].emojiClassName, videoFile
                                     )
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
@@ -112,7 +112,7 @@ fun TransformVideoPage(
                             }
                         },
                     ) {
-                        Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
+                        Text(text = if (createdEmojiList != null) "업로드" else "변환", color = Color.Black)
                     }
                 }
             )
@@ -132,18 +132,18 @@ fun TransformVideoPage(
                     .fillMaxSize()
             )
 
-            if (resultEmoji != null) {
+            if (createdEmojiList != null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!![0].emojiUnicode.toEmoji(),
+                        text = createdEmojiList!![0].emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = resultEmoji!![0].emojiClassName,
+                        text = createdEmojiList!![0].emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (
