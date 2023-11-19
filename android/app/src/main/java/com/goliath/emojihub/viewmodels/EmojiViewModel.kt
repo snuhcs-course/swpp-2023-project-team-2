@@ -11,10 +11,12 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -29,6 +31,8 @@ class EmojiViewModel @Inject constructor(
     private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
     val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
 
+    private val _topK = 3
+
     fun fetchEmojiList(numInt: Int)
     {
         viewModelScope.launch {
@@ -40,13 +44,12 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    fun createEmoji(videoUri: Uri): List<CreatedEmoji>?
-    {
-        viewModelScope.launch {
-            val createdEmojis = emojiUseCase.createEmoji(videoUri)
-            Log.d("Create_Emoji", "VIEWMODEL DONE: $createdEmojis")
+    suspend fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
+        return withContext(Dispatchers.IO) {
+            val createdEmojiList = emojiUseCase.createEmoji(videoUri, _topK)
+            Log.d("EmojiViewModel", "Done create emoji: $createdEmojiList")
+            createdEmojiList
         }
-        return emojiUseCase.createEmoji(videoUri)
     }
 
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {

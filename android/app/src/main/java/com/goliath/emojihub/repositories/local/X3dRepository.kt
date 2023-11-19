@@ -10,7 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface X3dRepository {
-    fun createEmoji(videoUri: Uri): List<CreatedEmoji>?
+    suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>?
 }
 
 @Singleton
@@ -23,7 +23,7 @@ class X3dRepositoryImpl @Inject constructor(
         const val DEFAULT_EMOJI_NAME = "love it"
         const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
-    override fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
+    override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>? {
         val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
             ?: return null
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
@@ -31,7 +31,9 @@ class X3dRepositoryImpl @Inject constructor(
             "hagrid_classname_to_unicode.json"
         )?: return null
         val videoTensor = loadVideoTensor(videoUri) ?: return null
-        return predictEmojiClass(x3dModule, videoTensor, classNameFilePath, classUnicodeFilePath)
+        return predictEmojiClass(
+            x3dModule, videoTensor, classNameFilePath, classUnicodeFilePath, topK
+        )
     }
 
     private fun loadVideoTensor(videoUri: Uri): Tensor? {
@@ -44,9 +46,10 @@ class X3dRepositoryImpl @Inject constructor(
         x3dModule: Module,
         videoTensor: Tensor,
         classNameFilePath: String,
-        classUnicodeFilePath: String
+        classUnicodeFilePath: String,
+        topK: Int
     ): List<CreatedEmoji>? {
-        val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor)
+        val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor, topK)
         if (inferenceResults.isEmpty() || inferenceResults[0].score < SCORE_THRESHOLD) {
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
             return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))

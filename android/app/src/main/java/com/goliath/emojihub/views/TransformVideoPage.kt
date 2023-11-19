@@ -78,8 +78,10 @@ fun TransformVideoPage(
                     TextButton(
                         onClick = {
                             if (resultEmoji == null) {
-                                resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-                                Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                                coroutineScope.launch {
+                                    resultEmoji = viewModel.createEmoji(viewModel.videoUri)
+                                    Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                                }
                             }
                             else {
                                 var realPath: String? = null

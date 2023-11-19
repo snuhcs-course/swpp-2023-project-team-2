@@ -27,7 +27,7 @@ interface X3dDataSource {
     ): Pair<String, String>?
     fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
-    fun runInference(x3dModule: Module, videoTensor: Tensor): List<X3dInferenceResult>
+    fun runInference(x3dModule: Module, videoTensor: Tensor, topK: Int): List<X3dInferenceResult>
     fun indexToEmojiInfo(
         inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
@@ -61,7 +61,6 @@ class X3dDataSourceImpl @Inject constructor(
         private const val SAMPLING_RATE = 6
         private const val COUNT_OF_FRAMES_PER_INFERENCE = 13
         private const val MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * NUM_CHANNELS * CROP_SIZE * CROP_SIZE
-        private const val topK = 3
     }
 
     override fun loadModule(moduleName: String): Module? {
@@ -164,7 +163,11 @@ class X3dDataSourceImpl @Inject constructor(
         return null
     }
 
-    override fun runInference(x3dModule: Module, videoTensor: Tensor): List<X3dInferenceResult> {
+    override fun runInference(
+        x3dModule: Module,
+        videoTensor: Tensor,
+        topK: Int
+    ): List<X3dInferenceResult> {
         val outputTensor = x3dModule.forward(IValue.from(videoTensor)).toTensor()
         val logits: FloatArray = outputTensor.dataAsFloatArray
         val scores = softMax(logits)
@@ -185,13 +188,13 @@ class X3dDataSourceImpl @Inject constructor(
         val classNameJSONObject = JSONObject(File(classNameFilePath).readText())
         val classUnicodeJSONObject = JSONObject(File(classUnicodeFilePath).readText())
 
-        val createdEmojis = mutableListOf<CreatedEmoji>()
+        val createdEmojiList = mutableListOf<CreatedEmoji>()
         for (result in inferenceResults) {
             val className = classNameJSONObject.getString(result.scoreIdx.toString()) ?: return null
             val classUnicode = classUnicodeJSONObject.getString(className) ?: return null
-            createdEmojis.add(CreatedEmoji(className, classUnicode))
+            createdEmojiList.add(CreatedEmoji(className, classUnicode))
         }
-        return createdEmojis
+        return createdEmojiList
     }
 
     fun assetFilePath(assetName: String): String {

@@ -19,8 +19,7 @@ import javax.inject.Singleton
 interface EmojiUseCase {
     val emojiListState: StateFlow<List<EmojiDto>>
     suspend fun fetchEmojiList(numInt: Int)
-    fun createEmoji(videoUri: Uri): List<CreatedEmoji>?
-
+    suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>?
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
     suspend fun unSaveEmoji(id: String): Boolean
@@ -28,8 +27,8 @@ interface EmojiUseCase {
 
 @Singleton
 class EmojiUseCaseImpl @Inject constructor(
-    private val repository: EmojiRepository,
-    private val model: X3dRepository,
+    private val emojiRepository: EmojiRepository,
+    private val x3dRepository: X3dRepository,
     private val errorController: ApiErrorController
 ): EmojiUseCase {
 
@@ -39,7 +38,7 @@ class EmojiUseCaseImpl @Inject constructor(
 
     override suspend fun fetchEmojiList(numInt: Int) {
         try{
-            val emojiList = repository.fetchEmojiList(numInt)
+            val emojiList = emojiRepository.fetchEmojiList(numInt)
             _emojiListState.emit(emojiList)
             Log.d("Fetch_E_L", "USECASE DONE: $emojiList")
         } catch (e: Exception) {
@@ -47,17 +46,17 @@ class EmojiUseCaseImpl @Inject constructor(
         }
     }
 
-    override fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
-        return model.createEmoji(videoUri)
+    override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>? {
+        return x3dRepository.createEmoji(videoUri, topK)
     }
 
     override suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
         val dto = UploadEmojiDto(emojiUnicode, emojiLabel)
-        return repository.uploadEmoji(videoFile, dto)
+        return emojiRepository.uploadEmoji(videoFile, dto)
     }
 
     override suspend fun saveEmoji(id: String): Boolean {
-        val response = repository.saveEmoji(id)
+        val response = emojiRepository.saveEmoji(id)
         response.let {
             if (it.isSuccessful) {
                 Log.d("Emoji Saved", "Emoji Id: $id")
@@ -70,7 +69,7 @@ class EmojiUseCaseImpl @Inject constructor(
     }
 
     override suspend fun unSaveEmoji(id: String): Boolean {
-        val response = repository.unSaveEmoji(id)
+        val response = emojiRepository.unSaveEmoji(id)
         response.let {
             if (it.isSuccessful) {
                 Log.d("Emoji Saved", "Emoji Id: $id")
