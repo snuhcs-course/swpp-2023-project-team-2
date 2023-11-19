@@ -1,4 +1,5 @@
 package com.goliath.emojihub.views
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -26,12 +26,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.models.createDummyEmoji
@@ -49,14 +49,13 @@ fun FeedPage() {
     val navController = LocalNavController.current
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
+
     val emojiList = (1..10).map { createDummyEmoji() }
+    val postList = postViewModel.postList.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit)
-    {
-        postViewModel.fetchPostList(10)
+    LaunchedEffect(Unit) {
+        postViewModel.fetchPostList()
     }
-
-    val postList = postViewModel.postList.collectAsState().value
 
     Column (
         Modifier.background(Color.White)
@@ -81,9 +80,11 @@ fun FeedPage() {
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(postList, key = {it.id}) { post ->
-                    PostCell(post = post)
-                    Divider(color = EmojiHubDividerColor, thickness = 0.5.dp)
+                items(postList.itemCount) { index ->
+                    postList[index]?.let {
+                        PostCell(post = it)
+                        Divider(color = EmojiHubDividerColor, thickness = 0.5.dp)
+                    }
                 }
             }
         }
