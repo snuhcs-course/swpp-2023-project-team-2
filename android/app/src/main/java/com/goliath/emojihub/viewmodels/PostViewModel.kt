@@ -15,7 +15,7 @@ class PostViewModel @Inject constructor(
 
     val postList = postUseCase.postList
 
-    init {
+    suspend fun fetchPostList() {
         viewModelScope.launch {
             postUseCase.fetchPostList()
                 .cachedIn(viewModelScope)

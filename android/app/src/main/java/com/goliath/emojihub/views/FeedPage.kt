@@ -25,6 +25,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,10 @@ fun FeedPage() {
 
     val emojiList = (1..10).map { createDummyEmoji() }
     val postList = postViewModel.postList.collectAsLazyPagingItems()
+
+    LaunchedEffect(Unit) {
+        postViewModel.fetchPostList()
+    }
 
     Column (
         Modifier.background(Color.White)
