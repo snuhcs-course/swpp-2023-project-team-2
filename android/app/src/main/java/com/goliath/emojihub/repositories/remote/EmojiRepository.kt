@@ -1,17 +1,22 @@
 package com.goliath.emojihub.repositories.remote
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.util.Log
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.FetchEmojiListDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,11 +32,12 @@ interface EmojiRepository {
 
 @Singleton
 class EmojiRepositoryImpl @Inject constructor(
-    private val emojiApi: EmojiApi
+    private val emojiApi: EmojiApi,
+    @ApplicationContext private val context: Context
 ): EmojiRepository {
     override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
         try {
-            val response = emojiApi.fetchEmojiList(1, 1, 5)
+            val response = emojiApi.fetchEmojiList(1, 1, 6)
 
             if(response.isSuccessful && response.body() != null) {
                 Log.d("Fetch_E_L", "Successfully fetched ${response.body()!!.size} emojis")
@@ -57,8 +63,13 @@ class EmojiRepositoryImpl @Inject constructor(
         val videoFileRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile)
         val videoFileMultipartBody = MultipartBody.Part.createFormData("file", videoFile.name, videoFileRequestBody)
 
+        val thumbnailFile = createVideoThumbnail(context, videoFile)
+
+        val thumbnailRequestBody = RequestBody.create(MediaType.parse("image/jpg"), thumbnailFile)
+        val thumbnailMultipartBody = MultipartBody.Part.createFormData("thumbnail", thumbnailFile?.name, thumbnailRequestBody)
+
         return try {
-            emojiApi.uploadEmoji(videoFileMultipartBody, emojiDtoRequestBody)
+            emojiApi.uploadEmoji(videoFileMultipartBody, thumbnailMultipartBody, emojiDtoRequestBody)
             true
         }
         catch (e: IOException) {
@@ -83,5 +94,29 @@ class EmojiRepositoryImpl @Inject constructor(
 
     override suspend fun deleteEmoji(id: String): Response<Unit> {
         TODO("Not yet implemented")
+    }
+
+    private fun createVideoThumbnail(context: Context, videoFile: File): File? {
+        val retriever = MediaMetadataRetriever()
+        try {
+            retriever.setDataSource(videoFile.absolutePath)
+            val bitmap = retriever.frameAtTime
+
+            bitmap?.let {
+                // Create a temporary file to store the thumbnail
+                val thumbnailFile = File(context.cacheDir, "thumbnail_${videoFile.name}.jpg")
+                FileOutputStream(thumbnailFile).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out) // Compress and write to file
+                }
+                Log.d("create_TN", "Thumbnail created: ${thumbnailFile.absolutePath}")
+                return thumbnailFile
+            }
+        } catch (e: Exception) {
+            Log.d("create_TN", "ERROR...")
+            e.printStackTrace()
+        } finally {
+            retriever.release()
+        }
+        return null
     }
 }

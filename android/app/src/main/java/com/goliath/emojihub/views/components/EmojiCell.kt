@@ -50,9 +50,9 @@ fun EmojiCell (
 
     val viewModel = hiltViewModel<EmojiViewModel>()
 
-    LaunchedEffect(emoji.videoLink) {
-        viewModel.createVideoThumbnail(emoji.videoLink, width, height)
-    }
+//    LaunchedEffect(emoji.videoLink) {
+//        viewModel.createVideoThumbnail(emoji.videoLink, width, height)
+//    }
 
     val thumbnailBitmap = viewModel.thumbnailState.collectAsState().value
 
@@ -64,13 +64,14 @@ fun EmojiCell (
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp
     ) {
-        thumbnailBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Video Thumbnail",
-                modifier = Modifier.fillMaxSize()
-            )
-        } ?: Box(Modifier.fillMaxSize().background(Black).alpha(0.25F))
+//        thumbnailBitmap?.let { bitmap ->
+//            Image(
+//                bitmap = bitmap.asImageBitmap(),
+//                contentDescription = "Video Thumbnail",
+//                modifier = Modifier.fillMaxSize()
+//            )
+//        } ?:
+        Box(Modifier.fillMaxSize().background(Black).alpha(0.25F))
 
         Box(
             modifier = Modifier.padding(8.dp)

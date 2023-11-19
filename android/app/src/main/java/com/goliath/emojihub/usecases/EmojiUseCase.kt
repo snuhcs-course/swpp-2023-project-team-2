@@ -3,7 +3,7 @@ package com.goliath.emojihub.usecases
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import android.content.ContentResolver
+import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -31,8 +31,6 @@ interface EmojiUseCase {
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
     suspend fun unSaveEmoji(id: String): Boolean
-
-    suspend fun createVideoThumbnail(videoUri: String, width: Int, height: Int): Bitmap?
 }
 
 @Singleton
@@ -90,23 +88,20 @@ class EmojiUseCaseImpl @Inject constructor(
         }
     }
 
-    override suspend fun createVideoThumbnail(videoUri: String, width: Int, height: Int): Bitmap? {
-        val retriever = MediaMetadataRetriever()
-
-        try {
-            Log.d("create_TN", "Created : ${videoUri}")
-            retriever.setDataSource(videoUri, HashMap<String, String>())
-            return retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST)
-        } catch (e: Exception) {
-            Log.d("create_TN", "Fail to Create")
-            errorController.setErrorState(-1)
-        } finally {
-            try{
-                retriever.release()
-            } catch (e: Exception) {
-                errorController.setErrorState(-1)
-            }
-        }
-        return null
-    }
+//    override fun createVideoThumbnail(videoFile: File): File? {
+//        val retriever = MediaMetadataRetriever()
+//        try {
+//            retriever.setDataSource(videoFile.absolutePath)
+//
+//            val thumbnailBitmap = retriever.getFrameAtTime(1000000.toLong(), MediaMetadataRetriever.OPTION_CLOSEST)
+//            val thumbnail = thumbnailBitmap?.let { bitmap ->
+//                val thumbnailFile = bitmapToFile(ti)
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return null
+//        } finally {
+//            retriever.release()
+//        }
+//    }
 }

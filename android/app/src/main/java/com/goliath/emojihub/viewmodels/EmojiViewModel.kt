@@ -60,9 +60,9 @@ class EmojiViewModel @Inject constructor(
         emojiUseCase.saveEmoji(id)
     }
 
-    fun createVideoThumbnail(videoUri: String, width: Int, height: Int) {
-        viewModelScope.launch {
-            _thumbnailState.value = emojiUseCase.createVideoThumbnail(videoUri, width, height)
-        }
-    }
+//    fun createVideoThumbnail(videoUri: String, width: Int, height: Int) {
+//        viewModelScope.launch {
+//            _thumbnailState.value = emojiUseCase.createVideoThumbnail(videoUri, width, height)
+//        }
+//    }
 }
