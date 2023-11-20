@@ -58,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var createdEmojiList by remember { mutableStateOf<List<CreatedEmoji>?>(null) }
+    var createdEmojiList by remember { mutableStateOf<List<CreatedEmoji>>(emptyList()) }
 
     Scaffold(
         topBar = {
@@ -77,7 +77,7 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            if (createdEmojiList == null) {
+                            if (createdEmojiList.isEmpty()) {
                                 coroutineScope.launch {
                                     createdEmojiList = viewModel.createEmoji(viewModel.videoUri)
                                     Log.d("TransformVideoPage", "createdEmojis: $createdEmojiList")
@@ -102,7 +102,9 @@ fun TransformVideoPage(
                                 coroutineScope.launch {
                                     // FIXME: add choose emoji dialog from topK emojis
                                     val success = viewModel.uploadEmoji(
-                                        createdEmojiList!![0].emojiUnicode, createdEmojiList!![0].emojiClassName, videoFile
+                                        createdEmojiList[0].emojiUnicode,
+                                        createdEmojiList[0].emojiClassName,
+                                        videoFile
                                     )
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
@@ -112,7 +114,7 @@ fun TransformVideoPage(
                             }
                         },
                     ) {
-                        Text(text = if (createdEmojiList != null) "업로드" else "변환", color = Color.Black)
+                        Text(text = if (createdEmojiList.isNotEmpty()) "업로드" else "변환", color = Color.Black)
                     }
                 }
             )
@@ -132,18 +134,18 @@ fun TransformVideoPage(
                     .fillMaxSize()
             )
 
-            if (createdEmojiList != null) {
+            if (createdEmojiList.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = createdEmojiList!![0].emojiUnicode.toEmoji(),
+                        text = createdEmojiList[0].emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = createdEmojiList!![0].emojiClassName,
+                        text = createdEmojiList[0].emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (

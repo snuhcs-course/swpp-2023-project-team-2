@@ -44,7 +44,7 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    suspend fun createEmoji(videoUri: Uri): List<CreatedEmoji>? {
+    suspend fun createEmoji(videoUri: Uri): List<CreatedEmoji> {
         return withContext(Dispatchers.IO) {
             val createdEmojiList = emojiUseCase.createEmoji(videoUri, _topK)
             Log.d("EmojiViewModel", "Done create emoji: $createdEmojiList")

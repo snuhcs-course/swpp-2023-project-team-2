@@ -19,7 +19,7 @@ import javax.inject.Singleton
 interface EmojiUseCase {
     val emojiListState: StateFlow<List<EmojiDto>>
     suspend fun fetchEmojiList(numInt: Int)
-    suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>?
+    suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
     suspend fun unSaveEmoji(id: String): Boolean
@@ -46,7 +46,7 @@ class EmojiUseCaseImpl @Inject constructor(
         }
     }
 
-    override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>? {
+    override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
         return x3dRepository.createEmoji(videoUri, topK)
     }
 
