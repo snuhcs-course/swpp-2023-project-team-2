@@ -52,7 +52,7 @@ jobs:
     - name: Execute remote commands
       run: |
         ssh -v ${{ secrets.SPRINGBOOT_USERNAME }}@${{ secrets.SPRINGBOOT_HOST_DNS }} \
-        "fuser -k 8080/tcp || true"
-        ssh -v ${{ secrets.SPRINGBOOT_USERNAME }}@${{ secrets.SPRINGBOOT_HOST_DNS }} \
-        "sudo nohup /usr/bin/java -jar ${{ secrets.SPRINGBOOT_TARGET_DIR }}/*.jar\
-         > {{ secrets.SPRINGBOOT_TARGET_DIR }}/app.log 2>&1 &"
+        "sudo lsof -t -i tcp:8080 | sargs sudo kill -9 || true && \
+        cd ${{ secrets.SPRINGBOOT_ROOT_DIR }} && pwd && \
+        sudo nohup /usr/bin/java -jar ${{ secrets.SPRINGBOOT_TARGET_DIR }}/*.jar \
+        > ${{ secrets.SPRINGBOOT_ROOT_DIR }}/app.log 2>&1 &"
