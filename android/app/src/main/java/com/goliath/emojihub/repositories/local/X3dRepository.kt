@@ -24,11 +24,11 @@ class X3dRepositoryImpl @Inject constructor(
         const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
-        val x3dModule = x3dDataSource.loadModule("efficient_x3d_s_hagrid_float.pt")
+        val x3dModule = x3dDataSource.loadModule("Hagrid/efficient_x3d_s_hagrid_float.pt")
             ?: return emptyList()
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
-            "hagrid_id_to_classname.json",
-            "hagrid_classname_to_unicode.json"
+            "Hagrid/hagrid_id_to_classname.json",
+            "Hagrid/hagrid_classname_to_unicode.json"
         )?: return emptyList()
         val videoTensor = loadVideoTensor(videoUri) ?: return emptyList()
         return predictEmojiClass(
