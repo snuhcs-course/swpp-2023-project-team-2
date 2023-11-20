@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.goliath.emojihub.data_sources.local.X3dDataSourceImpl
+import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.X3dInferenceResult
 import com.goliath.emojihub.repositories.local.X3dRepositoryImpl
+import kotlinx.coroutines.runBlocking
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,7 +26,7 @@ import java.io.File
 @RunWith(AndroidJUnit4::class)
 class X3dDataSourceAndRepositoryImplTest {
     @Deprecated("Deprecated because now we use hagrid model instead of kinetics400 model")
-    fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
+    suspend fun createEmoji_archeryVideo_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dDataSourceImpl = X3dDataSourceImpl(appContext)
         val x3dRepositoryImpl = X3dRepositoryImpl(x3dDataSourceImpl)
@@ -38,10 +41,13 @@ class X3dDataSourceAndRepositoryImplTest {
         val sampleVideoAbsolutePath = x3dDataSourceImpl.assetFilePath("kinetics/archery.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
-        val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
+        var emojiInfo : List<CreatedEmoji>
+        runBlocking {
+            emojiInfo = x3dRepositoryImpl.createEmoji(videoUri, topK=1)
+        }
         Log.d("X3dRepositoryImplTest", "emojiInfo: $emojiInfo")
         assert(
-            Pair("archery", "U+1F3AF") == emojiInfo
+            CreatedEmoji("archery", "U+1F3AF") == emojiInfo[0]
         ){
             """
             Predicted class index is not 5. 
@@ -51,18 +57,21 @@ class X3dDataSourceAndRepositoryImplTest {
     }
 
     @Test
-    fun createEmoji_peaceVideo_returnPairOfClassNameAndUnicode() {
+    fun createEmoji_palmVideo_returnPairOfClassNameAndUnicode() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dDataSourceImpl = X3dDataSourceImpl(appContext)
         val x3dRepositoryImpl = X3dRepositoryImpl(x3dDataSourceImpl)
 
-        val sampleVideoAbsolutePath = x3dDataSourceImpl.assetFilePath("peace.mp4")
+        val sampleVideoAbsolutePath = x3dDataSourceImpl.assetFilePath("Hagrid/test_palm_video.mp4")
         val videoUri = Uri.fromFile(File(sampleVideoAbsolutePath))
 
-        val emojiInfo = x3dRepositoryImpl.createEmoji(videoUri)
+        var emojiInfo : List<CreatedEmoji>
+        runBlocking {
+            emojiInfo = x3dRepositoryImpl.createEmoji(videoUri, topK=1)
+        }
         Log.d("X3dRepositoryImplTest", "emojiInfo: $emojiInfo")
         assert(
-            Pair("peace", "U+270C") == emojiInfo
+            CreatedEmoji("palm", "U+1F64B") == emojiInfo[0]
         ) {
             """
             Predicted class index is not 10. 
@@ -113,7 +122,7 @@ class X3dDataSourceAndRepositoryImplTest {
     fun loadModule_efficientX3dsHagridFloat_returnModule() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dDataSourceImpl = X3dDataSourceImpl(appContext)
-        val module = x3dDataSourceImpl.loadModule("efficient_x3d_s_hagrid_float.pt")
+        val module = x3dDataSourceImpl.loadModule("Hagrid/efficient_x3d_s_hagrid_float.pt")
         assertTrue(module is Module)
     }
 
@@ -137,8 +146,8 @@ class X3dDataSourceAndRepositoryImplTest {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val x3dDataSourceImpl = X3dDataSourceImpl(appContext)
         val filePaths = x3dDataSourceImpl.checkAnnotationFilesExist(
-            "hagrid_id_to_classname.json",
-            "hagrid_classname_to_unicode.json"
+            "Hagrid/hagrid_id_to_classname.json",
+            "Hagrid/hagrid_classname_to_unicode.json"
         )
         assertEquals(
             Pair("/data/user/0/com.goliath.emojihub/files/hagrid_id_to_classname.json",
@@ -222,17 +231,17 @@ class X3dDataSourceAndRepositoryImplTest {
         }
         // run inference
         val startTime = System.currentTimeMillis()
-        val predictedClassInfo = x3dDataSourceImpl.runInference(x3dModule, inputVideoFrameTensors)
+        val predictedClassInfo = x3dDataSourceImpl.runInference(x3dModule, inputVideoFrameTensors, topK=1)
         val elapsedTime = System.currentTimeMillis() - startTime
         Log.i("X3dRepositoryImplTest", "elapsedTime: $elapsedTime ms")
 
-        assert (predictedClassInfo.second > X3dRepositoryImpl.SCORE_THRESHOLD) {
+        assert (predictedClassInfo[0].score > X3dRepositoryImpl.SCORE_THRESHOLD) {
             """
-            X3dRepositoryImplTest, Score of ${predictedClassInfo.second} is lower than 
+            X3dRepositoryImplTest, Score of ${predictedClassInfo[0].score} is lower than 
             threshold ${X3dRepositoryImpl.SCORE_THRESHOLD}
             """.trimMargin()
         }
-        assert(5 == predictedClassInfo.first) {
+        assert(5 == predictedClassInfo[0].scoreIdx) {
             """
             Predicted class index is not 5. 
             This error may be caused by the poor performance of the model.   
@@ -254,11 +263,15 @@ class X3dDataSourceAndRepositoryImplTest {
         }
         val classNameFilePath = filePaths.first
         val classUnicodeFilePath = filePaths.second
-        val emojiInfo = x3dDataSourceImpl.indexToEmojiInfo(0, classNameFilePath, classUnicodeFilePath)
+
+        val mockInferenceResults = listOf(X3dInferenceResult(0, 0.0f))
+        val emojiInfo = x3dDataSourceImpl.indexToEmojiInfo(
+            mockInferenceResults, classNameFilePath, classUnicodeFilePath
+        )
         assertEquals(
             // dummy emoji unicode is same as the class index
-            Pair("abseiling", "U+00000"),
-            emojiInfo
+            CreatedEmoji("abseiling", "U+00000"),
+            emojiInfo[0]
         )
     }
 }

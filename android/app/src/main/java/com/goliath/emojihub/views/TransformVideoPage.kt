@@ -34,6 +34,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.extensions.toEmoji
+import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.views.components.CustomDialog
 import kotlinx.coroutines.launch
@@ -57,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var resultEmoji by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var createdEmojiList by remember { mutableStateOf<List<CreatedEmoji>>(emptyList()) }
 
     Scaffold(
         topBar = {
@@ -76,15 +77,19 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            if (resultEmoji == null) {
-                                resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-                                Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                            if (createdEmojiList.isEmpty()) {
+                                coroutineScope.launch {
+                                    createdEmojiList = viewModel.createEmoji(viewModel.videoUri)
+                                    Log.d("TransformVideoPage", "createdEmojis: $createdEmojiList")
+                                }
                             }
                             else {
                                 var realPath: String? = null
                                 // Query to get the actual file path
                                 val projection = arrayOf(MediaStore.Images.Media.DATA)
-                                val cursor = context.contentResolver.query(viewModel.videoUri, projection, null, null, null)
+                                val cursor = context.contentResolver.query(
+                                    viewModel.videoUri, projection, null, null, null
+                                )
 
                                 cursor?.use {
                                     val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
@@ -95,7 +100,12 @@ fun TransformVideoPage(
                                 val videoFile = File(realPath)
                                 Log.d("TransformVideoPage", "videoPath: $realPath")
                                 coroutineScope.launch {
-                                    val success = viewModel.uploadEmoji(resultEmoji!!.second, resultEmoji!!.first, videoFile)
+                                    // FIXME: add choose emoji dialog from topK emojis
+                                    val success = viewModel.uploadEmoji(
+                                        createdEmojiList[0].emojiUnicode,
+                                        createdEmojiList[0].emojiClassName,
+                                        videoFile
+                                    )
                                     Log.d("TransformVideoPage", "success: $success")
                                     if (success) {
                                         showSuccessDialog = true
@@ -104,7 +114,7 @@ fun TransformVideoPage(
                             }
                         },
                     ) {
-                        Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
+                        Text(text = if (createdEmojiList.isNotEmpty()) "업로드" else "변환", color = Color.Black)
                     }
                 }
             )
@@ -124,18 +134,18 @@ fun TransformVideoPage(
                     .fillMaxSize()
             )
 
-            if (resultEmoji != null) {
+            if (createdEmojiList.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!!.second.toEmoji(),
+                        text = createdEmojiList[0].emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = resultEmoji!!.first,
+                        text = createdEmojiList[0].emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (
