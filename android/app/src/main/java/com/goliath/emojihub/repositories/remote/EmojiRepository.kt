@@ -3,7 +3,6 @@ package com.goliath.emojihub.repositories.remote
 import android.util.Log
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
-import com.goliath.emojihub.models.FetchEmojiListDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.google.gson.Gson
 import okhttp3.MediaType
@@ -64,12 +63,10 @@ class EmojiRepositoryImpl @Inject constructor(
         }
         catch (e: IOException) {
             Log.d("EmojiRepository", "IOException")
-            e.printStackTrace()
             false
         }
         catch (e: HttpException) {
             Log.d("EmojiRepository", "HttpException")
-            e.printStackTrace()
             false
         }
     }

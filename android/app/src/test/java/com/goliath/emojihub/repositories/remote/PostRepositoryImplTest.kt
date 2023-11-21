@@ -1,14 +1,20 @@
 package com.goliath.emojihub.repositories.remote
 
+import android.util.Log
+import androidx.paging.PagingData
 import com.goliath.emojihub.data_sources.api.PostApi
+import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
 import retrofit2.Response
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -17,7 +23,6 @@ import org.junit.runners.JUnit4
 class PostRepositoryImplTest {
     private val postApi = mockk<PostApi>()
     private val postRepositoryImpl = PostRepositoryImpl(postApi)
-
     private val samplePostDto = PostDto(
         id = "1234",
         createdAt = "2023.09.16",
@@ -28,11 +33,17 @@ class PostRepositoryImplTest {
         modifiedAt = "2023.10.23"
         //reaction = listOf("good", "check", "good")
     )
+    @Before
+    fun setUp() {
+        mockLogClass()
+    }
 
-    // @Test
+//    @Test
     fun fetchPostList_returnsFlowOfPagingDataOfPostDto() {
         // given
-        val samplePostResponseBody = List(5) { samplePostDto }
+        val postApi = spyk<PostApi>()
+        val numSamplePosts = 5
+        val samplePostResponseBody = List(numSamplePosts) { samplePostDto }
         every {
             runBlocking {
                 postApi.fetchPostList(any())
@@ -43,9 +54,16 @@ class PostRepositoryImplTest {
             postRepositoryImpl.fetchPostList()
         }
         // then
-        verify { runBlocking { postApi.fetchPostList(any()) } }
         var postCount = 0
-        TODO("NOT IMPLEMENTED YET")
+        val postList = mutableListOf<PagingData<PostDto>>(PagingData.empty())
+        runBlocking {
+            flowPagingPostData.collect {
+                postCount++
+                postList.add(it)
+            }
+        }
+        assertEquals(numSamplePosts, postList.size)
+        assertEquals(numSamplePosts, postCount)
     }
 
     @Test
@@ -74,7 +92,7 @@ class PostRepositoryImplTest {
             runBlocking {
                 postApi.uploadPost(any())
             }
-        } returns Response.error(400, mockk())
+        } returns Response.error(400, mockk(relaxed=true))
         // when
         val response = runBlocking {
             postRepositoryImpl.uploadPost(uploadPostDto)
@@ -109,7 +127,7 @@ class PostRepositoryImplTest {
             runBlocking {
                 postApi.getPostWithId(any())
             }
-        } returns Response.error(400, mockk())
+        } returns Response.error(400, mockk(relaxed=true))
         // when
         val postDto = runBlocking {
             postRepositoryImpl.getPostWithId("1234")
@@ -119,7 +137,7 @@ class PostRepositoryImplTest {
         assertNull(postDto)
     }
 
-    // @Test
+     @Test
     fun editPost_returnsSuccessResponse() {
         // given
         every {
@@ -140,11 +158,9 @@ class PostRepositoryImplTest {
                 )
             }
         }
-        // TODO : Response is not implemented yet
-        // assertTrue(response.isSuccessful)
     }
 
-    // @Test
+     @Test
     fun deletePost_returnsSuccessResponse() {
         // given
         every {
@@ -158,7 +174,5 @@ class PostRepositoryImplTest {
         }
         // then
         verify { runBlocking { postApi.deletePost(samplePostDto.id) } }
-        // TODO : Response is not implemented yet
-        // assertTrue(response.isSuccessful)
     }
 }
