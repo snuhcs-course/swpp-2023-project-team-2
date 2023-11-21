@@ -13,7 +13,15 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/emoji")
 class EmojiController(private val emojiService: EmojiService) {
 
-    // Get randomly selected emojis with a limit of `numLimit`
+    @PostMapping
+    fun postEmoji(
+        @CurrentUser username: String,
+        @RequestPart(value = "file") file: MultipartFile,
+        @RequestPart postEmojiRequest: PostEmojiRequest
+    ): ResponseEntity<Unit> {
+        return ResponseEntity(emojiService.postEmoji(username, file, postEmojiRequest.emoji_unicode, postEmojiRequest.emoji_label), HttpStatus.CREATED)
+    }
+
     @GetMapping
     fun getEmojis(
         @RequestParam(value = "sortByDate", defaultValue = 0.toString()) sortByDate: Int,
@@ -28,15 +36,6 @@ class EmojiController(private val emojiService: EmojiService) {
         @PathVariable(value = "id") id: String,
     ): ResponseEntity<EmojiDto> {
         return ResponseEntity.ok(emojiService.getEmoji(id))
-    }
-
-    @PostMapping
-    fun postEmoji(
-        @CurrentUser username: String,
-        @RequestPart(value = "file") file: MultipartFile,
-        @RequestPart postEmojiRequest: PostEmojiRequest
-    ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(username, file, postEmojiRequest), HttpStatus.CREATED)
     }
 
     @PutMapping("/save")
