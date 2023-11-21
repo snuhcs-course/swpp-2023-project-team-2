@@ -1,11 +1,18 @@
 package com.goliath.emojihub.views
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
+import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.models.dummyPost
+import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
+import com.goliath.emojihub.views.components.PlayEmojiView
 
 @Composable
 fun BottomNavigationBar(
@@ -13,7 +20,7 @@ fun BottomNavigationBar(
 ) {
     NavHost(navController, startDestination = PageItem.Feed.screenRoute) {
         composable(PageItem.Feed.screenRoute) {
-            FeedPage((1..10).map { dummyPost })
+            FeedPage()
         }
 
         composable(PageItem.Emoji.screenRoute) {
@@ -22,6 +29,30 @@ fun BottomNavigationBar(
 
         composable(PageItem.Profile.screenRoute) {
             ProfilePage()
+        }
+
+        composable(NavigationDestination.TransformVideo) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Emoji.screenRoute)
+            }
+            val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+            TransformVideoPage(emojiViewModel)
+        }
+
+        composable(NavigationDestination.PlayEmojiVideo) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Emoji.screenRoute)
+            }
+            val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+            PlayEmojiView(emojiViewModel)
+        }
+
+        composable(NavigationDestination.CreatePost) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(PageItem.Feed.screenRoute)
+            }
+            val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+            CreatePostPage(postViewModel)
         }
     }
 }

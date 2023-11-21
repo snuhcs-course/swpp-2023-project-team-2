@@ -1,17 +1,66 @@
 package com.goliath.emojihub.viewmodels
 
+import android.net.Uri
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
-import com.goliath.emojihub.views.PageItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
-    private val _emojiState = MutableStateFlow<PageItem.Emoji?>(null)
-    val emojiState = _emojiState.asStateFlow()
+    var videoUri: Uri = Uri.EMPTY
+    var currentEmoji: Emoji? = null
+    var isBottomSheetShown by mutableStateOf(false)
+
+    private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
+    val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
+
+    private val _topK = 3
+
+    fun fetchEmojiList(numInt: Int)
+    {
+        viewModelScope.launch {
+            emojiUseCase.fetchEmojiList(numInt)
+
+            val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
+            _emojiList.emit(emojis)
+            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
+        }
+    }
+
+    suspend fun createEmoji(videoUri: Uri): List<CreatedEmoji> {
+        return withContext(Dispatchers.IO) {
+            val createdEmojiList = emojiUseCase.createEmoji(videoUri, _topK)
+            Log.d("EmojiViewModel", "Done create emoji: $createdEmojiList")
+            createdEmojiList
+        }
+    }
+
+    suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
+        return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
+    }
+
+    suspend fun saveEmoji(id: String) {
+        emojiUseCase.saveEmoji(id)
+    }
+
+    suspend fun unSaveEmoji(id: String) {
+        emojiUseCase.saveEmoji(id)
+    }
 }

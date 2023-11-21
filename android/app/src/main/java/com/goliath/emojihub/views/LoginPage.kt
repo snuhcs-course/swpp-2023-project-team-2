@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,12 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,21 +26,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.R
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.UnderlinedTextField
 import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
@@ -55,7 +51,6 @@ fun LoginPagePreview() {
 
 @Composable
 fun LoginPage() {
-
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
 
@@ -64,6 +59,7 @@ fun LoginPage() {
 
     val userViewModel = hiltViewModel<UserViewModel>()
     val coroutineScope = rememberCoroutineScope()
+    val navController = LocalNavController.current
 
     Box(
         modifier = Modifier
@@ -76,67 +72,31 @@ fun LoginPage() {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(32.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo_horizontal),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(top = 48.dp)
+                contentDescription = null
             )
-            TextField(
-                value = username,
-                onValueChange = { username = it },
-                placeholder = {
-                    Text(
-                        text = "Username",
-                        color = Color.LightGray
-                    )
-                },
-                modifier = Modifier
-                    .onFocusChanged { it.isFocused }
-                    .padding(top = 60.dp)
-                    .fillMaxWidth(),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                    }
-                ),
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    cursorColor = Color.Black,
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.LightGray,
-                   ),
-                singleLine = true
-            )
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = {
-                    Text(
-                        text = "Password",
-                        color = Color.LightGray
-                    )
-                },
-                modifier = Modifier
-                    .onFocusChanged { it.isFocused }
-                    .fillMaxWidth(),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                    }
-                ),
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    cursorColor = Color.Black,
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.LightGray,
-                ),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true
-            )
+            Spacer(modifier = Modifier.height(68.dp))
+            UnderlinedTextField(
+                content = username,
+                placeholder = "Username",
+                onValueChange = { username = it }
+            ) {
+                focusManager.clearFocus()
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            UnderlinedTextField(
+                content = password,
+                placeholder = "Password",
+                isSecure = true,
+                onValueChange = { password = it }
+            ) {
+                focusManager.clearFocus()
+            }
+            Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
                       coroutineScope.launch {
@@ -160,12 +120,11 @@ fun LoginPage() {
                     )
                 }
             )
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = {
                     coroutineScope.launch {
-                        userViewModel.registerUser(
-                            username = username.text,
-                            password = password.text)
+                        navController.navigate("signup")
                     }
                 },
                 modifier = Modifier

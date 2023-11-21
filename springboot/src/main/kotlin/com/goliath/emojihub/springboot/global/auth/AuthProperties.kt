@@ -7,5 +7,4 @@ data class AuthProperties (
     val issuer: String,
     val jwtSecret: String,
     val jwtExpiration: Long,
-    val refreshExpiration: Long,
 )

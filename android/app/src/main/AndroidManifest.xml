@@ -4,8 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.WRITE_MEDIA_VIDEO"/>
-
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -22,6 +20,7 @@
         <activity
             android:name=".RootActivity"
             android:exported="true"
+            android:windowSoftInputMode="adjustPan"
             android:theme="@style/Theme.EmojiHub">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

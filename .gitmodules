@@ -1,4 +1,0 @@
-
-[submodule "pytorchvideo"]
-	path = pytorchvideo
-	url = git@github.com:thisisWooyeol/pytorchvideo-for-emojihub.git

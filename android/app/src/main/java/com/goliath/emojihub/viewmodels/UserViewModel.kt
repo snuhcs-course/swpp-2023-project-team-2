@@ -1,20 +1,14 @@
 package com.goliath.emojihub.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.goliath.emojihub.models.User
 import com.goliath.emojihub.usecases.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userUseCase: UserUseCase
 ): ViewModel() {
-
-    private val _loginState = MutableStateFlow<User?>(null)
-    val loginState = _loginState.asStateFlow()
 
     val userState = userUseCase.userState
 
@@ -30,7 +24,15 @@ class UserViewModel @Inject constructor(
         userUseCase.login(username, password)
     }
 
-    suspend fun registerUser(username: String, password: String) {
-        //_loginState.update { userUseCase.registerUser(username, password) }
+    suspend fun registerUser(email: String, username: String, password: String): Boolean {
+        return userUseCase.registerUser(email, username, password)
+    }
+
+    fun logout() {
+        userUseCase.logout()
+    }
+
+    fun signOut() {
+        userUseCase.signOut()
     }
 }
