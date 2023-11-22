@@ -2,6 +2,7 @@ package com.goliath.emojihub.usecases
 
 import androidx.paging.PagingData
 import androidx.paging.map
+import androidx.paging.testing.asSnapshot
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
@@ -9,6 +10,7 @@ import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -38,10 +40,11 @@ class PostUseCaseImplTest {
         assertEquals(samplePagingPostData, postUseCaseImpl.postList.value)
     }
 
-//    @Test
+    @Test
     fun fetchPostList_returnsFlowOfPostPagingData() {
         // given
-        val samplePostPagingDataFlow = mockk<Flow<PagingData<PostDto>>>()
+        val samplePostPagingDataFlow = spyk<Flow<PagingData<PostDto>>>()
+        val sampleAnswer = samplePostPagingDataFlow.map { it.map { dto -> Post(dto) } }
         every {
             runBlocking {
                 postRepository.fetchPostList()
@@ -52,11 +55,13 @@ class PostUseCaseImplTest {
             postUseCaseImpl.fetchPostList()
         }
         // then
-        verify { runBlocking { postRepository.fetchPostList() } }
-        TODO("fix this test")
-        val sampleFetchedPostPagingDataFlow =
-            samplePostPagingDataFlow.map { it.map { dto -> Post(dto) } }
-        assertEquals(sampleFetchedPostPagingDataFlow, fetchedPostPagingDataFlow)
+        verify(exactly = 1) { runBlocking { postRepository.fetchPostList() } }
+        runBlocking {
+            assertEquals(
+                sampleAnswer.asSnapshot(),
+                fetchedPostPagingDataFlow.asSnapshot()
+            )
+        }
     }
 
     @Test
@@ -73,19 +78,26 @@ class PostUseCaseImplTest {
             postUseCaseImpl.uploadPost(sampleContent)
         }
         // then
-        verify { runBlocking { postRepository.uploadPost(UploadPostDto(sampleContent)) } }
+        verify(exactly = 1) {
+            runBlocking {
+                postRepository.uploadPost(UploadPostDto(sampleContent))
+            }
+        }
         assertTrue(isSuccess)
     }
 
     // @Test
+    // No return value
     fun getPostWithId() {
     }
 
     // @Test
+    // No return value
     fun editPost() {
     }
 
     // @Test
+    // No return value
     fun deletePost() {
     }
 }

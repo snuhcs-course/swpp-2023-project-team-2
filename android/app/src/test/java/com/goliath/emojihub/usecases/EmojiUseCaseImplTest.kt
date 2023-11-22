@@ -3,6 +3,7 @@ package com.goliath.emojihub.usecases
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import io.mockk.every
@@ -39,7 +40,7 @@ class EmojiUseCaseImplTest {
     }
 
     @Test
-    fun createEmoji_withTop3_returnsListOfCreatedEmoji() {
+    fun createEmoji_successWithTop3_returnsListOfCreatedEmoji() {
         // given
         val videoUri = mockk<android.net.Uri>()
         val topK = 3
@@ -56,12 +57,31 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.createEmoji(videoUri, topK)
         }
         // then
-        verify { runBlocking { x3dRepository.createEmoji(videoUri, topK) } }
+        verify(exactly = 1) { runBlocking { x3dRepository.createEmoji(videoUri, topK) } }
         assertEquals(sampleTop3CreatedEmojiList, createdEmojiList)
     }
 
     @Test
-    fun uploadEmoji_withValidEmojiInfo_returnsTrue() {
+    fun createEmoji_failure_returnsEmptyList() {
+        // given
+        val videoUri = mockk<android.net.Uri>()
+        val topK = 3
+        every {
+            runBlocking {
+                x3dRepository.createEmoji(videoUri, topK)
+            }
+        } returns emptyList()
+        // when
+        val createdEmojiList = runBlocking {
+            emojiUseCaseImpl.createEmoji(videoUri, topK)
+        }
+        // then
+        verify(exactly = 1) { runBlocking { x3dRepository.createEmoji(videoUri, topK) } }
+        assertEquals(emptyList<CreatedEmoji>(), createdEmojiList)
+    }
+
+    @Test
+    fun uploadEmoji_successWithValidEmojiInfo_returnsTrue() {
         // given
         val emojiUnicode = "U+1F600"
         val emojiLabel = "grinning face"
@@ -77,7 +97,14 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
         }
         // then
-        verify { runBlocking { emojiRepository.uploadEmoji(videoFile, any()) } }
+        verify(exactly = 1) {
+            runBlocking {
+                emojiRepository.uploadEmoji(
+                    videoFile,
+                    UploadEmojiDto(emojiUnicode, emojiLabel)
+                )
+            }
+        }
         assertTrue(isUploaded)
     }
 
@@ -95,7 +122,7 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
-        verify { runBlocking { emojiRepository.saveEmoji(sampleId) } }
+        verify(exactly = 1) { runBlocking { emojiRepository.saveEmoji(sampleId) } }
         assertTrue(isSuccess)
     }
 
@@ -113,8 +140,8 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
-        verify { runBlocking { emojiRepository.saveEmoji(sampleId) } }
-        verify { apiErrorController.setErrorState(404) }
+        verify(exactly = 1) { runBlocking { emojiRepository.saveEmoji(sampleId) } }
+        verify(exactly = 1) { apiErrorController.setErrorState(404) }
         assertFalse(isSuccess)
     }
 
@@ -132,7 +159,7 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
-        verify { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
+        verify(exactly = 1) { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
         assertTrue(isSuccess)
     }
 
@@ -150,8 +177,8 @@ class EmojiUseCaseImplTest {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
-        verify { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
-        verify { apiErrorController.setErrorState(404) }
+        verify(exactly = 1) { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
+        verify(exactly = 1) { apiErrorController.setErrorState(404) }
         assertFalse(isSuccess)
     }
 }

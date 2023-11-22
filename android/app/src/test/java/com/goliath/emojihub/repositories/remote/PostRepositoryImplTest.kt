@@ -1,7 +1,6 @@
 package com.goliath.emojihub.repositories.remote
 
-import android.util.Log
-import androidx.paging.PagingData
+import androidx.paging.testing.asSnapshot
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.PostDto
@@ -9,8 +8,6 @@ import com.goliath.emojihub.models.UploadPostDto
 import retrofit2.Response
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -38,32 +35,27 @@ class PostRepositoryImplTest {
         mockLogClass()
     }
 
-//    @Test
-    fun fetchPostList_returnsFlowOfPagingDataOfPostDto() {
+    @Test
+    fun fetchPostList_returnsPagingSourceFactory() {
         // given
-        val postApi = spyk<PostApi>()
-        val numSamplePosts = 5
-        val samplePostResponseBody = List(numSamplePosts) { samplePostDto }
+        val numSamplePosts = 10
+        val samplePostDtoList = List(numSamplePosts) { samplePostDto }
         every {
             runBlocking {
                 postApi.fetchPostList(any())
             }
-        } returns Response.success(samplePostResponseBody)
+        } returns Response.success(samplePostDtoList)
         // when
-        val flowPagingPostData = runBlocking {
+        val fetchedPostPagingDataFlow = runBlocking {
             postRepositoryImpl.fetchPostList()
         }
         // then
-        var postCount = 0
-        val postList = mutableListOf<PagingData<PostDto>>(PagingData.empty())
+//        verify(exactly = 1) { runBlocking { postApi.fetchPostList(any()) } }
         runBlocking {
-            flowPagingPostData.collect {
-                postCount++
-                postList.add(it)
-            }
+            val fetchedPostDtoList = fetchedPostPagingDataFlow.asSnapshot()
+            assertEquals(samplePostDtoList.size, fetchedPostDtoList.size)
+            assertEquals(samplePostDtoList, fetchedPostDtoList)
         }
-        assertEquals(numSamplePosts, postList.size)
-        assertEquals(numSamplePosts, postCount)
     }
 
     @Test
@@ -74,13 +66,13 @@ class PostRepositoryImplTest {
             runBlocking {
                 postApi.uploadPost(any())
             }
-        } returns Response.success(mockk())
+        } returns Response.success(Unit)
         // when
         val response = runBlocking {
             postRepositoryImpl.uploadPost(uploadPostDto)
         }
         // then
-        verify { runBlocking { postApi.uploadPost(uploadPostDto) } }
+        verify(exactly = 1) { runBlocking { postApi.uploadPost(uploadPostDto) } }
         assertTrue(response.isSuccessful)
     }
 
@@ -98,7 +90,7 @@ class PostRepositoryImplTest {
             postRepositoryImpl.uploadPost(uploadPostDto)
         }
         // then
-        verify { runBlocking { postApi.uploadPost(uploadPostDto) } }
+        verify(exactly = 1) { runBlocking { postApi.uploadPost(uploadPostDto) } }
         assertFalse(response.isSuccessful)
     }
 
@@ -116,7 +108,7 @@ class PostRepositoryImplTest {
             postRepositoryImpl.getPostWithId("1234")
         }
         // then
-        verify { runBlocking { postApi.getPostWithId("1234") } }
+        verify(exactly = 1) { runBlocking { postApi.getPostWithId("1234") } }
         assertEquals(samplePostDto, postDto)
     }
 
@@ -133,7 +125,7 @@ class PostRepositoryImplTest {
             postRepositoryImpl.getPostWithId("1234")
         }
         // then
-        verify { runBlocking { postApi.getPostWithId("1234") } }
+        verify(exactly = 1) { runBlocking { postApi.getPostWithId("1234") } }
         assertNull(postDto)
     }
 
@@ -144,13 +136,13 @@ class PostRepositoryImplTest {
             runBlocking {
                 postApi.editPost(any(), any())
             }
-        } returns Response.success(mockk())
+        } returns Response.success(Unit)
         // when
         val response = runBlocking {
             postRepositoryImpl.editPost(samplePostDto.id, samplePostDto.content)
         }
         // then
-        verify {
+        verify(exactly = 1) {
             runBlocking {
                 postApi.editPost(
                     samplePostDto.id,
@@ -167,12 +159,12 @@ class PostRepositoryImplTest {
             runBlocking {
                 postApi.deletePost(any())
             }
-        } returns Response.success(mockk())
+        } returns Response.success(Unit)
         // when
         val response = runBlocking {
             postRepositoryImpl.deletePost(samplePostDto.id)
         }
         // then
-        verify { runBlocking { postApi.deletePost(samplePostDto.id) } }
+        verify(exactly = 1) { runBlocking { postApi.deletePost(samplePostDto.id) } }
     }
 }

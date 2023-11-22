@@ -69,6 +69,10 @@ class EmojiRepositoryImpl @Inject constructor(
             Log.d("EmojiRepository", "HttpException")
             false
         }
+        catch (e: Exception) {
+            Log.d("EmojiRepository", e.message.toString())
+            false
+        }
     }
 
     override suspend fun saveEmoji(id: String): Response<Unit> {

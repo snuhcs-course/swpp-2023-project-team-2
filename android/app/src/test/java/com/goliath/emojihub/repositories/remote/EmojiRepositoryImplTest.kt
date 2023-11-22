@@ -54,7 +54,7 @@ class EmojiRepositoryImplTest {
             emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
         }
         // then
-        verify { runBlocking { emojiApi.uploadEmoji(any(), any()) } }
+        verify(exactly = 1) { runBlocking { emojiApi.uploadEmoji(any(), any()) } }
         assertTrue(isUploaded)
     }
 
@@ -74,7 +74,7 @@ class EmojiRepositoryImplTest {
             emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
         }
         // then
-        verify { runBlocking { emojiApi.uploadEmoji(any(), any()) } }
+        verify(exactly = 1) { runBlocking { emojiApi.uploadEmoji(any(), any()) } }
         assertFalse(isUploaded)
     }
 
@@ -92,12 +92,30 @@ class EmojiRepositoryImplTest {
             emojiRepositoryImpl.saveEmoji(sampleEmojiId)
         }
         // then
-        verify { runBlocking { emojiApi.saveEmoji(sampleEmojiId) } }
+        verify(exactly = 1) { runBlocking { emojiApi.saveEmoji(sampleEmojiId) } }
         assert(response.isSuccessful)
     }
 
     @Test
-    fun unSaveEmoji_success_returnsResponseUnit() {
+    fun saveEmoji_failure_returnsFailureResponseUnit() {
+        // given
+        val sampleEmojiId = "1234"
+        every {
+            runBlocking {
+                emojiApi.saveEmoji(any())
+            }
+        } returns Response.error(400, mockk(relaxed=true))
+        // when
+        val response = runBlocking {
+            emojiRepositoryImpl.saveEmoji(sampleEmojiId)
+        }
+        // then
+        verify(exactly = 1) { runBlocking { emojiApi.saveEmoji(sampleEmojiId) } }
+        assertFalse(response.isSuccessful)
+    }
+
+    @Test
+    fun unSaveEmoji_success_returnsSuccessResponseUnit() {
         // given
         val sampleEmojiId = "1234"
         every {
@@ -110,12 +128,12 @@ class EmojiRepositoryImplTest {
             emojiRepositoryImpl.unSaveEmoji(sampleEmojiId)
         }
         // then
-        verify { runBlocking { emojiApi.unSaveEmoji(sampleEmojiId) } }
+        verify(exactly = 1) { runBlocking { emojiApi.unSaveEmoji(sampleEmojiId) } }
         assert(response.isSuccessful)
     }
 
     @Test
-    fun unSaveEmoji_failure_returnsResponseUnit() {
+    fun unSaveEmoji_failure_returnsFailureResponseUnit() {
         // given
         val sampleEmojiId = "1234"
         every {
@@ -128,7 +146,7 @@ class EmojiRepositoryImplTest {
             emojiRepositoryImpl.unSaveEmoji(sampleEmojiId)
         }
         // then
-        verify { runBlocking { emojiApi.unSaveEmoji(sampleEmojiId) } }
+        verify(exactly = 1) { runBlocking { emojiApi.unSaveEmoji(sampleEmojiId) } }
         assertFalse(response.isSuccessful)
     }
 
