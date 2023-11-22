@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import com.goliath.emojihub.models.Emoji
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,12 +27,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.White
@@ -42,19 +48,10 @@ fun EmojiCell (
     emoji: Emoji,
     onSelected: (Emoji) -> Unit
 ) {
-    val width_dp = 292.dp // Width of the Card
-    val height_dp = LocalConfiguration.current.screenWidthDp.dp
-
-    val width = with(LocalDensity.current) { width_dp.toPx().toInt()}
-    val height = with(LocalDensity.current) { height_dp.toPx().toInt()}
-
-    val viewModel = hiltViewModel<EmojiViewModel>()
-
-//    LaunchedEffect(emoji.videoLink) {
-//        viewModel.createVideoThumbnail(emoji.videoLink, width, height)
-//    }
-
-    val thumbnailBitmap = viewModel.thumbnailState.collectAsState().value
+    //replace to emoji.thumbnailLink
+    val thumbnailLink = emoji.thumbnailLink?:"https://i.pinimg.com/236x/4b/05/0c/4b050ca4fcf588eedc58aa6135f5eecf.jpg"
+    Log.d("create_TN", "${emoji.thumbnailLink}")
+    val context = LocalContext.current
 
     Card (
         modifier = Modifier
@@ -64,14 +61,13 @@ fun EmojiCell (
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp
     ) {
-//        thumbnailBitmap?.let { bitmap ->
-//            Image(
-//                bitmap = bitmap.asImageBitmap(),
-//                contentDescription = "Video Thumbnail",
-//                modifier = Modifier.fillMaxSize()
-//            )
-//        } ?:
-        Box(Modifier.fillMaxSize().background(Black).alpha(0.25F))
+        Box(Modifier.fillMaxSize().background(Color.Gray).alpha(0.25F))
+        Image(
+            painter = rememberAsyncImagePainter(thumbnailLink),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.Crop
+        )
 
         Box(
             modifier = Modifier.padding(8.dp)

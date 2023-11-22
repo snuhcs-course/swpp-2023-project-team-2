@@ -11,6 +11,7 @@ import com.goliath.emojihub.models.UploadEmojiDto
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.HttpException
@@ -58,14 +59,16 @@ class EmojiRepositoryImpl @Inject constructor(
 
     override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
         val emojiDtoJson = Gson().toJson(emojiDto)
-        val emojiDtoRequestBody = RequestBody.create(MediaType.parse("application/json"), emojiDtoJson)
+        val emojiDtoRequestBody = RequestBody.create("application/json".toMediaTypeOrNull(), emojiDtoJson)
 
-        val videoFileRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile)
+        val videoFileRequestBody = RequestBody.create("video/mp4".toMediaTypeOrNull(), videoFile)
         val videoFileMultipartBody = MultipartBody.Part.createFormData("file", videoFile.name, videoFileRequestBody)
 
         val thumbnailFile = createVideoThumbnail(context, videoFile)
 
-        val thumbnailRequestBody = RequestBody.create(MediaType.parse("image/jpg"), thumbnailFile)
+        val thumbnailRequestBody = RequestBody.create("image/jpg".toMediaTypeOrNull(),
+            thumbnailFile!!
+        )
         val thumbnailMultipartBody = MultipartBody.Part.createFormData("thumbnail", thumbnailFile?.name, thumbnailRequestBody)
 
         return try {

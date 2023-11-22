@@ -87,21 +87,4 @@ class EmojiUseCaseImpl @Inject constructor(
             }
         }
     }
-
-//    override fun createVideoThumbnail(videoFile: File): File? {
-//        val retriever = MediaMetadataRetriever()
-//        try {
-//            retriever.setDataSource(videoFile.absolutePath)
-//
-//            val thumbnailBitmap = retriever.getFrameAtTime(1000000.toLong(), MediaMetadataRetriever.OPTION_CLOSEST)
-//            val thumbnail = thumbnailBitmap?.let { bitmap ->
-//                val thumbnailFile = bitmapToFile(ti)
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            return null
-//        } finally {
-//            retriever.release()
-//        }
-//    }
 }

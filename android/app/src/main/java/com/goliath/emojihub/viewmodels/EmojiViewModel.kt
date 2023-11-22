@@ -31,9 +31,6 @@ class EmojiViewModel @Inject constructor(
     private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
     val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
 
-    private val _thumbnailState = MutableStateFlow<Bitmap?>(null)
-    val thumbnailState = _thumbnailState.asStateFlow()
-
     fun fetchEmojiList(numInt: Int)
     {
         viewModelScope.launch {
@@ -59,10 +56,4 @@ class EmojiViewModel @Inject constructor(
     suspend fun unSaveEmoji(id: String) {
         emojiUseCase.saveEmoji(id)
     }
-
-//    fun createVideoThumbnail(videoUri: String, width: Int, height: Int) {
-//        viewModelScope.launch {
-//            _thumbnailState.value = emojiUseCase.createVideoThumbnail(videoUri, width, height)
-//        }
-//    }
 }
