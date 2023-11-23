@@ -6,19 +6,11 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +30,8 @@ import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
-import com.goliath.emojihub.ui.theme.Color.EmojiHubGrayIcon
 import com.goliath.emojihub.ui.theme.Color.White
+import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.EmptyProfile
@@ -55,12 +47,17 @@ fun ProfilePage(
     val scrollState = rememberScrollState()
 
     val userViewModel = hiltViewModel<UserViewModel>()
+    val postViewModel = hiltViewModel<PostViewModel>()
+
     val currentUser = userViewModel.userState.collectAsState().value
 
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
-    Column(Modifier.background(White).scrollable(scrollState, Orientation.Vertical)) {
+    Column(
+        Modifier
+            .background(White)
+            .scrollable(scrollState, Orientation.Vertical)) {
         TopNavigationBar("Profile", shouldNavigate = false)
 
         Box(
@@ -108,7 +105,7 @@ fun ProfilePage(
                         detailLabel = "count",
                         navigateTo = { navController.navigate(NavigationDestination.MyPostList) },
                         previewContent = {
-
+                            // should show my posts
                         }
                     )
 
@@ -121,7 +118,7 @@ fun ProfilePage(
                         detailLabel = "더보기",
                         navigateTo = { navController.navigate(NavigationDestination.MyEmojiList) },
                         previewContent = {
-
+                            // should show my emojis
                         }
                     )
 
@@ -132,7 +129,7 @@ fun ProfilePage(
                         detailLabel = "더보기",
                         navigateTo = { navController.navigate(NavigationDestination.MySavedEmojiList) },
                         previewContent = {
-
+                            // should show saved emoji list
                         }
                     )
 
