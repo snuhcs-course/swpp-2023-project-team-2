@@ -6,7 +6,8 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
@@ -47,17 +48,15 @@ class EmojiUseCaseImplTest {
         val sampleTop3CreatedEmojiList = listOf<CreatedEmoji>(
             mockk(), mockk(), mockk()
         )
-        every {
-            runBlocking {
-                x3dRepository.createEmoji(videoUri, topK)
-            }
+        coEvery {
+            x3dRepository.createEmoji(videoUri, topK)
         } returns sampleTop3CreatedEmojiList
         // when
         val createdEmojiList = runBlocking {
             emojiUseCaseImpl.createEmoji(videoUri, topK)
         }
         // then
-        verify(exactly = 1) { runBlocking { x3dRepository.createEmoji(videoUri, topK) } }
+        coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
         assertEquals(sampleTop3CreatedEmojiList, createdEmojiList)
     }
 
@@ -66,17 +65,15 @@ class EmojiUseCaseImplTest {
         // given
         val videoUri = mockk<android.net.Uri>()
         val topK = 3
-        every {
-            runBlocking {
-                x3dRepository.createEmoji(videoUri, topK)
-            }
+        coEvery {
+            x3dRepository.createEmoji(videoUri, topK)
         } returns emptyList()
         // when
         val createdEmojiList = runBlocking {
             emojiUseCaseImpl.createEmoji(videoUri, topK)
         }
         // then
-        verify(exactly = 1) { runBlocking { x3dRepository.createEmoji(videoUri, topK) } }
+        coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
         assertEquals(emptyList<CreatedEmoji>(), createdEmojiList)
     }
 
@@ -87,23 +84,19 @@ class EmojiUseCaseImplTest {
         val emojiLabel = "grinning face"
         mockkStatic(File::class)
         val videoFile = File("sample.mp4")
-        every {
-            runBlocking {
-                emojiRepository.uploadEmoji(videoFile, any())
-            }
+        coEvery {
+            emojiRepository.uploadEmoji(videoFile, any())
         } returns true
         // when
         val isUploaded = runBlocking {
             emojiUseCaseImpl.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
         }
         // then
-        verify(exactly = 1) {
-            runBlocking {
-                emojiRepository.uploadEmoji(
-                    videoFile,
-                    UploadEmojiDto(emojiUnicode, emojiLabel)
-                )
-            }
+        coVerify(exactly = 1) {
+            emojiRepository.uploadEmoji(
+                videoFile,
+                UploadEmojiDto(emojiUnicode, emojiLabel)
+            )
         }
         assertTrue(isUploaded)
     }
@@ -112,17 +105,15 @@ class EmojiUseCaseImplTest {
     fun saveEmoji_success_returnsTrue() {
         // given
         val sampleId = "sampleId"
-        every {
-            runBlocking {
-                emojiRepository.saveEmoji(sampleId)
-            }
+        coEvery {
+            emojiRepository.saveEmoji(sampleId)
         } returns Response.success(Unit)
         // when
         val isSuccess = runBlocking {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
-        verify(exactly = 1) { runBlocking { emojiRepository.saveEmoji(sampleId) } }
+        coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
         assertTrue(isSuccess)
     }
 
@@ -130,17 +121,15 @@ class EmojiUseCaseImplTest {
     fun saveEmoji_failure_returnsFalse() {
         // given
         val sampleId = "sampleId"
-        every {
-            runBlocking {
-                emojiRepository.saveEmoji(sampleId)
-            }
+        coEvery {
+            emojiRepository.saveEmoji(sampleId)
         } returns Response.error(404, mockk(relaxed=true))
         // when
         val isSuccess = runBlocking {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
-        verify(exactly = 1) { runBlocking { emojiRepository.saveEmoji(sampleId) } }
+        coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
         verify(exactly = 1) { apiErrorController.setErrorState(404) }
         assertFalse(isSuccess)
     }
@@ -149,17 +138,15 @@ class EmojiUseCaseImplTest {
     fun unSaveEmoji_success_returnsTrue() {
         // given
         val sampleId = "sampleId"
-        every {
-            runBlocking {
-                emojiRepository.unSaveEmoji(sampleId)
-            }
+        coEvery {
+            emojiRepository.unSaveEmoji(sampleId)
         } returns Response.success(Unit)
         // when
         val isSuccess = runBlocking {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
-        verify(exactly = 1) { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
+        coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
         assertTrue(isSuccess)
     }
 
@@ -167,17 +154,15 @@ class EmojiUseCaseImplTest {
     fun unSaveEmoji_failure_returnsFalse() {
         // given
         val sampleId = "sampleId"
-        every {
-            runBlocking {
-                emojiRepository.unSaveEmoji(sampleId)
-            }
+        coEvery {
+            emojiRepository.unSaveEmoji(sampleId)
         } returns Response.error(404, mockk(relaxed=true))
         // when
         val isSuccess = runBlocking {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
-        verify(exactly = 1) { runBlocking { emojiRepository.unSaveEmoji(sampleId) } }
+        coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
         verify(exactly = 1) { apiErrorController.setErrorState(404) }
         assertFalse(isSuccess)
     }

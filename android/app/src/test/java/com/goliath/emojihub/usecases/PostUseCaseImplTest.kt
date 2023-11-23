@@ -8,10 +8,10 @@ import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -45,17 +45,15 @@ class PostUseCaseImplTest {
         // given
         val samplePostPagingDataFlow = spyk<Flow<PagingData<PostDto>>>()
         val sampleAnswer = samplePostPagingDataFlow.map { it.map { dto -> Post(dto) } }
-        every {
-            runBlocking {
-                postRepository.fetchPostList()
-            }
+        coEvery {
+            postRepository.fetchPostList()
         } returns samplePostPagingDataFlow
         // when
         val fetchedPostPagingDataFlow = runBlocking {
             postUseCaseImpl.fetchPostList()
         }
         // then
-        verify(exactly = 1) { runBlocking { postRepository.fetchPostList() } }
+        coVerify(exactly = 1) { postRepository.fetchPostList() }
         runBlocking {
             assertEquals(
                 sampleAnswer.asSnapshot(),
@@ -68,20 +66,16 @@ class PostUseCaseImplTest {
     fun uploadPost_success_returnsTrue() {
         // given
         val sampleContent = "sample content"
-        every {
-            runBlocking {
-                postRepository.uploadPost(any())
-            }
+        coEvery {
+            postRepository.uploadPost(any())
         } returns Response.success(mockk())
         // when
         val isSuccess = runBlocking {
             postUseCaseImpl.uploadPost(sampleContent)
         }
         // then
-        verify(exactly = 1) {
-            runBlocking {
-                postRepository.uploadPost(UploadPostDto(sampleContent))
-            }
+        coVerify(exactly = 1) {
+            postRepository.uploadPost(UploadPostDto(sampleContent))
         }
         assertTrue(isSuccess)
     }

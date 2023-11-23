@@ -8,9 +8,10 @@ import com.goliath.emojihub.models.User
 import com.goliath.emojihub.models.UserDto
 import com.goliath.emojihub.models.responses.LoginResponseDto
 import com.goliath.emojihub.repositories.remote.UserRepository
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
@@ -44,10 +45,8 @@ class UserUseCaseImplTest {
         val sampleName = "sampleName"
         val samplePassword = "samplePassword"
         val sampleAccessToken = "sampleAccessToken"
-        every {
-            runBlocking {
-                userRepository.login(any())
-            }
+        coEvery {
+            userRepository.login(any())
         } returns Response.success(LoginResponseDto(sampleAccessToken))
         mockkStatic(EmojiHubApplication::class)
         val mockPreferences = mockk<SharedLocalStorage>()
@@ -62,7 +61,7 @@ class UserUseCaseImplTest {
             userUseCaseImpl.login(sampleName, samplePassword)
         }
         // then
-        verify { runBlocking { userRepository.login(any()) } }
+        coVerify { userRepository.login(any()) }
         assertEquals(
             User(UserDto(sampleAccessToken, sampleName)),
             userUseCaseImpl.userState.value
