@@ -121,6 +121,8 @@ internal class EmojiServiceTest {
         val username = "test_username"
         val audioContent = ByteArray(100)
         val file = MockMultipartFile("file", "test.mp4", "audio/mp4", audioContent)
+        val imageContent = ByteArray(100)
+        val thumbnail = MockMultipartFile("thumbnail", "test.jpeg", "image/jpeg", imageContent)
         val emojiUnicode = "test_emoji_unicode"
         val emojiLabel = "test_emoji_label"
         val emoji = EmojiDto(
@@ -132,14 +134,14 @@ internal class EmojiServiceTest {
             created_at = "test_created_at",
             num_saved = 0,
         )
-        Mockito.`when`(emojiDao.insertEmoji(any(), any(), any(), any(), any())).thenReturn(emoji)
+        Mockito.`when`(emojiDao.insertEmoji(any(), any(), any(), any(), any(), any())).thenReturn(emoji)
 
         // when
-        emojiService.postEmoji(username, file, emojiUnicode, emojiLabel)
+        emojiService.postEmoji(username, file, thumbnail, emojiUnicode, emojiLabel)
 
         // then
-        verify(emojiDao, times(1)).insertEmoji(any(), any(), any(), any(), any())
-        verify(emojiDao, times(1)).insertEmoji(any(), any(), any(), any(), any())
+        verify(emojiDao, times(1)).insertEmoji(any(), any(), any(), any(), any(), any())
+        verify(userDao, times(1)).insertId(username, emoji.id, "created_emojis")
     }
 
     @Test

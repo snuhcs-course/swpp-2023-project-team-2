@@ -34,9 +34,9 @@ class EmojiService(
         return emojiDao.getEmoji(emojiId)
     }
 
-    fun postEmoji(username: String, file: MultipartFile, emojiUnicode: String, emojiLabel: String) {
+    fun postEmoji(username: String, file: MultipartFile, thumbnail: MultipartFile, emojiUnicode: String, emojiLabel: String) {
         val dateTime = getDateTimeNow()
-        val emoji = emojiDao.insertEmoji(username, file, emojiUnicode, emojiLabel, dateTime)
+        val emoji = emojiDao.insertEmoji(username, file, thumbnail, emojiUnicode, emojiLabel, dateTime)
         userDao.insertId(username, emoji.id, CREATED_EMOJIS)
     }
 

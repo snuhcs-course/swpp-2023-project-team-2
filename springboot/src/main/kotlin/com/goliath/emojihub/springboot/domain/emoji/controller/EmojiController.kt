@@ -17,9 +17,10 @@ class EmojiController(private val emojiService: EmojiService) {
     fun postEmoji(
         @CurrentUser username: String,
         @RequestPart(value = "file") file: MultipartFile,
+        @RequestPart(value = "thumbnail") thumbnail: MultipartFile,
         @RequestPart postEmojiRequest: PostEmojiRequest
     ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(username, file, postEmojiRequest.emoji_unicode, postEmojiRequest.emoji_label), HttpStatus.CREATED)
+        return ResponseEntity(emojiService.postEmoji(username, file, thumbnail, postEmojiRequest.emoji_unicode, postEmojiRequest.emoji_label), HttpStatus.CREATED)
     }
 
     @GetMapping

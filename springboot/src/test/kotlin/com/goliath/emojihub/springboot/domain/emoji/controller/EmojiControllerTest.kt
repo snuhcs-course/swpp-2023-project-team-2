@@ -135,6 +135,8 @@ internal class EmojiControllerTest @Autowired constructor(
         // given
         val audioContent = ByteArray(100)
         val audioFile = MockMultipartFile("file", "test.mp4", "audio/mp4", audioContent)
+        val imageContent = ByteArray(100)
+        val thumbnail = MockMultipartFile("thumbnail", "test.jpeg", "image/jpeg", imageContent)
         val request = PostEmojiRequest(
             emoji_unicode = "test_emoji_unicode",
             emoji_label = "test_emoji_label"
@@ -151,6 +153,7 @@ internal class EmojiControllerTest @Autowired constructor(
         val result = mockMvc.perform(
             multipart("/api/emoji")
                 .file(audioFile)
+                .file(thumbnail)
                 .file(requestFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .characterEncoding("UTF-8")
@@ -160,7 +163,7 @@ internal class EmojiControllerTest @Autowired constructor(
 
         // then
         result.andExpect(status().isCreated)
-        verify(emojiService, times(1)).postEmoji(any(), any(), any(), any())
+        verify(emojiService, times(1)).postEmoji(any(), any(), any(), any(), any())
     }
 
     @Test
