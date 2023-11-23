@@ -129,14 +129,17 @@ internal class EmojiDaoTest {
     fun getEmoji() {
         // given
         val emojiId = emojiList[0].id
+        val wrongId = "wrong_emoji_id"
         Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
             .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
 
         // when
         val result = emojiDao.getEmoji(emojiId)
+        val wrongResult = emojiDao.getEmoji(wrongId)
 
         // then
         assertEquals(result, emojiList[0])
+        assertEquals(wrongResult, null)
     }
 
     @Test

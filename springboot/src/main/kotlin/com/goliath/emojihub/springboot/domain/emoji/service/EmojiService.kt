@@ -29,6 +29,28 @@ class EmojiService(
         return emojiDao.getEmojis(sortByDate, index, count)
     }
 
+    fun getMyEmojis(username: String, field: String): List<EmojiDto> {
+        val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
+        val emojiIdList = if (field == CREATED_EMOJIS) {
+            user.created_emojis
+        } else {
+            user.saved_emojis
+        }
+        val emojiList = mutableListOf<EmojiDto>()
+        if (emojiIdList != null && emojiIdList.size != 0) {
+            for (emojiId in emojiIdList) {
+                val emoji = emojiDao.getEmoji(emojiId)
+                if (emoji != null) {
+                    emojiList.add(emoji)
+                }
+            }
+            if (emojiList.size != 0) {
+                emojiList.sortByDescending { it.created_at }
+            }
+        }
+        return emojiList
+    }
+
     fun getEmoji(emojiId: String): EmojiDto? {
         if (emojiDao.existsEmoji(emojiId).not()) throw CustomHttp404("Emoji doesn't exist.")
         return emojiDao.getEmoji(emojiId)
