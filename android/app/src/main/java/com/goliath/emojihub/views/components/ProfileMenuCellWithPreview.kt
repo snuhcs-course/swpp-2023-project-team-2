@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -23,20 +22,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color
 
 @Composable
 fun ProfileMenuCellWithPreview(
     label: String,
     detailLabel: String,
-    navigateTo: () -> Unit,
-    previewContent: LazyListScope.() -> Unit
+    navigateToDestination: () -> Unit,
+    content: LazyListScope.() -> Unit
 ) {
     val listState = rememberLazyListState()
 
-    Column(Modifier.padding(start = 16.dp)) {
+    Column {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -51,8 +51,7 @@ fun ProfileMenuCellWithPreview(
                 fontWeight = FontWeight.SemiBold,
                 color = Color.EmojiHubGrayIcon
             )
-            Spacer(modifier = Modifier.width(2.dp))
-            IconButton(onClick = { navigateTo() }) {
+            IconButton(onClick = { navigateToDestination() }) {
                 Icon(
                     imageVector = Icons.Default.NavigateNext,
                     contentDescription = null,
@@ -67,7 +66,7 @@ fun ProfileMenuCellWithPreview(
             state = listState,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            previewContent()
+            content()
         }
     }
 }

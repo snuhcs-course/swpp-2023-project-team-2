@@ -26,8 +26,9 @@ fun PreviewPostCell(
     post: Post
 ) {
     Column(
-        Modifier.width(240.dp).height(152.dp).padding(16.dp)
+        Modifier.width(240.dp)
             .border(width = 1.dp, color = EmojiHubBorderColor, shape = RoundedCornerShape(8.dp))
+            .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -47,10 +48,9 @@ fun PreviewPostCell(
             fontSize = 13.sp,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxSize(1f)
+            modifier = Modifier.height(64.dp)
         )
         Spacer(Modifier.height(8.dp))
-
         Text(
             text = post.reaction.count().toString() + "개의 반응",
             fontSize = 13.sp,

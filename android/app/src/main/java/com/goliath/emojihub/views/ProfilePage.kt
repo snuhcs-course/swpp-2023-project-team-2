@@ -1,16 +1,17 @@
 package com.goliath.emojihub.views
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,13 +29,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.models.createDummyEmoji
+import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.CustomDialog
+import com.goliath.emojihub.views.components.EmojiCell
 import com.goliath.emojihub.views.components.EmptyProfile
+import com.goliath.emojihub.views.components.PreviewPostCell
 import com.goliath.emojihub.views.components.ProfileMenuCell
 import com.goliath.emojihub.views.components.ProfileMenuCellWithPreview
 import com.goliath.emojihub.views.components.TopNavigationBar
@@ -56,25 +61,19 @@ fun ProfilePage(
 
     Column(
         Modifier
-            .background(White)
-            .scrollable(scrollState, Orientation.Vertical)) {
+            .verticalScroll(scrollState)
+            .background(White)) {
         TopNavigationBar("Profile", shouldNavigate = false)
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
             if (currentUser?.accessToken.isNullOrEmpty()) {
                 EmptyProfile()
             } else {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    TopNavigationBar("Profile", shouldNavigate = false) {}
-
+                Column(Modifier.padding(horizontal = 16.dp)) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.Start,
                         verticalArrangement = Arrangement.Top
                     ) {
@@ -98,26 +97,28 @@ fun ProfilePage(
                     }
 
                     Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     ProfileMenuCellWithPreview(
                         label = "내가 작성한 포스트",
                         detailLabel = "count",
-                        navigateTo = { navController.navigate(NavigationDestination.MyPostList) },
-                        previewContent = {
-                            // should show my posts
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
+                    ) {
+                        // TODO: should show my posts
+                        items(listOf(dummyPost, dummyPost, dummyPost)) {
+                            PreviewPostCell(post = it)
                         }
-                    )
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     ProfileMenuCellWithPreview(
                         label = "내가 만든 이모지",
                         detailLabel = "더보기",
-                        navigateTo = { navController.navigate(NavigationDestination.MyEmojiList) },
-                        previewContent = {
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) },
+                        content = {
                             // should show my emojis
                         }
                     )
@@ -127,11 +128,16 @@ fun ProfilePage(
                     ProfileMenuCellWithPreview(
                         label = "저장된 이모지",
                         detailLabel = "더보기",
-                        navigateTo = { navController.navigate(NavigationDestination.MySavedEmojiList) },
-                        previewContent = {
-                            // should show saved emoji list
+                        navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
+                    ) {
+                        // TODO: should show saved emoji list
+                        items(listOf(
+                            createDummyEmoji(), createDummyEmoji(),
+                            createDummyEmoji(), createDummyEmoji())
+                        ) {
+                            EmojiCell(emoji = it, onSelected = {})
                         }
-                    )
+                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
                     Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
@@ -143,6 +149,8 @@ fun ProfilePage(
                     ProfileMenuCell(label = "회원 탈퇴", isDestructive = true) {
                         showSignOutDialog = true
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 if (showLogoutDialog) {
