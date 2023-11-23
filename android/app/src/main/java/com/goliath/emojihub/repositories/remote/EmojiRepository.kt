@@ -37,21 +37,6 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi
 ): EmojiRepository {
     override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
-//        try {
-//
-//            val response = emojiApi.fetchEmojiList(1, 1, 10)
-//
-//            if(response.isSuccessful && response.body() != null) {
-//                Log.d("Fetch_E_L", "Successfully fetched ${response.body()!!.size} emojis")
-//                return response.body()!!
-//            } else {
-//                val errorBody = response.errorBody()?.string() ?: "Unknown error"
-//                Log.d("Fetch_E_L", "Failed to fetch emojis: $errorBody")
-//            }
-//        } catch(e: Exception) {
-//            Log.e("Fetch_E_L", "Error fetching emojis", e)
-//        }
-//        return listOf()
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
             pagingSourceFactory = { EmojiPagingSource(emojiApi) }

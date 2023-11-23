@@ -6,7 +6,7 @@ import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
 import javax.inject.Inject
 
-class EmojiPagingSource  @Inject constructor(
+class EmojiPagingSource @Inject constructor(
     private val api: EmojiApi
 ): PagingSource<Int, EmojiDto>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EmojiDto> {

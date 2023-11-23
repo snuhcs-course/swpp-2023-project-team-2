@@ -108,12 +108,6 @@ fun EmojiPage(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-//                items(emojiList, key = { it.id }) { emoji ->
-//                    EmojiCell(emoji = emoji) {
-//                        viewModel.currentEmoji = emoji
-//                        navController.navigate(NavigationDestination.PlayEmojiVideo)
-//                    }
-//                }
                 items(emojiList.itemCount) { index ->
                     emojiList[index]?.let{
                         EmojiCell(emoji = it) { selectedEmoji ->

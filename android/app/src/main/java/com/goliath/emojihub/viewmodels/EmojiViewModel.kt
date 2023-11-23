@@ -29,7 +29,6 @@ class EmojiViewModel @Inject constructor(
     var currentEmoji: Emoji? = null
     var isBottomSheetShown by mutableStateOf(false)
 
-//    private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
     val emojiList = emojiUseCase.emojiList
 
     private val _topK = 3
@@ -42,10 +41,6 @@ class EmojiViewModel @Inject constructor(
                 .collect {
                     emojiUseCase.updateEmojiList(it)
                 }
-
-//            val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
-//            _emojiList.emit(emojis)
-//            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
         }
     }
 
