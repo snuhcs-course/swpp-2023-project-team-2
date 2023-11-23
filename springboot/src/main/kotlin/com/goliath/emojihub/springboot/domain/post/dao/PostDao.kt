@@ -13,19 +13,16 @@ class PostDao(
 ) {
 
     companion object {
-        const val USER_COLLECTION_NAME = "Users"
         const val POST_COLLECTION_NAME = "Posts"
     }
 
-    fun postPost(username: String, content: String) {
+    fun insertPost(username: String, content: String): PostDto {
         val dateTime = getDateTimeNow()
         val post = PostDto(username, content, dateTime)
         db.collection(POST_COLLECTION_NAME)
             .document(post.id)
             .set(post)
-        db.collection(USER_COLLECTION_NAME)
-            .document(username)
-            .update("created_posts", FieldValue.arrayUnion(post.id))
+        return post
     }
 
     fun getPosts(index: Int, count: Int): List<PostDto> {
@@ -40,26 +37,27 @@ class PostDao(
         return list
     }
 
-    fun getPost(id: String): PostDto? {
-        val future = db.collection(POST_COLLECTION_NAME).document(id).get()
+    fun getPost(postId: String): PostDto? {
+        val future = db.collection(POST_COLLECTION_NAME).document(postId).get()
         val document: DocumentSnapshot = future.get()
         return document.toObject(PostDto::class.java)
     }
 
-    fun existPost(id: String): Boolean {
-        val future = db.collection(POST_COLLECTION_NAME).document(id).get()
+    fun existPost(postId: String): Boolean {
+        val future = db.collection(POST_COLLECTION_NAME).document(postId).get()
         val document: DocumentSnapshot = future.get()
         return document.exists()
     }
 
-    fun updatePost(id: String, content: String) {
+    fun updatePost(postId: String, content: String) {
         val dateTime = getDateTimeNow()
-        val post = db.collection(POST_COLLECTION_NAME).document(id)
-        post.update("content", content)
-        post.update("modified_at", dateTime)
+        val postRef = db.collection(POST_COLLECTION_NAME).document(postId)
+        postRef.update("content", content)
+        postRef.update("modified_at", dateTime)
     }
 
-    fun deletePost(id: String) {
-        db.collection(POST_COLLECTION_NAME).document(id).delete()
+    fun deletePost(postId: String) {
+        db.collection(POST_COLLECTION_NAME).document(postId).delete()
     }
+
 }

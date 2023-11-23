@@ -1,4 +1,4 @@
-package com.goliath.emojihub.springboot.domain.user.model
+package com.goliath.emojihub.springboot.domain
 
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetails
