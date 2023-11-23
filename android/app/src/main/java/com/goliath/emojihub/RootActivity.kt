@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.BottomSheetController
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
@@ -42,6 +43,9 @@ class RootActivity : ComponentActivity() {
     @Inject
     lateinit var apiErrorController: ApiErrorController
 
+    @Inject
+    lateinit var bottomSheetController: BottomSheetController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -50,6 +54,7 @@ class RootActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize().background(Color.White)) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
                     val error by apiErrorController.apiErrorState.collectAsState()
+                    val bottomSheetState by bottomSheetController.bottomSheetState.collectAsState()
                     if (token.isNullOrEmpty()) {
                         LoginView()
                     } else {
@@ -63,6 +68,10 @@ class RootActivity : ComponentActivity() {
                             onDismissRequest = { apiErrorController.dismiss() },
                             confirm = { apiErrorController.dismiss() }
                         )
+                    }
+
+                    if (bottomSheetState) {
+                        //TODO: Display BottomSheet
                     }
                 }
             }
