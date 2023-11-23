@@ -106,7 +106,47 @@ internal class PostControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].content").value(content + 0))
             .andExpect(jsonPath("$[0].created_at").value(createdAt + 0))
             .andExpect(jsonPath("$[0].modified_at").value(modifiedAt + 0))
-        verify(postService).getPosts(index, count)
+        verify(postService, times(1)).getPosts(index, count)
+    }
+
+    @Test
+    @WithCustomUser
+    @DisplayName("자신의 게시글 데이터 가져오기 테스트")
+    fun getMyPosts() {
+        // given
+        val username = "custom_username"
+        val list = mutableListOf<PostDto>()
+        val size = 2
+        val id = "test_id"
+        val content = "test_content"
+        val createdAt = "test_created_at"
+        val modifiedAt = "test_modified_at"
+        for (i in 0 until size) {
+            list.add(
+                PostDto(
+                    id = id + i,
+                    created_by = username,
+                    content = content + i,
+                    created_at = createdAt + i,
+                    modified_at = modifiedAt + i
+                )
+            )
+        }
+        given(postService.getMyPosts(username)).willReturn(list)
+
+        // when
+        val result = this.mockMvc.perform(get("/api/post/me"))
+
+        // then
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$[0].id").value(id + 0))
+            .andExpect(jsonPath("$[0].created_by").value(username))
+            .andExpect(jsonPath("$[0].content").value(content + 0))
+            .andExpect(jsonPath("$[0].created_at").value(createdAt + 0))
+            .andExpect(jsonPath("$[0].modified_at").value(modifiedAt + 0))
+        verify(postService, times(1)).getMyPosts(username)
     }
 
     @Test
@@ -133,7 +173,7 @@ internal class PostControllerTest @Autowired constructor(
             .andExpect(jsonPath("$.content").value(postDto.content))
             .andExpect(jsonPath("$.created_at").value(postDto.created_at))
             .andExpect(jsonPath("$.modified_at").value(postDto.modified_at))
-        verify(postService).getPost(postDto.id)
+        verify(postService, times(1)).getPost(postDto.id)
     }
 
     @Test

@@ -30,6 +30,11 @@ class PostService(
         return postDao.getPosts(index, count)
     }
 
+    fun getMyPosts(username: String): List<PostDto> {
+        if (!userDao.existUser(username)) throw CustomHttp404("User doesn't exist.")
+        return postDao.getMyPosts(username)
+    }
+
     fun getPost(postId: String): PostDto? {
         if (postDao.existPost(postId).not())
             throw CustomHttp404("Post doesn't exist.")
