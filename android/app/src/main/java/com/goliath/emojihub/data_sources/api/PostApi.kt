@@ -14,7 +14,7 @@ import retrofit2.http.Query
 interface PostApi {
     @GET("post")
     suspend fun fetchPostList(
-        @Query("numLimit") numLimit: Int
+        @Query("index") index: Int
     ): Response<List<PostDto>>
 
     @GET("post")

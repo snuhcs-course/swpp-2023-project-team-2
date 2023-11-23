@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +33,12 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.extensions.toEmoji
+import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.views.components.CustomDialog
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +47,8 @@ fun TransformVideoPage(
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -49,7 +58,7 @@ fun TransformVideoPage(
         }
     }
 
-    var resultEmoji by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var createdEmojiList by remember { mutableStateOf<List<CreatedEmoji>>(emptyList()) }
 
     Scaffold(
         topBar = {
@@ -68,11 +77,44 @@ fun TransformVideoPage(
                 actions = {
                     TextButton(
                         onClick = {
-                            resultEmoji = viewModel.createEmoji(viewModel.videoUri)
-                            Log.d("TransformVideoPage", "resultEmoji: $resultEmoji")
+                            if (createdEmojiList.isEmpty()) {
+                                coroutineScope.launch {
+                                    createdEmojiList = viewModel.createEmoji(viewModel.videoUri)
+                                    Log.d("TransformVideoPage", "createdEmojis: $createdEmojiList")
+                                }
+                            }
+                            else {
+                                var realPath: String? = null
+                                // Query to get the actual file path
+                                val projection = arrayOf(MediaStore.Images.Media.DATA)
+                                val cursor = context.contentResolver.query(
+                                    viewModel.videoUri, projection, null, null, null
+                                )
+
+                                cursor?.use {
+                                    val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                                    it.moveToFirst()
+                                    realPath = it.getString(columnIndex)
+                                }
+
+                                val videoFile = File(realPath)
+                                Log.d("TransformVideoPage", "videoPath: $realPath")
+                                coroutineScope.launch {
+                                    // FIXME: add choose emoji dialog from topK emojis
+                                    val success = viewModel.uploadEmoji(
+                                        createdEmojiList[0].emojiUnicode,
+                                        createdEmojiList[0].emojiClassName,
+                                        videoFile
+                                    )
+                                    Log.d("TransformVideoPage", "success: $success")
+                                    if (success) {
+                                        showSuccessDialog = true
+                                    }
+                                }
+                            }
                         },
                     ) {
-                        Text(text = if (resultEmoji != null) "업로드" else "변환", color = Color.Black)
+                        Text(text = if (createdEmojiList.isNotEmpty()) "업로드" else "변환", color = Color.Black)
                     }
                 }
             )
@@ -92,18 +134,18 @@ fun TransformVideoPage(
                     .fillMaxSize()
             )
 
-            if (resultEmoji != null) {
+            if (createdEmojiList.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = resultEmoji!!.second,
+                        text = createdEmojiList[0].emojiUnicode.toEmoji(),
                         fontSize = 48.sp
                     )
                     Text (
-                        text = resultEmoji!!.first,
+                        text = createdEmojiList[0].emojiClassName,
                         fontSize = 48.sp
                     )
                     Text (
@@ -111,6 +153,14 @@ fun TransformVideoPage(
                         fontSize = 24.sp,
                     )
                 }
+            }
+
+            if (showSuccessDialog) {
+                CustomDialog(
+                    title = "완료",
+                    body = "동영상 업로드가 완료되었습니다.",
+                    confirm = { navController.popBackStack() }
+                )
             }
         }
     }

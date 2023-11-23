@@ -20,12 +20,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
+import com.goliath.emojihub.views.LoginNavigation
 import com.goliath.emojihub.views.LoginPage
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
@@ -45,15 +47,11 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-                ) {
+                Box(Modifier.fillMaxSize().background(Color.White)) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
                     val error by apiErrorController.apiErrorState.collectAsState()
                     if (token.isNullOrEmpty()) {
-                        LoginPage()
+                        LoginView()
                     } else {
                         RootView()
                     }
@@ -72,7 +70,18 @@ class RootActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@Composable
+fun LoginView() {
+    val navController = rememberNavController()
+
+    CompositionLocalProvider(
+        LocalNavController provides navController
+    ) {
+        LoginNavigation(navController = navController)
+    }
+}
+
 @Composable
 fun RootView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()

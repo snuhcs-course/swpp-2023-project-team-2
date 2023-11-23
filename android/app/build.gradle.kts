@@ -80,12 +80,14 @@ dependencies {
     // jetpack compose
     implementation("androidx.activity:activity-compose:1.8.0")
     implementation("androidx.activity:activity-ktx:1.8.0")
-    implementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material:1.5.3")
+    implementation("androidx.paging:paging-compose:3.2.1")
+    implementation("androidx.paging:paging-runtime-ktx:3.2.1")
 
     // jetpack compose extended icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
