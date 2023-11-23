@@ -2,7 +2,7 @@ package com.goliath.emojihub.springboot.domain.post.dto
 
 import kotlin.streams.asSequence
 
-data class PostDto(
+class PostDto(
     var id: String = "",
     var created_by: String = "",
     var content: String = "",

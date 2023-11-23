@@ -62,14 +62,7 @@ class UserService(
                 if (username != emoji.created_by) continue
                 val blobName = username + "_" + emoji.created_at + ".mp4"
                 emojiDao.deleteFileInStorage(blobName)
-                userDao.deleteAllSavedEmojiId(emojiId)
-                emojiDao.deleteEmoji(emojiId)
-            }
-        }
-        if (savedEmojiIds != null) {
-            for (emojiId in savedEmojiIds) {
-                if (!emojiDao.existsEmoji(emojiId)) continue
-                emojiDao.numSavedChange(emojiId, -1)
+                emojiDao.deleteEmoji(username, emojiId)
             }
         }
         if (savedEmojiIds != null) {

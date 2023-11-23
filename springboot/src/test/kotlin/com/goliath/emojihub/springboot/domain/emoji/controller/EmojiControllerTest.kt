@@ -62,7 +62,7 @@ internal class EmojiControllerTest @Autowired constructor(
                     emoji_unicode = emojiUnicode + i,
                     emoji_label = emojiLabel + i,
                     created_at = createdAt + i,
-                    num_saved = i
+                    num_saved = i.toLong()
                 )
             )
         }
@@ -160,7 +160,7 @@ internal class EmojiControllerTest @Autowired constructor(
 
         // then
         result.andExpect(status().isCreated)
-        verify(emojiService, times(1)).postEmoji(any(), any(), any(), any())
+        verify(emojiService, times(1)).postEmoji(any(), any(), any())
     }
 
     @Test

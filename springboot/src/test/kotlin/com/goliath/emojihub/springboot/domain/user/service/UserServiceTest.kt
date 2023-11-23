@@ -276,11 +276,11 @@ internal class UserServiceTest {
         for (i in 0 until ceSize) {
             verify(emojiDao, times(1)).getEmoji(createdEmojiIds[i])
             verify(emojiDao, times(1)).deleteFileInStorage(blobNames[i])
-            verify(emojiDao, times(1)).deleteEmoji(createdEmojiIds[i])
+            verify(emojiDao, times(1)).deleteEmoji(username, createdEmojiIds[i])
         }
         for (i in 0 until seSize) {
             verify(emojiDao, times(1)).existsEmoji(savedEmojiIds[i])
-            verify(emojiDao, times(1)).numSavedChange(savedEmojiIds[i], -1)
+            verify(emojiDao, times(1)).unSaveEmoji(username, savedEmojiIds[i])
         }
         for (i in 0 until pSize) {
             verify(postDao, times(1)).getPost(postIds[i])
