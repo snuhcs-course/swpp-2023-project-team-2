@@ -72,12 +72,6 @@ class UserService(
                 emojiDao.numSavedChange(emojiId, -1)
             }
         }
-        if (savedEmojiIds != null) {
-            for (emojiId in savedEmojiIds) {
-                if (!emojiDao.existsEmoji(emojiId)) continue
-                emojiDao.unSaveEmoji(username, emojiId)
-            }
-        }
         if (postIds != null) {
             for (postId in postIds) {
                 val post = postDao.getPost(postId) ?: continue
