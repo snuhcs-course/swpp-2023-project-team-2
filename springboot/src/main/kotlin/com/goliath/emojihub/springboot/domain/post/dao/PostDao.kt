@@ -37,6 +37,18 @@ class PostDao(
         return list
     }
 
+    fun getMyPosts(username: String): List<PostDto> {
+        val list = mutableListOf<PostDto>()
+        val postsRef = db.collection(POST_COLLECTION_NAME)
+        val postQuery = postsRef.whereEqualTo("created_by", username)
+            .orderBy("created_at", Query.Direction.DESCENDING)
+        val documents = postQuery.get().get().documents
+        for (document in documents) {
+            list.add(document.toObject(PostDto::class.java))
+        }
+        return list
+    }
+
     fun getPost(postId: String): PostDto? {
         val future = db.collection(POST_COLLECTION_NAME).document(postId).get()
         val document: DocumentSnapshot = future.get()

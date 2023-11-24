@@ -101,6 +101,45 @@ internal class PostServiceTest {
     }
 
     @Test
+    @DisplayName("자신의 게시글 데이터 가져오기")
+    fun getMyPosts() {
+        // given
+        val username = "test_username"
+        val wrongUsername = "wrong_username"
+        val list = mutableListOf<PostDto>()
+        val size = 2
+        for (i in 0 until size) {
+            list.add(
+                PostDto(
+                    id = "test_id$i",
+                    created_by = username,
+                    content = "test_content$i",
+                    created_at = "test_created_at$i",
+                    modified_at = "test_modified_at$i"
+                )
+            )
+        }
+        Mockito.`when`(userDao.existUser(username)).thenReturn(true)
+        Mockito.`when`(userDao.existUser(wrongUsername)).thenReturn(false)
+        Mockito.`when`(postDao.getMyPosts(username)).thenReturn(list)
+
+        // when
+        val result = postService.getMyPosts(username)
+        val assertThrows = assertThrows(CustomHttp404::class.java) {
+            postService.getMyPosts(wrongUsername)
+        }
+
+        // then
+        assertAll(
+            { assertEquals(result, list) },
+            { assertEquals(assertThrows.message, "User doesn't exist.") }
+        )
+        verify(userDao, times(1)).existUser(username)
+        verify(userDao, times(1)).existUser(wrongUsername)
+        verify(postDao, times(1)).getMyPosts(username)
+    }
+
+    @Test
     @DisplayName("특정 게시글 데이터 가져오기")
     fun getPost() {
         // given

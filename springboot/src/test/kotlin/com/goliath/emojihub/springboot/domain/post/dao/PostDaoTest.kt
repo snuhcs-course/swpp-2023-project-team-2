@@ -126,6 +126,25 @@ internal class PostDaoTest {
     }
 
     @Test
+    fun getMyPosts() {
+        // given
+        val username = userList[0].username
+        val postListForUser = mutableListOf<PostDto>()
+        postListForUser.add(postList[1])
+        postListForUser.add(postList[0])
+        Mockito.`when`(db.collection(POST_COLLECTION_NAME))
+            .thenReturn(testDB.collection(POST_COLLECTION_NAME))
+
+        // when
+        val result = postDao.getMyPosts(username)
+
+        // then
+        assertAll(
+            { assertEquals(result, postListForUser) }
+        )
+    }
+
+    @Test
     fun getPost() {
         // given
         val id = postList[0].id
