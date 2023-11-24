@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.user.dao
 
-import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
@@ -66,7 +65,7 @@ class UserDao(
     }
 
     fun deleteAllSavedEmojiId(emojiId: String) {
-        val usersWithDeletedEmoji = db.collection(EmojiDao.USER_COLLECTION_NAME)
+        val usersWithDeletedEmoji = db.collection(USER_COLLECTION_NAME)
             .whereArrayContains("saved_emojis", emojiId)
             .get().get().documents
         for (user in usersWithDeletedEmoji) {

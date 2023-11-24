@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain.post.service
 
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 @Service
 class PostService(
     private val postDao: PostDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val reactionDao: ReactionDao
 ) {
 
     companion object {
@@ -52,7 +54,18 @@ class PostService(
         val post = postDao.getPost(postId) ?: throw CustomHttp404("Post doesn't exist.")
         if (username != post.created_by)
             throw CustomHttp403("You can't delete this post.")
+        // delete post(and post's reactions)
+        val reactionIds = post.reactions
+        if (reactionIds != null) {
+            for (reactionId in reactionIds) {
+                val reaction = reactionDao.getReaction(reactionId) ?: continue
+                if (postId != reaction.post_id) continue
+                reactionDao.deleteReaction(reactionId)
+            }
+        }
+        // delete created_post id in user
         userDao.deleteId(username, postId, CREATED_POSTS)
+        // delete post
         postDao.deletePost(postId)
     }
 }

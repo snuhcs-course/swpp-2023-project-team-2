@@ -1,11 +1,11 @@
 package com.goliath.emojihub.springboot.domain.user.service
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
-import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
-import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
-import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
@@ -46,36 +46,26 @@ internal class UserServiceTest {
     @MockBean
     lateinit var postDao: PostDao
 
+    @MockBean
+    lateinit var reactionDao: ReactionDao
+
+    companion object {
+        const val CREATED_BY = "created_by"
+        const val EMOJI_ID = "emoji_id"
+        val testDto = TestDto()
+    }
+
     @Test
     @DisplayName("유저 데이터 가져오기")
     fun getUsers() {
         // given
-        val list = mutableListOf<UserDto>()
-        val size = 2
-        val email = "test_email"
-        val username = "test_username"
-        val password = "test_password"
-        for (i in 0 until size) {
-            list.add(
-                UserDto(
-                    email = email + i,
-                    username = username + i,
-                    password = password + i,
-                )
-            )
-        }
-        Mockito.`when`(userDao.getUsers()).thenReturn(list)
+        Mockito.`when`(userDao.getUsers()).thenReturn(testDto.userList)
 
         // when
         val result = userService.getUsers()
 
         // then
-        assertAll(
-            { assertEquals(result.size, size) },
-            { assertEquals(result[0].email, email + 0) },
-            { assertEquals(result[0].username, username + 0) },
-            { assertEquals(result[0].password, password + 0) }
-        )
+        assertEquals(result, testDto.userList)
         verify(userDao, times(1)).getUsers()
     }
 
@@ -83,103 +73,95 @@ internal class UserServiceTest {
     @DisplayName("회원가입 실패: 아이디 중복")
     fun signUpFail() {
         // given
-        val email = "test_email"
-        val username = "test_username"
-        val password = "test_password"
-        Mockito.`when`(userDao.existUser(username)).thenReturn(true)
+        val user = testDto.userList[0]
+        Mockito.`when`(userDao.existUser(user.username)).thenReturn(true)
 
         // when
         val assertThrows = assertThrows(CustomHttp409::class.java) {
-            userService.signUp(email, username, password)
+            userService.signUp(user.email, user.username, user.password)
         }
 
         // then
         assertEquals(assertThrows.message, "Id already exists.")
+        verify(userDao, times(1)).existUser(user.username)
     }
 
     @Test
     @DisplayName("회원가입 성공")
     fun signUpSucceed() {
         // given
-        val email = "test_email"
-        val username = "test_username"
-        val password = "test_password"
+        val user = testDto.userList[0]
         val authToken = "test_authToken"
-        Mockito.`when`(userDao.existUser(username)).thenReturn(false)
         val encodedPassword = "test_encoded_password"
-        Mockito.`when`(passwordEncoder.encode(password)).thenReturn(encodedPassword)
-        Mockito.`when`(jwtTokenProvider.createToken(username)).thenReturn(authToken)
+        Mockito.`when`(userDao.existUser(user.username)).thenReturn(false)
+        Mockito.`when`(passwordEncoder.encode(user.password)).thenReturn(encodedPassword)
+        Mockito.`when`(jwtTokenProvider.createToken(user.username)).thenReturn(authToken)
 
         // when
-        val result = userService.signUp(email, username, password)
+        val result = userService.signUp(user.email, user.username, user.password)
 
         // then
         assertEquals(result.accessToken, authToken)
+        verify(userDao, times(1)).existUser(user.username)
+        verify(passwordEncoder, times(1)).encode(user.password)
+        verify(jwtTokenProvider, times(1)).createToken(user.username)
     }
 
     @Test
     @DisplayName("로그인 실패1: 아이디 존재 X")
     fun loginFail1() {
         // given
-        val username = "test_username"
-        val password = "test_password"
-        Mockito.`when`(userDao.getUser(username)).thenReturn(null)
+        val user = testDto.userList[0]
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(null)
 
         // when
         val assertThrows = assertThrows(CustomHttp404::class.java) {
-            userService.login(username, password)
+            userService.login(user.username, user.password)
         }
 
         // then
         assertEquals(assertThrows.message, "Id doesn't exist.")
+        verify(userDao, times(1)).getUser(user.username)
     }
 
     @Test
     @DisplayName("로그인 실패2: 비밀번호 불일치")
     fun loginFail2() {
         // given
-        val username = "test_username"
-        val password = "test_password"
-        val user = UserDto(
-            email = "test_email",
-            username = "test_username",
-            password = "different_encoded_password"
-        )
-        Mockito.`when`(userDao.getUser(username)).thenReturn(user)
-        Mockito.`when`(passwordEncoder.matches(password, user.password)).thenReturn(false)
+        val user = testDto.userList[0]
+        val wrongPassword = "wrong_password"
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(passwordEncoder.matches(wrongPassword, user.password)).thenReturn(false)
 
         // when
         val assertThrows = assertThrows(CustomHttp401::class.java) {
-            userService.login(username, password)
+            userService.login(user.username, wrongPassword)
         }
 
         // then
         assertEquals(assertThrows.message, "Password is incorrect.")
+        verify(userDao, times(1)).getUser(user.username)
+        verify(passwordEncoder, times(1)).matches(wrongPassword, user.password)
     }
 
     @Test
     @DisplayName("로그인 성공")
     fun loginSucceed() {
         // given
-        val username = "test_username"
-        val password = "test_password"
-        val user = UserDto(
-            email = "test_email",
-            username = "test_username",
-            password = "test_encoded_password"
-        )
+        val user = testDto.userList[0]
         val authToken = "test_authToken"
-        Mockito.`when`(userDao.getUser(username)).thenReturn(user)
-        Mockito.`when`(passwordEncoder.matches(password, user.password)).thenReturn(true)
-        Mockito.`when`(jwtTokenProvider.createToken(username)).thenReturn(authToken)
-
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(passwordEncoder.matches(user.password, user.password)).thenReturn(true)
+        Mockito.`when`(jwtTokenProvider.createToken(user.username)).thenReturn(authToken)
 
         // when
-        val result = userService.login(username, password)
-
+        val result = userService.login(user.username, user.password)
 
         // then
         assertEquals(result.accessToken, authToken)
+        verify(userDao, times(1)).getUser(user.username)
+        verify(passwordEncoder, times(1)).matches(user.password, user.password)
+        verify(jwtTokenProvider, times(1)).createToken(user.username)
     }
 
     @Test
@@ -196,7 +178,7 @@ internal class UserServiceTest {
     @DisplayName("회원탈퇴 실패: 유저 존재 X")
     fun signOutFail() {
         // given
-        val username = "test_username"
+        val username = "wrong_username"
         Mockito.`when`(userDao.getUser(username)).thenReturn(null)
 
         // when
@@ -206,65 +188,45 @@ internal class UserServiceTest {
 
         // then
         assertEquals(assertThrows.message, "User doesn't exist.")
+        verify(userDao, times(1)).getUser(username)
     }
 
     @Test
     @DisplayName("회원탈퇴 성공")
     fun signOut() {
         // given
-        val username = "test_username"
+        val n = 0
+        val user = testDto.userList[n]
+        val username = user.username
 
-        val createdEmojiIds = mutableListOf<String>()
-        val savedEmojiIds = mutableListOf<String>()
-        val postIds = mutableListOf<String>()
+        val myReactions = mutableListOf<ReactionDto>()
+        for (reactions in testDto.reactionList) {
+            if (reactions.created_by == username) {
+                myReactions.add(reactions)
+            }
+        }
 
-        val ceSize = 2
-        val seSize = 2
-        val pSize = 2
-        val createdEmojis = mutableListOf<EmojiDto>()
-        val createdPosts = mutableListOf<PostDto>()
-        val blobNames = mutableListOf<String>()
-        for (i in 0 until ceSize) {
-            createdEmojiIds.add("test_createdEmojiId$i")
-            createdEmojis.add(
-                EmojiDto(
-                    id = createdEmojiIds[i],
-                    created_by = username,
-                    created_at = "test_created_at$i"
-                )
-            )
-            blobNames.add(
-                username + "_" + createdEmojis[i].created_at + ".mp4"
-            )
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(reactionDao.getReactionsWithField(user.username, CREATED_BY)).thenReturn(myReactions)
+        for (post in testDto.postList) {
+            Mockito.`when`(postDao.getPost(post.id)).thenReturn(post)
         }
-        for (i in 0 until seSize)
-            savedEmojiIds.add("test_savedEmojiId$i")
-        for (i in 0 until pSize) {
-            postIds.add("test_postId$i")
-            createdPosts.add(
-                PostDto(
-                    id = postIds[i],
-                    created_by = username,
-                )
-            )
+        for (reaction in testDto.reactionList) {
+            Mockito.`when`(reactionDao.getReaction(reaction.id)).thenReturn(reaction)
         }
-        val user = UserDto(
-            email = "test_email",
-            username = "test_username",
-            password = "test_encoded_password",
-            created_emojis = createdEmojiIds,
-            saved_emojis = savedEmojiIds,
-            created_posts = postIds
-        )
-        Mockito.`when`(userDao.getUser(username)).thenReturn(user)
-        for (i in 0 until ceSize) {
-            Mockito.`when`(emojiDao.getEmoji(createdEmojiIds[i])).thenReturn(createdEmojis[i])
+        for (emoji in testDto.emojiList) {
+            Mockito.`when`(emojiDao.getEmoji(emoji.id)).thenReturn(emoji)
+            Mockito.`when`(emojiDao.existsEmoji(emoji.id)).thenReturn(true)
         }
-        for (i in 0 until seSize) {
-            Mockito.`when`(emojiDao.existsEmoji(savedEmojiIds[i])).thenReturn(true)
-        }
-        for (i in 0 until pSize) {
-            Mockito.`when`(postDao.getPost(postIds[i])).thenReturn(createdPosts[i])
+        for (userDto in testDto.userList) {
+            val firstEmojiId = userDto.created_emojis!![0]
+            val reactions = mutableListOf<ReactionDto>()
+            for (reaction in testDto.reactionList) {
+                if (reaction.emoji_id == firstEmojiId) {
+                    reactions.add(reaction)
+                }
+            }
+            Mockito.`when`(reactionDao.getReactionsWithField(firstEmojiId, EMOJI_ID)).thenReturn(reactions)
         }
 
         // when
@@ -273,19 +235,6 @@ internal class UserServiceTest {
         // then
         assertEquals(result, Unit)
         verify(userDao, times(1)).getUser(username)
-        for (i in 0 until ceSize) {
-            verify(emojiDao, times(1)).getEmoji(createdEmojiIds[i])
-            verify(emojiDao, times(1)).deleteFileInStorage(blobNames[i])
-            verify(emojiDao, times(1)).deleteEmoji(createdEmojiIds[i])
-        }
-        for (i in 0 until seSize) {
-            verify(emojiDao, times(1)).existsEmoji(savedEmojiIds[i])
-            verify(emojiDao, times(1)).numSavedChange(savedEmojiIds[i], -1)
-        }
-        for (i in 0 until pSize) {
-            verify(postDao, times(1)).getPost(postIds[i])
-            verify(postDao, times(1)).deletePost(postIds[i])
-        }
         verify(userDao, times(1)).deleteUser(username)
     }
 }
