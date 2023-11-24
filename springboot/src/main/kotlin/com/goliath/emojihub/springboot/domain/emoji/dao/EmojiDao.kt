@@ -6,6 +6,7 @@ import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import lombok.extern.slf4j.Slf4j
+import org.apache.http.entity.ContentType
 import org.springframework.stereotype.Repository
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
@@ -50,11 +51,12 @@ class EmojiDao(
         return document.toObject(EmojiDto::class.java)
     }
 
-    fun insertEmoji(username: String, file: MultipartFile, emojiUnicode: String, emojiLabel: String, dateTime: String): EmojiDto {
+    fun insertEmoji(username: String, file: MultipartFile, thumbnail: MultipartFile, emojiUnicode: String, emojiLabel: String, dateTime: String): EmojiDto {
         // NOTE: created_by(username)을 video이름으로 넣어주어 유저별로 올린 비디오를 구분할 수 있게 한다.
+        val blobIdPart = username + "_" + dateTime
         val emojiVideoBlobId: BlobId = BlobId.of(
             EMOJI_STORAGE_BUCKET_NAME,
-            username + "_" + dateTime + ".mp4"
+            "$blobIdPart.mp4"
         )
         val emojiVideoBlob: BlobInfo = BlobInfo.newBuilder(emojiVideoBlobId)
             .setContentType("video/mp4")
@@ -62,7 +64,16 @@ class EmojiDao(
         storage.createFrom(emojiVideoBlob, ByteArrayInputStream(file.bytes))
         val emojiVideoUrl = storage.get(emojiVideoBlobId).signUrl(100, TimeUnit.DAYS)
         // upload video thumbnail to emojiBucket
-        val emoji = EmojiDto(username, emojiUnicode, emojiLabel, emojiVideoUrl.toString(), dateTime)
+        val thumbnailBlobId: BlobId = BlobId.of(
+            EMOJI_STORAGE_BUCKET_NAME,
+            "$blobIdPart.jpeg"
+        )
+        val thumbnailBlob: BlobInfo = BlobInfo.newBuilder(thumbnailBlobId)
+            .setContentType(ContentType.IMAGE_JPEG.toString())
+            .build()
+        storage.createFrom(thumbnailBlob, ByteArrayInputStream(thumbnail.bytes))
+        val thumbnailUrl = storage.get(thumbnailBlobId).signUrl(100, TimeUnit.DAYS)
+        val emoji = EmojiDto(username, emojiUnicode, emojiLabel, emojiVideoUrl.toString(), dateTime, thumbnailUrl.toString())
         db.collection(EMOJI_COLLECTION_NAME)
             .document(emoji.id)
             .set(emoji)

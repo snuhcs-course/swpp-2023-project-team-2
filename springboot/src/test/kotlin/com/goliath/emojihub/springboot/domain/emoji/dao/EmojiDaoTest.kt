@@ -44,7 +44,7 @@ internal class EmojiDaoTest {
     lateinit var blob: Blob
 
     @MockBean
-    lateinit var emojiURL: URL
+    lateinit var url: URL
 
     companion object {
 
@@ -84,6 +84,7 @@ internal class EmojiDaoTest {
                             id = "test_emoji" + i + "_" + j,
                             created_by = "test_username$i",
                             video_url = "test_video_url" + i + "_" + j,
+                            thumbnail_url = "test_thumbnail_url" + i + "_" + j,
                             emoji_unicode = "test_emoji_unicode" + i + "_" + j,
                             emoji_label = "test_emoji_label" + i + "_" + j,
                             created_at = "test_created_at" + i + "_" + j,
@@ -144,26 +145,35 @@ internal class EmojiDaoTest {
         val username = userList[1].username
         val audioContent = ByteArray(100)
         val file = MockMultipartFile("file", "test.mp4", "audio/mp4", audioContent)
+        val imageContent = ByteArray(100)
+        val thumbnail = MockMultipartFile("thumbnail", "test.jpeg", "image/jpeg", imageContent)
         val emojiUnicode = "test_emoji_unicode"
         val emojiLabel = "test_emoji_label"
-        val emojiVideoUrl = "test_emoji_video_url"
+        val url = "test_url"
         val dateTime = "test_date_time"
+        val blobIdPart = username + "_" + dateTime
         val emojiVideoBlobId: BlobId = BlobId.of(
             "emojihub-e2023.appspot.com",
-            username + "_" + dateTime + ".mp4"
+            "$blobIdPart.mp4"
+        )
+        val thumbnailBlobId: BlobId = BlobId.of(
+            "emojihub-e2023.appspot.com",
+            "$blobIdPart.jpeg"
         )
         Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
             .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
         Mockito.`when`(storage.get(emojiVideoBlobId)).thenReturn(blob)
-        Mockito.`when`(blob.signUrl(100, TimeUnit.DAYS)).thenReturn(emojiURL)
-        Mockito.`when`(emojiURL.toString()).thenReturn(emojiVideoUrl)
+        Mockito.`when`(storage.get(thumbnailBlobId)).thenReturn(blob)
+        Mockito.`when`(blob.signUrl(100, TimeUnit.DAYS)).thenReturn(this.url)
+        Mockito.`when`(this.url.toString()).thenReturn(url)
 
         // when
-        val result = emojiDao.insertEmoji(username, file, emojiUnicode, emojiLabel, dateTime)
+        val result = emojiDao.insertEmoji(username, file, thumbnail, emojiUnicode, emojiLabel, dateTime)
 
         // then
         verify(storage, times(1)).get(emojiVideoBlobId)
-        verify(blob, times(1)).signUrl(100, TimeUnit.DAYS)
+        verify(storage, times(1)).get(thumbnailBlobId)
+        verify(blob, times(2)).signUrl(100, TimeUnit.DAYS)
 
         var emojiExist = emojiDao.existsEmoji(result.id)
         var a = 1
