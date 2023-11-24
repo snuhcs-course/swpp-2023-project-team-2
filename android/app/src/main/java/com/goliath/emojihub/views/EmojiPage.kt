@@ -44,7 +44,6 @@ import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
 fun EmojiPage(
-//    emojiList: List<Emoji>
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -120,9 +119,3 @@ fun EmojiPage(
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun EmojiPagePreview() {
-//    EmojiPage(emojiList = (1..10).map { createDummyEmoji() })
-//}

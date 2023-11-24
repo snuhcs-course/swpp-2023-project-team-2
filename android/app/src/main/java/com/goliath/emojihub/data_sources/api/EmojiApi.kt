@@ -31,6 +31,7 @@ interface EmojiApi {
     @POST("emoji")
     suspend fun uploadEmoji(
         @Part file: MultipartBody.Part,
+        @Part thumbnail: MultipartBody.Part,
         @Part("postEmojiRequest") emojiDto: RequestBody
     ): Response<Unit>
 

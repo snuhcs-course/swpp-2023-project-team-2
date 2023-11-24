@@ -92,6 +92,9 @@ dependencies {
     // jetpack compose extended icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
+    // coil
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     // test tools
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test.ext:junit:1.1.5")
