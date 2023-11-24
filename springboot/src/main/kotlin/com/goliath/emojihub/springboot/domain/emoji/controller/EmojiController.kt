@@ -13,6 +13,11 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/emoji")
 class EmojiController(private val emojiService: EmojiService) {
 
+    companion object {
+        const val CREATED_EMOJIS = "created_emojis"
+        const val SAVED_EMOJIS = "saved_emojis"
+    }
+
     @PostMapping
     fun postEmoji(
         @CurrentUser username: String,
@@ -30,6 +35,20 @@ class EmojiController(private val emojiService: EmojiService) {
         @RequestParam(value = "count", defaultValue = 10.toString()) count: Int,
     ): ResponseEntity<List<EmojiDto>> {
         return ResponseEntity.ok(emojiService.getEmojis(sortByDate, index, count))
+    }
+
+    @GetMapping("/me/created")
+    fun getMyCreatedEmojis(
+        @CurrentUser username: String
+    ): ResponseEntity<List<EmojiDto>> {
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS))
+    }
+
+    @GetMapping("/me/saved")
+    fun getMySavedEmojis(
+        @CurrentUser username: String
+    ): ResponseEntity<List<EmojiDto>> {
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS))
     }
 
     @GetMapping("/{id}")
