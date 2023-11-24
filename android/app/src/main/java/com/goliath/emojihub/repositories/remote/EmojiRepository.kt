@@ -106,10 +106,9 @@ class EmojiRepositoryImpl @Inject constructor(
             val bitmap = retriever.frameAtTime
 
             bitmap?.let {
-                // Create a temporary file to store the thumbnail
                 val thumbnailFile = File(context.cacheDir, "thumbnail_${videoFile.name}.jpg")
                 FileOutputStream(thumbnailFile).use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out) // Compress and write to file
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 75, out)
                 }
                 Log.d("create_TN", "Thumbnail created: ${thumbnailFile.absolutePath}")
                 return thumbnailFile
