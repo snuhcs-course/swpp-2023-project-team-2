@@ -4,13 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.goliath.emojihub.data_sources.EmojiPagingSource
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
-import com.goliath.emojihub.models.FetchEmojiListDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import okhttp3.MediaType
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -23,7 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EmojiRepository {
-    suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto>
+    suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
     suspend fun saveEmoji(id: String): Response<Unit>
@@ -36,21 +39,11 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi,
     @ApplicationContext private val context: Context
 ): EmojiRepository {
-    override suspend fun fetchEmojiList(numLimit: Int): List<EmojiDto> {
-        try {
-            val response = emojiApi.fetchEmojiList(1, 1, 6)
-
-            if(response.isSuccessful && response.body() != null) {
-                Log.d("Fetch_E_L", "Successfully fetched ${response.body()!!.size} emojis")
-                return response.body()!!
-            } else {
-                val errorBody = response.errorBody()?.string() ?: "Unknown error"
-                Log.d("Fetch_E_L", "Failed to fetch emojis: $errorBody")
-            }
-        } catch(e: Exception) {
-            Log.e("Fetch_E_L", "Error fetching emojis", e)
-        }
-        return listOf()
+    override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { EmojiPagingSource(emojiApi) }
+        ).flow
     }
 
     override suspend fun getEmojiWithId(id: String): EmojiDto? {

@@ -1,0 +1,38 @@
+name: Springboot CI
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./springboot
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Add test account key from secrets
+      run: |
+        echo "${{ secrets.FIREBASE_TEST_ACCOUNT_KEY }}" | base64 -d > \
+        src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json
+        ls -al src/test/kotlin/com/goliath/emojihub/springboot/
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew clean build
+    - name: Test with Gradle
+      run: ./gradlew test

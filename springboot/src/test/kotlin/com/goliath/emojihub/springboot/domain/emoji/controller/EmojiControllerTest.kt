@@ -6,10 +6,11 @@ import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import org.hamcrest.Matchers
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.DisplayName
-import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.times
@@ -36,6 +37,30 @@ internal class EmojiControllerTest @Autowired constructor(
     @MockBean
     lateinit var emojiService: EmojiService
 
+    companion object {
+        const val CREATED_EMOJIS = "created_emojis"
+        const val SAVED_EMOJIS = "saved_emojis"
+        var emojiList: MutableList<EmojiDto> = mutableListOf()
+        const val size = 2
+
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            for (i in 0 until size) {
+                emojiList.add(
+                    EmojiDto(
+                        id = "test_id$i",
+                        created_by = "test_created_by$i",
+                        video_url = "test_video_url$i",
+                        emoji_unicode = "test_video_url$i",
+                        emoji_label = "test_emoji_label$i",
+                        created_at = "test_created_at$i",
+                        num_saved = i
+                    )
+                )
+            }
+        }
+    }
 
     @Test
     @WithCustomUser
@@ -45,34 +70,7 @@ internal class EmojiControllerTest @Autowired constructor(
         val sortByDate = 0
         val index = 1
         val count = 10
-        val list = mutableListOf<EmojiDto>()
-        val size = 2
-        val id = "test_id"
-        val createdBy = "test_created_by"
-        val videoUrl = "test_video_url"
-        val emojiUnicode = "test_emoji_unicode"
-        val emojiLabel = "test_emoji_label"
-        val createdAt = "test_created_at"
-        for (i in 0 until size) {
-            list.add(
-                EmojiDto(
-                    id = id + i,
-                    created_by = createdBy + i,
-                    video_url = videoUrl + i,
-                    emoji_unicode = emojiUnicode + i,
-                    emoji_label = emojiLabel + i,
-                    created_at = createdAt + i,
-                    num_saved = i.toLong()
-                )
-            )
-        }
-        given(
-            emojiService.getEmojis(
-                anyInt(),
-                anyInt(),
-                anyInt()
-            )
-        ).willReturn(list)
+        Mockito.`when`(emojiService.getEmojis(sortByDate, index, count)).thenReturn(emojiList)
 
         // when
         val result = this.mockMvc.perform(
@@ -86,15 +84,64 @@ internal class EmojiControllerTest @Autowired constructor(
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
-            .andExpect(jsonPath("$[0].id").value(id + 0))
-            .andExpect(jsonPath("$[0].created_by").value(createdBy + 0))
-            .andExpect(jsonPath("$[0].video_url").value(videoUrl + 0))
-            .andExpect(jsonPath("$[0].emoji_unicode").value(emojiUnicode + 0))
-            .andExpect(jsonPath("$[0].emoji_label").value(emojiLabel + 0))
-            .andExpect(jsonPath("$[0].created_at").value(createdAt + 0))
-            .andExpect(jsonPath("$[0].num_saved").value(0))
-        verify(emojiService).getEmojis(sortByDate, index, count)
+            .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
+            .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
+            .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
+            .andExpect(jsonPath("$[0].emoji_unicode").value(emojiList[0].emoji_unicode))
+            .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
+            .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
+            .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
+        verify(emojiService, times(1)).getEmojis(sortByDate, index, count)
+    }
 
+    @Test
+    @WithCustomUser
+    @DisplayName("자신이 만든 이모지 데이터 가져오기 테스트")
+    fun getMyCreatedEmojis() {
+        // given
+        val username = "custom_username"
+        Mockito.`when`(emojiService.getMyEmojis(username, CREATED_EMOJIS)).thenReturn(emojiList)
+
+        // when
+        val result = this.mockMvc.perform(get("/api/emoji/me/created"))
+
+        // then
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
+            .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
+            .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
+            .andExpect(jsonPath("$[0].emoji_unicode").value(emojiList[0].emoji_unicode))
+            .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
+            .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
+            .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
+        verify(emojiService, times(1)).getMyEmojis(username, CREATED_EMOJIS)
+    }
+
+    @Test
+    @WithCustomUser
+    @DisplayName("자신이 저장한 이모지 데이터 가져오기 테스트")
+    fun getMySavedEmojis() {
+        // given
+        val username = "custom_username"
+        Mockito.`when`(emojiService.getMyEmojis(username, SAVED_EMOJIS)).thenReturn(emojiList)
+
+        // when
+        val result = this.mockMvc.perform(get("/api/emoji/me/saved"))
+
+        // then
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
+            .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
+            .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
+            .andExpect(jsonPath("$[0].emoji_unicode").value(emojiList[0].emoji_unicode))
+            .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
+            .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
+            .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
+        verify(emojiService, times(1)).getMyEmojis(username, SAVED_EMOJIS)
     }
 
     @Test
@@ -102,30 +149,23 @@ internal class EmojiControllerTest @Autowired constructor(
     @DisplayName("특정 이모지 데이터 가져오기 테스트")
     fun getEmoji() {
         // given
-        val emojiDto = EmojiDto(
-            id = "test_id",
-            created_by = "test_created_by",
-            video_url = "test_video_url",
-            emoji_unicode = "test_emoji_unicode",
-            emoji_label = "test_emoji_label",
-            created_at = "test_created_at",
-            num_saved = 1
-        )
-        given(emojiService.getEmoji(any())).willReturn(emojiDto)
+        val emoji = emojiList[0]
+        given(emojiService.getEmoji(any())).willReturn(emoji)
 
         // when
-        val result = mockMvc.perform(get("/api/emoji/{id}", emojiDto.id))
+        val result = mockMvc.perform(get("/api/emoji/{id}", emoji.id))
 
         // then
         result.andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(emojiDto.id))
-            .andExpect(jsonPath("$.created_by").value(emojiDto.created_by))
-            .andExpect(jsonPath("$.video_url").value(emojiDto.video_url))
-            .andExpect(jsonPath("$.emoji_unicode").value(emojiDto.emoji_unicode))
-            .andExpect(jsonPath("$.emoji_label").value(emojiDto.emoji_label))
-            .andExpect(jsonPath("$.created_at").value(emojiDto.created_at))
-            .andExpect(jsonPath("$.num_saved").value(emojiDto.num_saved))
-        verify(emojiService).getEmoji(emojiDto.id)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(emoji.id))
+            .andExpect(jsonPath("$.created_by").value(emoji.created_by))
+            .andExpect(jsonPath("$.video_url").value(emoji.video_url))
+            .andExpect(jsonPath("$.emoji_unicode").value(emoji.emoji_unicode))
+            .andExpect(jsonPath("$.emoji_label").value(emoji.emoji_label))
+            .andExpect(jsonPath("$.created_at").value(emoji.created_at))
+            .andExpect(jsonPath("$.num_saved").value(emoji.num_saved))
+        verify(emojiService).getEmoji(emoji.id)
     }
 
     @Test
@@ -135,6 +175,8 @@ internal class EmojiControllerTest @Autowired constructor(
         // given
         val audioContent = ByteArray(100)
         val audioFile = MockMultipartFile("file", "test.mp4", "audio/mp4", audioContent)
+        val imageContent = ByteArray(100)
+        val thumbnail = MockMultipartFile("thumbnail", "test.jpeg", "image/jpeg", imageContent)
         val request = PostEmojiRequest(
             emoji_unicode = "test_emoji_unicode",
             emoji_label = "test_emoji_label"
@@ -151,16 +193,16 @@ internal class EmojiControllerTest @Autowired constructor(
         val result = mockMvc.perform(
             multipart("/api/emoji")
                 .file(audioFile)
+                .file(thumbnail)
                 .file(requestFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .characterEncoding("UTF-8")
-                .with { request -> request.method = "POST"; request }
                 .with(csrf())
         )
 
         // then
         result.andExpect(status().isCreated)
-        verify(emojiService, times(1)).postEmoji(any(), any(), any())
+        verify(emojiService, times(1)).postEmoji(any(), any(), any(), any(), any())
     }
 
     @Test

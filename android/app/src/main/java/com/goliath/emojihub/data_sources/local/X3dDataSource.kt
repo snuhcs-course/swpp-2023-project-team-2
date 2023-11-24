@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.X3dInferenceResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import org.pytorch.IValue
@@ -25,13 +27,12 @@ interface X3dDataSource {
     ): Pair<String, String>?
     fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
-    fun runInference(x3dModule: Module, videoTensor: Tensor): Pair<Int, Float>
+    fun runInference(x3dModule: Module, videoTensor: Tensor, topK: Int): List<X3dInferenceResult>
     fun indexToEmojiInfo(
-        maxScoreIdx: Int,
+        inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): Pair<String, String>?
-    fun assetFilePath(assetName: String): String
+    ): List<CreatedEmoji>
 }
 
 @Singleton
@@ -118,7 +119,7 @@ class X3dDataSourceImpl @Inject constructor(
 
             val inTensorBuffer = Tensor.allocateFloatBuffer(MODEL_INPUT_SIZE)
             // uniformly sample from videoTensor
-//            val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
+            // val frameInterval = videoLengthInMs / COUNT_OF_FRAMES_PER_INFERENCE
             val frameInterval = ((SAMPLING_RATE * 1000) / FRAMES_PER_SECOND).toLong()
             for (i in 0 until COUNT_OF_FRAMES_PER_INFERENCE) {
                 val frameTime = i * frameInterval
@@ -162,39 +163,46 @@ class X3dDataSourceImpl @Inject constructor(
         return null
     }
 
-    override fun runInference(x3dModule: Module, videoTensor: Tensor): Pair<Int, Float> {
+    override fun runInference(
+        x3dModule: Module,
+        videoTensor: Tensor,
+        topK: Int
+    ): List<X3dInferenceResult> {
         val outputTensor = x3dModule.forward(IValue.from(videoTensor)).toTensor()
         val logits: FloatArray = outputTensor.dataAsFloatArray
         val scores = softMax(logits)
-        // for debug
+
         val sortedScores = scores.withIndex().toSortedSet(
             compareBy<IndexedValue<Float>>({ it.value },{ it.index }).reversed()
         )
-        Log.i("X3dDataSource", "sortedScores: $sortedScores")
-        val (maxScoreIdx, maxScore) = sortedScores.first()
-        Log.i("X3dDataSource", "maxScoreIdx: $maxScoreIdx, maxScore: $maxScore")
-        return Pair(maxScoreIdx, maxScore)
+        val topKScores = sortedScores.take(topK)
+        Log.i("X3dDataSource", "topKScores: $topKScores")
+        return topKScores.map { X3dInferenceResult(it.index, it.value) }
     }
 
     override fun indexToEmojiInfo(
-        maxScoreIdx: Int,
+        inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
-    ): Pair<String, String>? {
-        // TODO: after fine-tuning, map index to emoji unicode by 19 classes
-        val maxScoreClassName = JSONObject(File(classNameFilePath).readText())
-            .getString(maxScoreIdx.toString()) ?: return null
-        val maxScoreClassUnicode = JSONObject(File(classUnicodeFilePath).readText())
-            .getString(maxScoreClassName) ?: return null
-        return Pair(maxScoreClassName, maxScoreClassUnicode)
+    ): List<CreatedEmoji> {
+        val classNameJSONObject = JSONObject(File(classNameFilePath).readText())
+        val classUnicodeJSONObject = JSONObject(File(classUnicodeFilePath).readText())
+
+        val createdEmojiList = mutableListOf<CreatedEmoji>()
+        for (result in inferenceResults) {
+            val className = classNameJSONObject.getString(result.scoreIdx.toString()) ?: return emptyList()
+            val classUnicode = classUnicodeJSONObject.getString(className) ?: return emptyList()
+            createdEmojiList.add(CreatedEmoji(className, classUnicode))
+        }
+        return createdEmojiList
     }
 
-    override fun assetFilePath(assetName: String): String {
+    fun assetFilePath(assetName: String): String {
         val file = File(context.filesDir, assetName.split("/").last())
         // FIXME: assetFilePath로 호출하고자 하는 파일에 변경사항(개발자 관점)이 생길 시 반영할 수 없음
-//        if (file.exists() && file.length() > 0) {
-//            return file.absolutePath
-//        }
+        if (file.exists() && file.length() > 0) {
+            return file.absolutePath
+        }
         context.assets.open(assetName).use { inputStream ->
             FileOutputStream(file).use { outputStream ->
                 val buffer = ByteArray(4 * 1024)
