@@ -106,6 +106,36 @@ class UserUseCaseImplTest {
         )
     }
 
+    @Test
+    fun login_withWrongUserName_returnsNotFoundError() {
+        // given
+        val sampleName = "wrongName"
+        val samplePassword = "samplePassword"
+        coEvery {
+            userRepository.login(any())
+        } returns Response.error(404, mockk(relaxed=true))
+        // when
+        runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
+        // then
+        coVerify { userRepository.login(any()) }
+        verify { apiErrorController.setErrorState(404) }
+    }
+
+    @Test
+    fun login_withWrongPassword_returnsUnauthorizedError() {
+        // given
+        val sampleName = "sampleName"
+        val samplePassword = "wrongPassword"
+        coEvery {
+            userRepository.login(any())
+        } returns Response.error(401, mockk(relaxed=true))
+        // when
+        runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
+        // then
+        coVerify { userRepository.login(any()) }
+        verify { apiErrorController.setErrorState(401) }
+    }
+
     // @Test
     // TODO: Not yet implemented
     fun logout() {
