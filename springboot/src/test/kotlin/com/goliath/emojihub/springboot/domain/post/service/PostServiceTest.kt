@@ -1,7 +1,8 @@
 package com.goliath.emojihub.springboot.domain.post.service
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
-import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -32,23 +33,21 @@ internal class PostServiceTest {
     @MockBean
     lateinit var userDao: UserDao
 
+    @MockBean
+    lateinit var reactionDao: ReactionDao
+
     companion object {
         const val CREATED_POSTS = "created_posts"
+        private val testDto = TestDto()
     }
 
     @Test
     @DisplayName("게시글 올리기")
     fun postPost() {
         // given
-        val username = "test_username"
-        val content = "test_content"
-        val post = PostDto(
-            id = "test_id",
-            created_by = username,
-            content = content,
-            created_at = "test_created_at",
-            modified_at = "test_modified_at"
-        )
+        val post = testDto.postList[0]
+        val username = post.created_by
+        val content = post.content
         Mockito.`when`(postDao.insertPost(username, content)).thenReturn(post)
 
         // when
@@ -63,19 +62,7 @@ internal class PostServiceTest {
     @DisplayName("게시글 데이터 가져오기")
     fun getPosts() {
         // given
-        val list = mutableListOf<PostDto>()
-        val size = 2
-        for (i in 0 until size) {
-            list.add(
-                PostDto(
-                    id = "test_id$i",
-                    created_by = "test_created_by$i",
-                    content = "test_content$i",
-                    created_at = "test_created_at$i",
-                    modified_at = "test_modified_at$i"
-                )
-            )
-        }
+        val list = testDto.postList
         val index = 1
         val count = 10
         val wrongIndex = 0
@@ -106,19 +93,7 @@ internal class PostServiceTest {
         // given
         val username = "test_username"
         val wrongUsername = "wrong_username"
-        val list = mutableListOf<PostDto>()
-        val size = 2
-        for (i in 0 until size) {
-            list.add(
-                PostDto(
-                    id = "test_id$i",
-                    created_by = username,
-                    content = "test_content$i",
-                    created_at = "test_created_at$i",
-                    modified_at = "test_modified_at$i"
-                )
-            )
-        }
+        val list = testDto.postList
         Mockito.`when`(userDao.existUser(username)).thenReturn(true)
         Mockito.`when`(userDao.existUser(wrongUsername)).thenReturn(false)
         Mockito.`when`(postDao.getMyPosts(username)).thenReturn(list)
@@ -143,15 +118,9 @@ internal class PostServiceTest {
     @DisplayName("특정 게시글 데이터 가져오기")
     fun getPost() {
         // given
-        val id = "test_id"
+        val post = testDto.postList[0]
+        val id = post.id
         val wrongId = "wrong_id"
-        val post = PostDto(
-            id = id,
-            created_by = "test_created_by",
-            content = "test_content",
-            created_at = "test_created_at",
-            modified_at = "test_modified_at"
-        )
         Mockito.`when`(postDao.existPost(id)).thenReturn(true)
         Mockito.`when`(postDao.existPost(wrongId)).thenReturn(false)
         Mockito.`when`(postDao.getPost(id)).thenReturn(post)
@@ -176,18 +145,12 @@ internal class PostServiceTest {
     @DisplayName("게시글 수정")
     fun patchPost() {
         // given
-        val username = "test_username"
+        val post = testDto.postList[0]
+        val username = post.created_by
+        val id = post.id
         val wrongUsername = "wrong_username"
-        val id = "test_id"
         val wrongId = "wrong_id"
         val content = "new_content"
-        val post = PostDto(
-            id = id,
-            created_by = username,
-            content = "test_content",
-            created_at = "test_created_at",
-            modified_at = "test_modified_at"
-        )
         Mockito.`when`(postDao.getPost(id)).thenReturn(post)
         Mockito.`when`(postDao.getPost(wrongId)).thenReturn(null)
 
@@ -215,19 +178,16 @@ internal class PostServiceTest {
     @DisplayName("게시글 삭제")
     fun deletePost() {
         // given
-        val username = "test_username"
+        val post = testDto.postList[0]
+        val username = post.created_by
+        val id = post.id
         val wrongUsername = "wrong_username"
-        val id = "test_id"
         val wrongId = "wrong_id"
-        val post = PostDto(
-            id = id,
-            created_by = username,
-            content = "test_content",
-            created_at = "test_created_at",
-            modified_at = "test_modified_at"
-        )
         Mockito.`when`(postDao.getPost(id)).thenReturn(post)
         Mockito.`when`(postDao.getPost(wrongId)).thenReturn(null)
+        for (reaction in testDto.reactionList) {
+            Mockito.`when`(reactionDao.getReaction(reaction.id)).thenReturn(reaction)
+        }
 
         // when
         val result = postService.deletePost(username, id)
@@ -246,6 +206,10 @@ internal class PostServiceTest {
         )
         verify(postDao, times(2)).getPost(id)
         verify(postDao, times(1)).getPost(wrongId)
+        for (reactionId in post.reactions!!) {
+            verify(reactionDao, times(1)).getReaction(reactionId)
+            verify(reactionDao, times(1)).deleteReaction(reactionId)
+        }
         verify(userDao, times(1)).deleteId(username, id, CREATED_POSTS)
         verify(postDao, times(1)).deletePost(id)
     }

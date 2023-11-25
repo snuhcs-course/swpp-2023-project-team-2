@@ -1,7 +1,7 @@
 package com.goliath.emojihub.springboot.domain.emoji.dao
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
-import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.storage.Blob
@@ -49,9 +49,10 @@ internal class EmojiDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        var userList: MutableList<UserDto> = mutableListOf()
-        var emojiList: MutableList<EmojiDto> = mutableListOf()
         const val EMOJI_COLLECTION_NAME = "Emojis"
+        private val testDto = TestDto()
+        val userList = testDto.userList
+        val emojiList = testDto.emojiList
 
         @BeforeAll
         @JvmStatic
@@ -66,33 +67,6 @@ internal class EmojiDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
-            userList.add(UserDto("test_email0", "test_username0", "test_password0"))
-            userList.add(UserDto("test_email1", "test_username1", "test_password1"))
-            for (i in 0 until 2) {
-                for (j in 0 until 2) {
-                    userList[i].created_posts!!.add("test_post" + i + "_" + j)
-                    userList[i].created_emojis!!.add("test_emoji" + i + "_" + j)
-                    if (j == 1) {
-                        userList[i].saved_emojis!!.add("test_emoji" + (1 - i) + "_" + j)
-                    }
-                }
-            }
-            for (i in 0 until 2) {
-                for (j in 0 until 2) {
-                    emojiList.add(
-                        EmojiDto(
-                            id = "test_emoji" + i + "_" + j,
-                            created_by = "test_username$i",
-                            video_url = "test_video_url" + i + "_" + j,
-                            thumbnail_url = "test_thumbnail_url" + i + "_" + j,
-                            emoji_unicode = "test_emoji_unicode" + i + "_" + j,
-                            emoji_label = "test_emoji_label" + i + "_" + j,
-                            created_at = "test_created_at" + i + "_" + j,
-                            num_saved = j
-                        )
-                    )
-                }
-            }
         }
     }
 
@@ -105,6 +79,13 @@ internal class EmojiDaoTest {
         val count = 10
         Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
             .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        val expectedResult1 = mutableListOf<EmojiDto>()
+        expectedResult1.addAll(emojiList)
+        val expectedResult2 = mutableListOf<EmojiDto>()
+        expectedResult2.addAll(emojiList)
+        expectedResult1.sortByDescending { it.created_at }
+        expectedResult2.sortWith(compareByDescending<EmojiDto> { it.num_saved }
+            .thenByDescending { it.created_at })
 
         // when
         val result1 = emojiDao.getEmojis(sortByDate, index, count)
@@ -112,16 +93,8 @@ internal class EmojiDaoTest {
 
         // then
         assertAll(
-            { assertEquals(result1.size, emojiList.size) },
-            { assertEquals(result2.size, emojiList.size) },
-            { assertEquals(result1[0], emojiList[3]) },
-            { assertEquals(result1[1], emojiList[2]) },
-            { assertEquals(result1[2], emojiList[1]) },
-            { assertEquals(result1[3], emojiList[0]) },
-            { assertEquals(result2[0], emojiList[3]) },
-            { assertEquals(result2[1], emojiList[1]) },
-            { assertEquals(result2[2], emojiList[2]) },
-            { assertEquals(result2[3], emojiList[0]) }
+            { assertEquals(result1, expectedResult1) },
+            { assertEquals(result2, expectedResult2) }
         )
     }
 
@@ -200,7 +173,8 @@ internal class EmojiDaoTest {
     @Test
     fun numSavedChange() {
         // given
-        val emojiId = emojiList[2].id
+        val emoji = emojiList[0]
+        val emojiId = emoji.id
         Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
             .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
 
@@ -208,23 +182,23 @@ internal class EmojiDaoTest {
         emojiDao.numSavedChange(emojiId, 1)
 
         // then
-        var emoji = emojiDao.getEmoji(emojiId)
+        var changedEmoji = emojiDao.getEmoji(emojiId)
         var a = 1
-        while (emoji!!.num_saved != 1 && a <= 5) {
-            emoji = emojiDao.getEmoji(emojiId)
+        while (changedEmoji!!.num_saved != emoji.num_saved + 1 && a <= 5) {
+            changedEmoji = emojiDao.getEmoji(emojiId)
             a++
         }
-        assertEquals(emoji.num_saved, 1)
+        assertEquals(changedEmoji.num_saved, emoji.num_saved + 1)
 
         // after work
         emojiDao.numSavedChange(emojiId, -1)
-        emoji = emojiDao.getEmoji(emojiId)
+        changedEmoji = emojiDao.getEmoji(emojiId)
         var b = 1
-        while (emoji!!.num_saved != 0 && b <= 5) {
-            emoji = emojiDao.getEmoji(emojiId)
+        while (changedEmoji!!.num_saved != emoji.num_saved && b <= 5) {
+            changedEmoji = emojiDao.getEmoji(emojiId)
             b++
         }
-        assertEquals(emoji.num_saved, 0)
+        assertEquals(changedEmoji.num_saved, emoji.num_saved)
     }
 
     @Test

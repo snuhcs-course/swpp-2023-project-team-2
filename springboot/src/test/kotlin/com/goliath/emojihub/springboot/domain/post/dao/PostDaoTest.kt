@@ -1,12 +1,13 @@
 package com.goliath.emojihub.springboot.domain.post.dao
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
-import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -32,9 +33,10 @@ internal class PostDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        var userList: MutableList<UserDto> = mutableListOf()
-        var postList: MutableList<PostDto> = mutableListOf()
         const val POST_COLLECTION_NAME = "Posts"
+        private val testDto = TestDto()
+        val userList = testDto.userList
+        val postList = testDto.postList
 
         @BeforeAll
         @JvmStatic
@@ -49,27 +51,6 @@ internal class PostDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
-            userList.add(UserDto("test_email0", "test_username0", "test_password0"))
-            userList.add(UserDto("test_email1", "test_username1", "test_password1"))
-            for (i in 0 until 2) {
-                for (j in 0 until 2) {
-                    userList[i].created_posts!!.add("test_post" + i + "_" + j)
-                }
-            }
-            for (i in 0 until 2) {
-                for (j in 0 until 2) {
-                    postList.add(
-                        PostDto(
-                            content = "test_content" + i + "_" + j,
-                            created_at = "test_created_at" + i + "_" + j,
-                            created_by = "test_username$i",
-                            id = "test_post" + i + "_" + j,
-                            modified_at = "test_modified_at" + i + "_" + j,
-
-                            )
-                    )
-                }
-            }
         }
     }
 
@@ -77,7 +58,7 @@ internal class PostDaoTest {
     fun insertPost() {
         // given
         val username = userList[0].username
-        val content = "test_content0_2"
+        val content = "new_test_content"
         Mockito.`when`(db.collection(POST_COLLECTION_NAME))
             .thenReturn(testDB.collection(POST_COLLECTION_NAME))
 
@@ -111,18 +92,15 @@ internal class PostDaoTest {
         val count = 10
         Mockito.`when`(db.collection(POST_COLLECTION_NAME))
             .thenReturn(testDB.collection(POST_COLLECTION_NAME))
+        val expectedResult = mutableListOf<PostDto>()
+        expectedResult.addAll(postList)
+        expectedResult.sortByDescending { it.created_at }
 
         // when
         val result = postDao.getPosts(index, count)
 
         // then
-        assertAll(
-            { assertEquals(result.size, postList.size) },
-            { assertEquals(result[0], postList[3]) },
-            { assertEquals(result[1], postList[2]) },
-            { assertEquals(result[2], postList[1]) },
-            { assertEquals(result[3], postList[0]) }
-        )
+        assertEquals(result, expectedResult)
     }
 
     @Test
@@ -228,7 +206,7 @@ internal class PostDaoTest {
         assertEquals(postExist, false)
 
         // after work
-        testDB.collection(PostDao.POST_COLLECTION_NAME)
+        testDB.collection(POST_COLLECTION_NAME)
             .document(id)
             .set(postList[2])
         postExist = postDao.existPost(id)
@@ -238,5 +216,36 @@ internal class PostDaoTest {
             b++
         }
         assertEquals(postExist, true)
+    }
+
+    @Test
+    fun insertAndDeleteReactionId() {
+        // given
+        val postId = postList[0].id
+        val reactionId = "new_test_reaction_id"
+        Mockito.`when`(db.collection(POST_COLLECTION_NAME))
+            .thenReturn(testDB.collection(POST_COLLECTION_NAME))
+
+        // when
+        postDao.insertReactionId(postId, reactionId)
+
+        // then
+        var post = postDao.getPost(postId)
+        var a = 1
+        while (!post!!.reactions!!.contains(reactionId) && a <= 5) {
+            post = postDao.getPost(postId)
+            a++
+        }
+        assertThat(post.reactions).contains(reactionId)
+
+        // after work
+        postDao.deleteReactionId(postId, reactionId)
+        post = postDao.getPost(postId)
+        var b = 1
+        while(post!!.reactions!!.contains(reactionId) && b <= 5) {
+            post = postDao.getPost(postId)
+            b++
+        }
+        assertThat(post.reactions).doesNotContain(reactionId)
     }
 }

@@ -1,5 +1,6 @@
 package com.goliath.emojihub.springboot.domain.user.dao
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.*
@@ -32,10 +33,11 @@ internal class UserDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        var userList: MutableList<UserDto> = mutableListOf()
         const val USER_COLLECTION_NAME = "Users"
         const val CREATED_POSTS = "created_posts"
         const val SAVED_EMOJIS = "saved_emojis"
+        private val testDto = TestDto()
+        val userList = testDto.userList
 
         @BeforeAll
         @JvmStatic
@@ -50,17 +52,6 @@ internal class UserDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
-            userList.add(UserDto("test_email0", "test_username0", "test_password0"))
-            userList.add(UserDto("test_email1", "test_username1", "test_password1"))
-            for (i in 0 until 2) {
-                for (j in 0 until 2) {
-                    userList[i].created_posts!!.add("test_post" + i + "_" + j)
-                    userList[i].created_emojis!!.add("test_emoji" + i + "_" + j)
-                    if (j == 1) {
-                        userList[i].saved_emojis!!.add("test_emoji" + (1 - i) + "_" + j)
-                    }
-                }
-            }
         }
     }
 
@@ -118,9 +109,9 @@ internal class UserDaoTest {
         Mockito.`when`(db.collection(USER_COLLECTION_NAME))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME))
         val user = UserDto(
-            email = "test_email2",
-            username = "test_username2",
-            password = "test_password2"
+            email = "new_test_email",
+            username = "new_test_username",
+            password = "new_test_password"
         )
 
         // when
@@ -193,15 +184,21 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (result!!.created_posts!!.size != 3 && a <= 5) {
+        while (!result!!.created_posts!!.contains(postId) && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
         assertThat(result.created_posts).contains(postId)
 
         // after work
-        val userRef = testDB.collection(UserDao.USER_COLLECTION_NAME).document(username)
-        userRef.update("created_posts", FieldValue.arrayRemove(postId))
+        userDao.deleteId(username, postId, CREATED_POSTS)
+        result = userDao.getUser(username)
+        var b = 1
+        while (result!!.created_posts!!.contains(postId) && b <= 5) {
+            result = userDao.getUser(username)
+            b++
+        }
+        assertThat(result.created_posts).doesNotContain(postId)
     }
 
     @Test
@@ -225,8 +222,14 @@ internal class UserDaoTest {
         assertThat(result.created_posts).doesNotContain(username)
 
         // after work
-        val userRef = testDB.collection(UserDao.USER_COLLECTION_NAME).document(username)
-        userRef.update("created_posts", FieldValue.arrayUnion(postId))
+        userDao.insertId(username, postId, CREATED_POSTS)
+        result = userDao.getUser(username)
+        var b = 1
+        while (!result!!.created_posts!!.contains(postId) && b <= 5) {
+            result = userDao.getUser(username)
+            b++
+        }
+        assertThat(result.created_posts).contains(postId)
     }
 
     @Test

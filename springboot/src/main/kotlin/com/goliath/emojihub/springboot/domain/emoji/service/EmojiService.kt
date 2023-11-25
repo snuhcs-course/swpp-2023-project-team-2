@@ -3,6 +3,8 @@ package com.goliath.emojihub.springboot.domain.emoji.service
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.post.dao.PostDao
+import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -14,11 +16,14 @@ import org.springframework.web.multipart.MultipartFile
 class EmojiService(
     private val emojiDao: EmojiDao,
     private val userDao: UserDao,
+    private val reactionDao: ReactionDao,
+    private val postDao: PostDao
 ) {
 
     companion object {
         const val CREATED_EMOJIS = "created_emojis"
         const val SAVED_EMOJIS = "saved_emojis"
+        const val EMOJI_ID = "emoji_id"
     }
 
     fun getEmojis(sortByDate: Int, index: Int, count: Int): List<EmojiDto> {
@@ -89,10 +94,22 @@ class EmojiService(
     fun deleteEmoji(username: String, emojiId: String) {
         val emoji = emojiDao.getEmoji(emojiId) ?: throw CustomHttp404("Emoji doesn't exist.")
         if (username != emoji.created_by) throw CustomHttp403("You can't delete this emoji.")
-        val blobName = username + "_" + emoji.created_at + ".mp4"
-        emojiDao.deleteFileInStorage(blobName)
+        // delete file and thumbnail in DB
+        val fileBlobName = username + "_" + emoji.created_at + ".mp4"
+        val thumbnailBlobName = username + "_" + emoji.created_at + ".jpeg"
+        emojiDao.deleteFileInStorage(fileBlobName)
+        emojiDao.deleteFileInStorage(thumbnailBlobName)
+        // delete all reactions(and reaction id in posts) using this emoji
+        val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID)
+        for (reaction in reactions) {
+            postDao.deleteReactionId(reaction.post_id, reaction.id)
+            reactionDao.deleteReaction(reaction.id)
+        }
+        // delete all saved_emoji ids in users
         userDao.deleteAllSavedEmojiId(emojiId)
+        // delete created_emoji id in user
         userDao.deleteId(username, emojiId, CREATED_EMOJIS)
+        // delete emoji
         emojiDao.deleteEmoji(emojiId)
     }
 }

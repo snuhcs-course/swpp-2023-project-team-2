@@ -1,12 +1,11 @@
 package com.goliath.emojihub.springboot.domain.emoji.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.WithCustomUser
-import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import org.hamcrest.Matchers
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.DisplayName
@@ -40,26 +39,8 @@ internal class EmojiControllerTest @Autowired constructor(
     companion object {
         const val CREATED_EMOJIS = "created_emojis"
         const val SAVED_EMOJIS = "saved_emojis"
-        var emojiList: MutableList<EmojiDto> = mutableListOf()
-        const val size = 2
-
-        @BeforeAll
-        @JvmStatic
-        fun beforeAll() {
-            for (i in 0 until size) {
-                emojiList.add(
-                    EmojiDto(
-                        id = "test_id$i",
-                        created_by = "test_created_by$i",
-                        video_url = "test_video_url$i",
-                        emoji_unicode = "test_video_url$i",
-                        emoji_label = "test_emoji_label$i",
-                        created_at = "test_created_at$i",
-                        num_saved = i
-                    )
-                )
-            }
-        }
+        private val testDto = TestDto()
+        val emojiList = testDto.emojiList
     }
 
     @Test
@@ -83,7 +64,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
@@ -108,7 +89,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
@@ -133,7 +114,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))

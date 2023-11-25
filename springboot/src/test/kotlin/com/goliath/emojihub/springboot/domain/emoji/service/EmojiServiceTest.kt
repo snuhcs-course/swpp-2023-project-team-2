@@ -1,16 +1,17 @@
 package com.goliath.emojihub.springboot.domain.emoji.service
 
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
-import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.domain.post.dao.PostDao
+import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
-import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
@@ -36,29 +37,17 @@ internal class EmojiServiceTest {
     @MockBean
     lateinit var userDao: UserDao
 
+    @MockBean
+    lateinit var reactionDao: ReactionDao
+
+    @MockBean
+    lateinit var postDao: PostDao
+
     companion object {
         const val CREATED_EMOJIS = "created_emojis"
         const val SAVED_EMOJIS = "saved_emojis"
-        var emojiList: MutableList<EmojiDto> = mutableListOf()
-        const val size = 2
-
-        @BeforeAll
-        @JvmStatic
-        fun beforeAll() {
-            for (i in 0 until size) {
-                emojiList.add(
-                    EmojiDto(
-                        id = "test_id$i",
-                        created_by = "test_created_by$i",
-                        video_url = "test_video_url$i",
-                        emoji_unicode = "test_video_url$i",
-                        emoji_label = "test_emoji_label$i",
-                        created_at = "test_created_at$i",
-                        num_saved = i
-                    )
-                )
-            }
-        }
+        const val EMOJI_ID = "emoji_id"
+        private val testDto = TestDto()
     }
 
     @Test
@@ -70,7 +59,7 @@ internal class EmojiServiceTest {
         val count = 10
         val wrongIndex = 0
         val wrongCount = 0
-        Mockito.`when`(emojiDao.getEmojis(sortByDate, index, count)).thenReturn(emojiList)
+        Mockito.`when`(emojiDao.getEmojis(sortByDate, index, count)).thenReturn(testDto.emojiList)
 
         // when
         val result = emojiService.getEmojis(sortByDate, index, count)
@@ -83,7 +72,7 @@ internal class EmojiServiceTest {
 
         // then
         assertAll(
-            { assertEquals(result, emojiList) },
+            { assertEquals(result, testDto.emojiList) },
             { assertEquals(assertThrows1.message, "Index should be positive integer.") },
             { assertEquals(assertThrows2.message, "Count should be positive integer.") }
         )
@@ -94,20 +83,14 @@ internal class EmojiServiceTest {
     @DisplayName("자신의 이모지 데이터 가져오기")
     fun getMyEmojis() {
         // given
-        val emoji = emojiList[0]
-        val username = emoji.created_by
+        val user = testDto.userList[0]
+        val username = user.username
         val wrongUsername = "wrong_username"
-        val user = UserDto(
-            username = username,
-            email = "test_email",
-            password = "test_password"
-        )
-        user.created_emojis!!.add(emojiList[0].id)
-        user.saved_emojis!!.add(emojiList[1].id)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
         Mockito.`when`(userDao.getUser(wrongUsername)).thenReturn(null)
-        Mockito.`when`(emojiDao.getEmoji(user.created_emojis!![0])).thenReturn(emojiList[0])
-        Mockito.`when`(emojiDao.getEmoji(user.saved_emojis!![0])).thenReturn(emojiList[1])
+        for (emoji in testDto.emojiList) {
+            Mockito.`when`(emojiDao.getEmoji(emoji.id)).thenReturn(emoji)
+        }
 
         // when
         val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS)
@@ -118,23 +101,25 @@ internal class EmojiServiceTest {
 
         // then
         assertAll(
-            { assertEquals(createdEmojisResult.size, 1) },
-            { assertEquals(savedEmojisResult.size, 1) },
-            { assertEquals(createdEmojisResult[0], emojiList[0]) },
-            { assertEquals(savedEmojisResult[0], emojiList[1]) },
+            { assertEquals(createdEmojisResult.size, testDto.createdEmojiSize) },
+            { assertEquals(savedEmojisResult.size, testDto.savedEmojiSize) },
             { assertEquals(assertThrows.message, "User doesn't exist.") }
         )
         verify(userDao, times(2)).getUser(username)
         verify(userDao, times(1)).getUser(wrongUsername)
-        verify(emojiDao, times(1)).getEmoji(user.created_emojis!![0])
-        verify(emojiDao, times(1)).getEmoji(user.saved_emojis!![0])
+        for (emojiId in user.created_emojis!!) {
+            verify(emojiDao, times(1)).getEmoji(emojiId)
+        }
+        for (emojiId in user.saved_emojis!!) {
+            verify(emojiDao, times(1)).getEmoji(emojiId)
+        }
     }
 
     @Test
     @DisplayName("특정 이모지 데이터 가져오기")
     fun getEmoji() {
         // given
-        val emoji = emojiList[0]
+        val emoji = testDto.emojiList[0]
         val id = emoji.id
         val wrongId = "wrong_id"
         Mockito.`when`(emojiDao.existsEmoji(id)).thenReturn(true)
@@ -168,7 +153,7 @@ internal class EmojiServiceTest {
         val thumbnail = MockMultipartFile("thumbnail", "test.jpeg", "image/jpeg", imageContent)
         val emojiUnicode = "test_emoji_unicode"
         val emojiLabel = "test_emoji_label"
-        val emoji = emojiList[0]
+        val emoji = testDto.emojiList[0]
         Mockito.`when`(emojiDao.insertEmoji(any(), any(), any(), any(), any(), any())).thenReturn(emoji)
 
         // when
@@ -183,13 +168,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장하기 성공")
     fun saveEmojiSucceed() {
         // given
-        val username = "test_username"
+        val user = testDto.userList[0]
+        val username = user.username
         val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -244,14 +225,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장하기 실패3: 자신이 만든 이모지")
     fun saveEmojiFail3() {
         // given
-        val username = "test_username"
-        val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
-        user.created_emojis!!.add(emojiId)
+        val user = testDto.userList[0]
+        val username = user.username
+        val emojiId = user.created_emojis!![0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -270,14 +246,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장하기 실패4: 이미 저장한 이모지")
     fun saveEmojiFail4() {
         // given
-        val username = "test_username"
-        val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
-        user.saved_emojis!!.add(emojiId)
+        val user = testDto.userList[0]
+        val username = user.username
+        val emojiId = user.saved_emojis!![0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -296,14 +267,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장 취소하기 성공")
     fun unSaveEmojiSucceed() {
         // given
-        val username = "test_username"
-        val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
-        user.saved_emojis!!.add(emojiId)
+        val user = testDto.userList[0]
+        val username = user.username
+        val emojiId = user.saved_emojis!![0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -358,14 +324,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장 취소하기 실패3: 자신이 만든 이모지")
     fun unSaveEmojiFail3() {
         // given
-        val username = "test_username"
-        val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
-        user.created_emojis!!.add(emojiId)
+        val user = testDto.userList[0]
+        val username = user.username
+        val emojiId = user.created_emojis!![0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -384,13 +345,9 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 저장 취소하기 실패4: 저장하지 않은 이모지")
     fun unSaveEmojiFail4() {
         // given
-        val username = "test_username"
+        val user = testDto.userList[0]
+        val username = user.username
         val emojiId = "test_emojiId"
-        val user = UserDto(
-            email = "test_email",
-            username = username,
-            password = "different_encoded_password"
-        )
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -409,13 +366,22 @@ internal class EmojiServiceTest {
     @DisplayName("이모지 삭제하기")
     fun deleteEmoji() {
         // given
-        val emoji = emojiList[0]
+        val emoji = testDto.emojiList[0]
         val username = emoji.created_by
         val wrongUsername = "wrong_username"
         val emojiId = emoji.id
         val wrongId = "wrong_emojiId"
+        val fileBlobName = username + "_" + emoji.created_at + ".mp4"
+        val thumbnailBlobName = username + "_" + emoji.created_at + ".jpeg"
         Mockito.`when`(emojiDao.getEmoji(emojiId)).thenReturn(emoji)
         Mockito.`when`(emojiDao.getEmoji(wrongId)).thenReturn(null)
+        val reactions = mutableListOf<ReactionDto>()
+        for (reaction in testDto.reactionList) {
+            if (reaction.emoji_id == emojiId) {
+                reactions.add(reaction)
+            }
+        }
+        Mockito.`when`(reactionDao.getReactionsWithField(emojiId, EMOJI_ID)).thenReturn(reactions)
 
         // when
         emojiService.deleteEmoji(username, emojiId)
@@ -433,7 +399,15 @@ internal class EmojiServiceTest {
         )
         verify(emojiDao, times(2)).getEmoji(emojiId)
         verify(emojiDao, times(1)).getEmoji(wrongId)
-        verify(emojiDao, times(1)).deleteFileInStorage(any())
+        verify(emojiDao, times(1)).deleteFileInStorage(fileBlobName)
+        verify(emojiDao, times(1)).deleteFileInStorage(thumbnailBlobName)
+        verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID)
+        for (reaction in reactions) {
+            verify(postDao, times(1)).deleteReactionId(reaction.post_id, reaction.id)
+            verify(reactionDao, times(1)).deleteReaction(reaction.id)
+        }
+        verify(userDao, times(1)).deleteAllSavedEmojiId(emojiId)
+        verify(userDao, times(1)).deleteId(username, emojiId, CREATED_EMOJIS)
         verify(emojiDao, times(1)).deleteEmoji(emojiId)
     }
 }
