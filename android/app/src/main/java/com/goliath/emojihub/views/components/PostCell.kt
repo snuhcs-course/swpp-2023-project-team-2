@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.BottomSheetController
+import com.goliath.emojihub.data_sources.BottomSheetControllerImpl
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
@@ -28,9 +35,11 @@ import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
 fun PostCell(
-    post: Post
+    post: Post,
+    bottomSheetController: BottomSheetController = remember { BottomSheetControllerImpl() }
 ) {
     val viewModel = hiltViewModel<EmojiViewModel>()
+    val state by bottomSheetController.bottomSheetState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -76,7 +85,10 @@ fun PostCell(
                     color = EmojiHubDetailLabel
                 )
                 IconButton(onClick = {
-                    viewModel.isBottomSheetShown = true
+                    //viewModel.isBottomSheetShown = true
+                    Log.d("FeedPage", "bottomSheetState0: $state")
+                    bottomSheetController.setBottomSheetState(true)
+                    Log.d("FeedPage", "bottomSheetState1: $state")
                 }) {
                     Icon(
                         imageVector = Icons.Filled.AddReaction,
@@ -88,8 +100,8 @@ fun PostCell(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PostCellPreview() {
-    PostCell(dummyPost)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PostCellPreview() {
+//    PostCell(dummyPost)
+//}

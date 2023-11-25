@@ -90,74 +90,82 @@ fun FeedPage() {
         }
     }
 
-    if (emojiViewModel.isBottomSheetShown) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                emojiViewModel.isBottomSheetShown = false
-                navController.popBackStack()
-            }
-        ) {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            // TODO: fetch user's emojis and display
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp),
-                        shape = RoundedCornerShape(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = androidx.compose.ui.graphics.Color.White,
-                            contentColor = androidx.compose.ui.graphics.Color.Black
-                        )
-                    )
-                    {
-                        Text(
-                            text = "내가 만든 이모지",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            // TODO: fetch user's saved emojis and display
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp),
-                        shape = RoundedCornerShape(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = androidx.compose.ui.graphics.Color.White,
-                            contentColor = androidx.compose.ui.graphics.Color.Black
-                        )
-                    ) {
-                        Text(
-                            text = "저장된 이모지",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
+//    if(bottomSheetState) {
+//        Log.d("FeedPage", "bottomSheetState1: $bottomSheetState")
+//        CustomBottomSheet(
+//            onDismissRequest = { userViewModel.bottomSheetController?.dismiss() },
+//            isAddReaction = true
+//        )
+//    }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.padding(top = 18.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    items(emojiList, key = { it.id }) { emoji ->
-                        EmojiCell(emoji = emoji) {
-                            emojiViewModel.currentEmoji = emoji
-                            navController.navigate(NavigationDestination.PlayEmojiVideo)
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    if (emojiViewModel.isBottomSheetShown) {
+//        ModalBottomSheet(
+//            onDismissRequest = {
+//                emojiViewModel.isBottomSheetShown = false
+//                navController.popBackStack()
+//            }
+//        ) {
+//            Column(Modifier.padding(horizontal = 16.dp)) {
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    OutlinedButton(
+//                        onClick = {
+//                            // TODO: fetch user's emojis and display
+//                        },
+//                        modifier = Modifier
+//                            .padding(horizontal = 15.dp),
+//                        shape = RoundedCornerShape(50.dp),
+//                        colors = ButtonDefaults.buttonColors(
+//                            backgroundColor = androidx.compose.ui.graphics.Color.White,
+//                            contentColor = androidx.compose.ui.graphics.Color.Black
+//                        )
+//                    )
+//                    {
+//                        Text(
+//                            text = "내가 만든 이모지",
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    }
+//                    OutlinedButton(
+//                        onClick = {
+//                            // TODO: fetch user's saved emojis and display
+//                        },
+//                        modifier = Modifier
+//                            .padding(horizontal = 15.dp),
+//                        shape = RoundedCornerShape(50.dp),
+//                        colors = ButtonDefaults.buttonColors(
+//                            backgroundColor = androidx.compose.ui.graphics.Color.White,
+//                            contentColor = androidx.compose.ui.graphics.Color.Black
+//                        )
+//                    ) {
+//                        Text(
+//                            text = "저장된 이모지",
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    }
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.weight(1f))
+//
+//            Column(Modifier.padding(horizontal = 16.dp)) {
+//                LazyVerticalGrid(
+//                    columns = GridCells.Fixed(2),
+//                    modifier = Modifier.padding(top = 18.dp),
+//                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+//                    verticalArrangement = Arrangement.spacedBy(4.dp),
+//                ) {
+//                    items(emojiList, key = { it.id }) { emoji ->
+//                        EmojiCell(emoji = emoji) {
+//                            emojiViewModel.currentEmoji = emoji
+//                            navController.navigate(NavigationDestination.PlayEmojiVideo)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 }

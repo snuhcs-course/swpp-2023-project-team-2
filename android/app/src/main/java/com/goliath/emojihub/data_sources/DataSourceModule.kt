@@ -16,4 +16,7 @@ abstract class DataSourceModule {
 
     @Binds
     abstract fun bindsApiErrorController(impl: ApiErrorControllerImpl): ApiErrorController
+
+    @Binds
+    abstract fun bindsBottomSheetController(impl: BottomSheetControllerImpl): BottomSheetController
 }

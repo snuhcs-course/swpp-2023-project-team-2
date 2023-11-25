@@ -1,6 +1,7 @@
 package com.goliath.emojihub
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -30,6 +31,7 @@ import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginNavigation
 import com.goliath.emojihub.views.LoginPage
+import com.goliath.emojihub.views.components.CustomBottomSheet
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,7 +73,11 @@ class RootActivity : ComponentActivity() {
                     }
 
                     if (bottomSheetState) {
-                        //TODO: Display BottomSheet
+                        Log.d("FeedPage", "bottomSheetState in Root: $bottomSheetState")
+                        CustomBottomSheet(
+                            isAddReaction = true,
+                            onDismissRequest = { bottomSheetController.dismiss() }
+                        )
                     }
                 }
             }
