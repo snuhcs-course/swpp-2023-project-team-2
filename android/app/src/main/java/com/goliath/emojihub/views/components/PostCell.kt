@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.data_sources.BottomSheetController
 import com.goliath.emojihub.data_sources.BottomSheetControllerImpl
+import com.goliath.emojihub.extensions.reactionsToString
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
@@ -79,13 +81,23 @@ fun PostCell(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = post.reaction.toString(),
-                    fontSize = 13.sp,
-                    color = EmojiHubDetailLabel
-                )
+                TextButton(
+                    onClick = {
+                        val emojistr = reactionsToString(post.reaction)
+                        /*TODO*/
+                        Log.d("emojiStr", emojistr)
+                    },
+
+                ) {
+                    Text(
+                        text = reactionsToString(post.reaction),
+                        fontSize = 13.sp,
+                        color = EmojiHubDetailLabel
+                    )
+                }
+
                 IconButton(onClick = {
-                    //viewModel.isBottomSheetShown = true
+//                    viewModel.isBottomSheetShown = true
                     Log.d("FeedPage", "bottomSheetState0: $state")
                     bottomSheetController.setBottomSheetState(true)
                     Log.d("FeedPage", "bottomSheetState1: $state")
