@@ -44,9 +44,7 @@ class PostRepositoryImplTest {
             postApi.fetchPostList(any())
         } returns Response.success(samplePostDtoList)
         // when
-        val fetchedPostPagingDataFlow = runBlocking {
-            postRepositoryImpl.fetchPostList()
-        }
+        val fetchedPostPagingDataFlow = runBlocking { postRepositoryImpl.fetchPostList() }
         // then
 //        verify(exactly = 1) { runBlocking { postApi.fetchPostList(any()) } }
         runBlocking {
@@ -64,9 +62,7 @@ class PostRepositoryImplTest {
             postApi.uploadPost(any())
         } returns Response.success(Unit)
         // when
-        val response = runBlocking {
-            postRepositoryImpl.uploadPost(uploadPostDto)
-        }
+        val response = runBlocking { postRepositoryImpl.uploadPost(uploadPostDto) }
         // then
         coVerify(exactly = 1) { postApi.uploadPost(uploadPostDto) }
         assertTrue(response.isSuccessful)
@@ -80,9 +76,7 @@ class PostRepositoryImplTest {
             postApi.uploadPost(any())
         } returns Response.error(400, mockk(relaxed=true))
         // when
-        val response = runBlocking {
-            postRepositoryImpl.uploadPost(uploadPostDto)
-        }
+        val response = runBlocking { postRepositoryImpl.uploadPost(uploadPostDto) }
         // then
         coVerify(exactly = 1) { postApi.uploadPost(uploadPostDto) }
         assertFalse(response.isSuccessful)
@@ -96,9 +90,7 @@ class PostRepositoryImplTest {
             postApi.getPostWithId(any())
         } returns Response.success(samplePostResponseBody)
         // when
-        val postDto = runBlocking {
-            postRepositoryImpl.getPostWithId("1234")
-        }
+        val postDto = runBlocking { postRepositoryImpl.getPostWithId("1234") }
         // then
         coVerify(exactly = 1) { postApi.getPostWithId("1234") }
         assertEquals(samplePostDto, postDto)
@@ -111,9 +103,7 @@ class PostRepositoryImplTest {
             postApi.getPostWithId(any())
         } returns Response.error(400, mockk(relaxed=true))
         // when
-        val postDto = runBlocking {
-            postRepositoryImpl.getPostWithId("1234")
-        }
+        val postDto = runBlocking { postRepositoryImpl.getPostWithId("1234") }
         // then
         coVerify(exactly = 1) { postApi.getPostWithId("1234") }
         assertNull(postDto)
@@ -145,9 +135,7 @@ class PostRepositoryImplTest {
             postApi.deletePost(any())
         } returns Response.success(Unit)
         // when
-        val response = runBlocking {
-            postRepositoryImpl.deletePost(samplePostDto.id)
-        }
+        val response = runBlocking { postRepositoryImpl.deletePost(samplePostDto.id) }
         // then
         coVerify(exactly = 1) { postApi.deletePost(samplePostDto.id) }
     }
