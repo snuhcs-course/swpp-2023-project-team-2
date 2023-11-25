@@ -16,89 +16,96 @@ import androidx.compose.material.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.goliath.emojihub.LocalNavController
-import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.createDummyEmoji
-import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.models.Emoji
+import kotlinx.coroutines.launch
+
+enum class BottomSheetContent {
+    VIEW_REACTION, ADD_REACTION
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomBottomSheet (
-    onDismissRequest: () -> Unit = {},
-    isViewReaction: Boolean = false,
-    isAddReaction: Boolean = false,
+    bottomSheetContent: BottomSheetContent,
+    emojiList: List<Emoji>,
+    emojiCellClicked: (Emoji) -> Unit
 ){
-    val emojiViewModel = hiltViewModel<EmojiViewModel>()
-    val navController = LocalNavController.current
-    val emojiList = (1..10).map { createDummyEmoji() }
+    val bottomSheetState = LocalBottomSheetController.current
+    val coroutineScope = rememberCoroutineScope()
 
     ModalBottomSheet(
-        onDismissRequest = { onDismissRequest() },
-
-    ) {
-        if (isViewReaction) {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    //TODO: display each emoji class (as an IconButton?) and its count [Figma]
-                    Text(
-                        text = "전체",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+        onDismissRequest = {
+            coroutineScope.launch {
+                bottomSheetState.hide()
             }
-        }
-
-        else if (isAddReaction) {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            // TODO: fetch user's emojis and display
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp),
-                        shape = RoundedCornerShape(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.White,
-                            contentColor = Color.Black
-                        )
-                    )
-                    {
+        },
+    ) {
+        when (bottomSheetContent) {
+            BottomSheetContent.VIEW_REACTION -> {
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //TODO: display each emoji class (as an IconButton?) and its count [Figma]
                         Text(
-                            text = "내가 만든 이모지",
+                            text = "전체",
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    OutlinedButton(
-                        onClick = {
-                            // TODO: fetch user's saved emojis and display
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp),
-                        shape = RoundedCornerShape(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.White,
-                            contentColor = Color.Black
-                        )
+                }
+            }
+
+            BottomSheetContent.ADD_REACTION -> {
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "저장된 이모지",
-                            fontWeight = FontWeight.Bold
-                        )
+                        OutlinedButton(
+                            onClick = {
+                                // TODO: fetch user's emojis and display
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 15.dp),
+                            shape = RoundedCornerShape(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.White,
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Text(
+                                text = "내가 만든 이모지",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                // TODO: fetch user's saved emojis and display
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 15.dp),
+                            shape = RoundedCornerShape(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.White,
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Text(
+                                text = "저장된 이모지",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -115,8 +122,7 @@ fun CustomBottomSheet (
             ) {
                 items(emojiList, key = { it.id }) { emoji ->
                     EmojiCell(emoji = emoji) {
-                        emojiViewModel.currentEmoji = emoji
-                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        emojiCellClicked(emoji)
                     }
                 }
             }
