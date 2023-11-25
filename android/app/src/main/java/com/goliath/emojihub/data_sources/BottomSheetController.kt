@@ -1,32 +1,48 @@
 package com.goliath.emojihub.data_sources
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
-import javax.inject.Inject
-import javax.inject.Singleton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
-sealed interface BottomSheetController {
-    val bottomSheetState: StateFlow<Boolean>
-    fun setBottomSheetState(isShown: Boolean)
-
-    fun dismiss()
+@OptIn(ExperimentalMaterialApi::class)
+interface BottomSheetController {
+    val state: ModalBottomSheetState
+    var content: @Composable ColumnScope.() -> Unit
+    val isVisible: Boolean get() = state.isVisible
+    fun setSheetContent(n: @Composable ColumnScope.() -> Unit) { content = n }
+    suspend fun show() = state.show()
+    suspend fun hide()
 }
-@Singleton
-class BottomSheetControllerImpl @Inject constructor(
 
-    ): BottomSheetController {
-        private val _bottomSheetState = MutableStateFlow(false)
-        override val bottomSheetState: StateFlow<Boolean>
-            get() = _bottomSheetState
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun bottomSheet(): BottomSheetController {
+    return object : BottomSheetController {
+        override val state: ModalBottomSheetState = rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            skipHalfExpanded = true,
+        )
 
-        override fun setBottomSheetState(isShown: Boolean) {
-            _bottomSheetState.update {
-                isShown
-            }
+        override var content by remember {
+            mutableStateOf<@Composable ColumnScope.() -> Unit>({
+                Box(modifier = Modifier.size(1.dp))
+            },)
         }
 
-        override fun dismiss() {
-            _bottomSheetState.update { false }
+        override suspend fun hide() {
+            state.hide()
+            content = { Box(modifier = Modifier.size(1.dp)) }
         }
     }
+}

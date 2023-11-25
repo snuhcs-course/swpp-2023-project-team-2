@@ -1,7 +1,6 @@
 package com.goliath.emojihub
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,17 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.data_sources.BottomSheetController
+import com.goliath.emojihub.data_sources.bottomSheet
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginNavigation
-import com.goliath.emojihub.views.LoginPage
-import com.goliath.emojihub.views.components.CustomBottomSheet
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,9 +40,6 @@ class RootActivity : ComponentActivity() {
     @Inject
     lateinit var apiErrorController: ApiErrorController
 
-    @Inject
-    lateinit var bottomSheetController: BottomSheetController
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -56,7 +48,6 @@ class RootActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize().background(Color.White)) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
                     val error by apiErrorController.apiErrorState.collectAsState()
-                    val bottomSheetState by bottomSheetController.bottomSheetState.collectAsState()
                     if (token.isNullOrEmpty()) {
                         LoginView()
                     } else {
@@ -71,20 +62,11 @@ class RootActivity : ComponentActivity() {
                             confirm = { apiErrorController.dismiss() }
                         )
                     }
-
-                    if (bottomSheetState) {
-                        Log.d("FeedPage", "bottomSheetState in Root: $bottomSheetState")
-                        CustomBottomSheet(
-                            isAddReaction = true,
-                            onDismissRequest = { bottomSheetController.dismiss() }
-                        )
-                    }
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun LoginView() {
@@ -100,9 +82,11 @@ fun LoginView() {
 @Composable
 fun RootView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+    val bottomSheet = bottomSheet()
 
     CompositionLocalProvider(
-        LocalNavController provides navController
+        LocalNavController provides navController,
+        LocalBottomSheetController provides bottomSheet
     ) {
         Scaffold(
             bottomBar =  {

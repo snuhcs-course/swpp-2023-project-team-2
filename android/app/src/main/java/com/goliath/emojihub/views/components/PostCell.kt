@@ -1,6 +1,5 @@
 package com.goliath.emojihub.views.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,37 +10,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.data_sources.BottomSheetController
-import com.goliath.emojihub.data_sources.BottomSheetControllerImpl
-import com.goliath.emojihub.extensions.reactionsToString
+import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.models.Post
-import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
-import com.goliath.emojihub.viewmodels.EmojiViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PostCell(
-    post: Post,
-    bottomSheetController: BottomSheetController = remember { BottomSheetControllerImpl() }
+    post: Post
 ) {
-    val viewModel = hiltViewModel<EmojiViewModel>()
-    val state by bottomSheetController.bottomSheetState.collectAsState()
+    val bottomSheetState = LocalBottomSheetController.current
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -81,26 +70,13 @@ fun PostCell(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(
-                    onClick = {
-                        val emojistr = reactionsToString(post.reaction)
-                        /*TODO*/
-                        Log.d("emojiStr", emojistr)
-                    },
-
-                ) {
-                    Text(
-                        text = reactionsToString(post.reaction),
-                        fontSize = 13.sp,
-                        color = EmojiHubDetailLabel
-                    )
-                }
-
+                Text(
+                    text = post.reaction.toString(),
+                    fontSize = 13.sp,
+                    color = EmojiHubDetailLabel
+                )
                 IconButton(onClick = {
-//                    viewModel.isBottomSheetShown = true
-                    Log.d("FeedPage", "bottomSheetState0: $state")
-                    bottomSheetController.setBottomSheetState(true)
-                    Log.d("FeedPage", "bottomSheetState1: $state")
+                    coroutineScope.launch { bottomSheetState.show() }
                 }) {
                     Icon(
                         imageVector = Icons.Filled.AddReaction,
@@ -111,9 +87,3 @@ fun PostCell(
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PostCellPreview() {
-//    PostCell(dummyPost)
-//}
