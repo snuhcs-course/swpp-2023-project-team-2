@@ -1,13 +1,16 @@
 package com.goliath.emojihub.usecases
 
+import android.app.Application
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.data_sources.SharedLocalStorage
 import com.goliath.emojihub.mockLogClass
+import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
 import com.goliath.emojihub.models.UserDto
 import com.goliath.emojihub.models.responses.LoginResponseDto
 import com.goliath.emojihub.repositories.remote.UserRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,11 +39,56 @@ class UserUseCaseImplTest {
     }
 
     @Test
-    fun registerUser() {
+    fun registerUser_withValidUserInfo_returnsTrue() {
+        // given
+        val sampleRegisterUserDto = RegisterUserDto(
+            "sampleEmail",
+            "sampleName",
+            "samplePassword"
+        )
+        val sampleAccessToken = "sampleAccessToken"
+        coEvery {
+            userRepository.registerUser(any())
+        } returns Response.success(LoginResponseDto(sampleAccessToken))
+        // when
+        val isSuccessfulRegister = runBlocking {
+            userUseCaseImpl.registerUser(
+                sampleRegisterUserDto.email,
+                sampleRegisterUserDto.name,
+                sampleRegisterUserDto.password
+            )
+        }
+        // then
+        coVerify { userRepository.registerUser(any()) }
+        assertTrue(isSuccessfulRegister)
     }
 
     @Test
-    fun login_validUserInfo_updateAccessToken() {
+    fun registerUser_withInvalidUserInfo_returnsFalse() {
+        // given
+        val sampleRegisterUserDto = RegisterUserDto(
+            "sampleEmail",
+            "sampleName",
+            "samplePassword"
+        )
+        coEvery {
+            userRepository.registerUser(any())
+        } returns Response.error(400, mockk(relaxed=true))
+        // when
+        val isSuccessfulRegister = runBlocking {
+            userUseCaseImpl.registerUser(
+                sampleRegisterUserDto.email,
+                sampleRegisterUserDto.name,
+                sampleRegisterUserDto.password
+            )
+        }
+        // then
+        coVerify { userRepository.registerUser(any()) }
+        assertFalse(isSuccessfulRegister)
+    }
+
+    @Test
+    fun login_withValidUserInfo_updateAccessToken() {
         // given
         val sampleName = "sampleName"
         val samplePassword = "samplePassword"
@@ -48,18 +96,8 @@ class UserUseCaseImplTest {
         coEvery {
             userRepository.login(any())
         } returns Response.success(LoginResponseDto(sampleAccessToken))
-        mockkStatic(EmojiHubApplication::class)
-        val mockPreferences = mockk<SharedLocalStorage>()
-        every {
-            EmojiHubApplication.preferences
-        } returns mockPreferences
-        every {
-            mockPreferences.accessToken = any()
-        } returns Unit
         // when
-        runBlocking {
-            userUseCaseImpl.login(sampleName, samplePassword)
-        }
+        runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
         // then
         coVerify { userRepository.login(any()) }
         assertEquals(
@@ -68,11 +106,13 @@ class UserUseCaseImplTest {
         )
     }
 
-    @Test
+    // @Test
+    // TODO: Not yet implemented
     fun logout() {
     }
 
-    @Test
+    // @Test
+    // TODO: Not yet implemented
     fun signOut() {
     }
 }
