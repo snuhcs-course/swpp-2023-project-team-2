@@ -1,21 +1,17 @@
 package com.goliath.emojihub.usecases
 
-import android.app.Application
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.data_sources.SharedLocalStorage
+import com.goliath.emojihub.data_sources.LocalStorage
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.RegisterUserDto
-import com.goliath.emojihub.models.User
-import com.goliath.emojihub.models.UserDto
 import com.goliath.emojihub.models.responses.LoginResponseDto
 import com.goliath.emojihub.repositories.remote.UserRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
@@ -32,21 +28,31 @@ class UserUseCaseImplTest {
     private val userRepository = mockk<UserRepository>()
     private val apiErrorController = spyk<ApiErrorController>()
     private val userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
+
+    private val sampleEmail = "sampleEmail"
+    private val sampleName = "sampleName"
+    private val samplePassword = "samplePassword"
+    private val sampleAccessToken = "sampleAccessToken"
+
+    // ! Fake SharedPreferences for testing
+    class FakeSharedLocalStorage : LocalStorage {
+        private val fakePreference = mutableMapOf<String, String>()
+        override var accessToken: String?
+            get() = fakePreference.getOrDefault("accessToken", "")
+            set(value) = fakePreference.set("accessToken", value!!)
+    }
+
     @Before
     fun setUp() {
         mockLogClass()
-
+        mockkObject(EmojiHubApplication.Companion)
+        every { EmojiHubApplication.preferences } returns FakeSharedLocalStorage()
     }
 
     @Test
     fun registerUser_withValidUserInfo_returnsTrue() {
         // given
-        val sampleRegisterUserDto = RegisterUserDto(
-            "sampleEmail",
-            "sampleName",
-            "samplePassword"
-        )
-        val sampleAccessToken = "sampleAccessToken"
+        val sampleRegisterUserDto = RegisterUserDto(sampleEmail, sampleName, samplePassword)
         coEvery {
             userRepository.registerUser(any())
         } returns Response.success(LoginResponseDto(sampleAccessToken))
@@ -59,18 +65,14 @@ class UserUseCaseImplTest {
             )
         }
         // then
-        coVerify { userRepository.registerUser(any()) }
+        coVerify(exactly = 1) { userRepository.registerUser(any()) }
         assertTrue(isSuccessfulRegister)
     }
 
     @Test
     fun registerUser_withInvalidUserInfo_returnsFalse() {
         // given
-        val sampleRegisterUserDto = RegisterUserDto(
-            "sampleEmail",
-            "sampleName",
-            "samplePassword"
-        )
+        val sampleRegisterUserDto = RegisterUserDto(sampleEmail, sampleName, samplePassword)
         coEvery {
             userRepository.registerUser(any())
         } returns Response.error(400, mockk(relaxed=true))
@@ -83,57 +85,52 @@ class UserUseCaseImplTest {
             )
         }
         // then
-        coVerify { userRepository.registerUser(any()) }
+        coVerify(exactly = 1) { userRepository.registerUser(any()) }
         assertFalse(isSuccessfulRegister)
     }
 
     @Test
     fun login_withValidUserInfo_updateAccessToken() {
         // given
-        val sampleName = "sampleName"
-        val samplePassword = "samplePassword"
-        val sampleAccessToken = "sampleAccessToken"
         coEvery {
             userRepository.login(any())
         } returns Response.success(LoginResponseDto(sampleAccessToken))
         // when
         runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
         // then
-        coVerify { userRepository.login(any()) }
+        coVerify(exactly = 1) { userRepository.login(any()) }
         assertEquals(
-            User(UserDto(sampleAccessToken, sampleName)),
-            userUseCaseImpl.userState.value
+            sampleAccessToken,
+            userUseCaseImpl.userState.value?.accessToken
         )
     }
 
     @Test
     fun login_withWrongUserName_returnsNotFoundError() {
         // given
-        val sampleName = "wrongName"
-        val samplePassword = "samplePassword"
+        val wrongName = "wrongName"
         coEvery {
             userRepository.login(any())
         } returns Response.error(404, mockk(relaxed=true))
         // when
-        runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
+        runBlocking { userUseCaseImpl.login(wrongName, samplePassword) }
         // then
-        coVerify { userRepository.login(any()) }
-        verify { apiErrorController.setErrorState(404) }
+        coVerify(exactly = 1) { userRepository.login(any()) }
+        verify(exactly = 1) { apiErrorController.setErrorState(404) }
     }
 
     @Test
     fun login_withWrongPassword_returnsUnauthorizedError() {
         // given
-        val sampleName = "sampleName"
-        val samplePassword = "wrongPassword"
+        val wrongPassword = "wrongPassword"
         coEvery {
             userRepository.login(any())
         } returns Response.error(401, mockk(relaxed=true))
         // when
-        runBlocking { userUseCaseImpl.login(sampleName, samplePassword) }
+        runBlocking { userUseCaseImpl.login(sampleName, wrongPassword) }
         // then
-        coVerify { userRepository.login(any()) }
-        verify { apiErrorController.setErrorState(401) }
+        coVerify(exactly = 1) { userRepository.login(any()) }
+        verify(exactly = 1) { apiErrorController.setErrorState(401) }
     }
 
     // @Test

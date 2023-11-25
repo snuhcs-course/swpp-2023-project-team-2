@@ -40,17 +40,19 @@ class PostRepositoryImplTest {
         // given
         val numSamplePosts = 10
         val samplePostDtoList = List(numSamplePosts) { samplePostDto }
+        val expectedFetchedPostDtoList = List(numSamplePosts*2) { samplePostDto }
+        // *2 because of .asSnapshot() load one more time
         coEvery {
             postApi.fetchPostList(any())
         } returns Response.success(samplePostDtoList)
         // when
         val fetchedPostPagingDataFlow = runBlocking { postRepositoryImpl.fetchPostList() }
+        val fetchedPostDtoList = runBlocking { fetchedPostPagingDataFlow.asSnapshot() }
         // then
-//        verify(exactly = 1) { runBlocking { postApi.fetchPostList(any()) } }
+        coVerify(exactly = 2) { postApi.fetchPostList(any()) }
         runBlocking {
-            val fetchedPostDtoList = fetchedPostPagingDataFlow.asSnapshot()
-            assertEquals(samplePostDtoList.size, fetchedPostDtoList.size)
-            assertEquals(samplePostDtoList, fetchedPostDtoList)
+            assertEquals(expectedFetchedPostDtoList.size, fetchedPostDtoList.size)
+            assertEquals(expectedFetchedPostDtoList, fetchedPostDtoList)
         }
     }
 

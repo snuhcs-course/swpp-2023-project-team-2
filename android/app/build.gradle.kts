@@ -75,6 +75,18 @@ android {
         animationsDisabled = true
     }
 
+    sourceSets {
+        getByName("main") {
+            resources.srcDirs("src/main/assets")
+        }
+        getByName("test") {
+            resources.srcDirs("src/main/assets")
+        }
+        getByName("androidTest") {
+            resources.srcDirs("src/main/assets")
+        }
+    }
+
     // hilt
     hilt {
         enableAggregatingTask = true
