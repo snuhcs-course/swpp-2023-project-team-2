@@ -22,13 +22,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.data_sources.BottomSheetController
 import com.goliath.emojihub.data_sources.bottomSheet
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginNavigation
-import com.goliath.emojihub.views.components.CustomBottomSheet
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
