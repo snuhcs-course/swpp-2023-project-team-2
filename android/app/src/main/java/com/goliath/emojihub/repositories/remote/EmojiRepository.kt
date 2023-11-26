@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.goliath.emojihub.data_sources.EmojiFetchType
 import com.goliath.emojihub.data_sources.EmojiPagingSource
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
@@ -28,6 +29,8 @@ import javax.inject.Singleton
 
 interface EmojiRepository {
     suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
     suspend fun saveEmoji(id: String): Response<Unit>
@@ -43,7 +46,21 @@ class EmojiRepositoryImpl @Inject constructor(
     override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.GENERAL) }
+        ).flow
+    }
+
+    override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_CREATED) }
+        ).flow
+    }
+
+    override suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_SAVED) }
         ).flow
     }
 

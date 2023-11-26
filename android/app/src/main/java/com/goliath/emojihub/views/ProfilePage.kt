@@ -10,12 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,14 +27,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.createDummyEmoji
-import com.goliath.emojihub.models.dummyEmoji
-import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.ui.theme.Color.White
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.CustomDialog
@@ -55,11 +53,22 @@ fun ProfilePage(
 
     val userViewModel = hiltViewModel<UserViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
+    val emojiViewModel = hiltViewModel<EmojiViewModel>()
 
     val currentUser = userViewModel.userState.collectAsState().value
 
+    val myPostList = postViewModel.myPostList.collectAsLazyPagingItems()
+    val myCreatedEmojiList = emojiViewModel.myCreatedEmojiList.collectAsLazyPagingItems()
+    val mySavedEmojiList = emojiViewModel.mySavedEmojiList.collectAsLazyPagingItems()
+
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        postViewModel.fetchPostList()
+        emojiViewModel.fetchMyCreatedEmojiList()
+        emojiViewModel.fetchMySavedEmojiList()
+    }
 
     LazyColumn(
         Modifier.background(White)
@@ -106,9 +115,10 @@ fun ProfilePage(
                             detailLabel = "count",
                             navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
                         ) {
-                            // TODO: should show my posts
-                            items(listOf(dummyPost, dummyPost, dummyPost)) {
-                                PreviewPostCell(post = it)
+                            items(myPostList.itemCount) { index ->
+                                myPostList[index]?.let {
+                                    PreviewPostCell(post = it)
+                                }
                             }
                         }
 
@@ -119,11 +129,14 @@ fun ProfilePage(
                         ProfileMenuCellWithPreview(
                             label = "내가 만든 이모지",
                             detailLabel = "더보기",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) },
-                            content = {
-                                // should show my emojis
+                            navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) }
+                        ) {
+                            items(myCreatedEmojiList.itemCount) { index ->
+                                myCreatedEmojiList[index]?.let {
+                                    EmojiCell(emoji = it, onSelected = {})
+                                }
                             }
-                        )
+                        }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
@@ -132,12 +145,10 @@ fun ProfilePage(
                             detailLabel = "더보기",
                             navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
                         ) {
-                            // TODO: should show saved emoji list
-                            items(listOf(
-                                dummyEmoji, dummyEmoji,
-                                dummyEmoji, dummyEmoji)
-                            ) {
-                                EmojiCell(emoji = it, onSelected = {})
+                            items(mySavedEmojiList.itemCount) { index ->
+                                mySavedEmojiList[index]?.let {
+                                    EmojiCell(emoji = it, onSelected = {})
+                                }
                             }
                         }
 

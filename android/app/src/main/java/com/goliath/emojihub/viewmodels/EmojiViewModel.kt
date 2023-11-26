@@ -27,16 +27,37 @@ class EmojiViewModel @Inject constructor(
     var isBottomSheetShown by mutableStateOf(false)
 
     val emojiList = emojiUseCase.emojiList
+    val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
+    val mySavedEmojiList = emojiUseCase.mySavedEmojiList
 
     private val _topK = 3
 
-    fun fetchEmojiList()
-    {
+    fun fetchEmojiList() {
         viewModelScope.launch {
             emojiUseCase.fetchEmojiList()
                 .cachedIn(viewModelScope)
                 .collect {
                     emojiUseCase.updateEmojiList(it)
+                }
+        }
+    }
+
+    fun fetchMyCreatedEmojiList() {
+        viewModelScope.launch {
+            emojiUseCase.fetchMyCreatedEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateMyCreatedEmojiList(it)
+                }
+        }
+    }
+
+    fun fetchMySavedEmojiList() {
+        viewModelScope.launch {
+            emojiUseCase.fetchMySavedEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateMySavedEmojiList(it)
                 }
         }
     }

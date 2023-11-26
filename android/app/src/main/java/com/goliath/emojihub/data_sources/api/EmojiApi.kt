@@ -27,6 +27,20 @@ interface EmojiApi {
         @Path("id") id: String
     ): Response<EmojiDto>
 
+    @GET("emoji/me/created")
+    suspend fun fetchMyCreatedEmojiList(
+        @Query("sortByDate") sortByDate: Int,
+        @Query("index") index: Int,
+        @Query("count") count: Int
+    ): Response<List<EmojiDto>>
+
+    @GET("emoji/me/saved")
+    suspend fun fetchMySavedEmojiList(
+        @Query("sortByDate") sortByDate: Int,
+        @Query("index") index: Int,
+        @Query("count") count: Int
+    ): Response<List<EmojiDto>>
+
     @Multipart
     @POST("emoji")
     suspend fun uploadEmoji(
