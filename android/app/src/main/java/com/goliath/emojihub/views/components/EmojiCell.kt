@@ -24,6 +24,10 @@ import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -42,16 +46,27 @@ import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.UserViewModel
 
 @Composable
 fun EmojiCell (
     emoji: Emoji,
     onSelected: (Emoji) -> Unit
 ) {
-    //replace to emoji.thumbnailLink
+    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+    val saveEmojiState = emojiViewModel.saveEmojiState.collectAsState().value
+    var isButtonEnabled by remember { mutableStateOf(true) }
+
+    LaunchedEffect(saveEmojiState) {
+        saveEmojiState?.let {
+            if (it.isSuccess) {
+                isButtonEnabled = false
+            }
+        }
+    }
+
     val thumbnailLink = emoji.thumbnailLink.takeIf{ it.isNotEmpty()} ?:"https://i.pinimg.com/236x/4b/05/0c/4b050ca4fcf588eedc58aa6135f5eecf.jpg"
     Log.d("create_TN", "${emoji.thumbnailLink}")
-    val context = LocalContext.current
 
     Card (
         modifier = Modifier
@@ -75,7 +90,7 @@ fun EmojiCell (
             Text(
                 text = "@" + emoji.createdBy,
                 modifier = Modifier.align(Alignment.TopStart),
-                fontSize = 12.sp,
+                fontSize = 15.sp,
                 color = White
             )
 
@@ -84,15 +99,19 @@ fun EmojiCell (
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(20.dp),
                     onClick = {
-                        // TODO: save emoji
-                    }
+                        if(isButtonEnabled)
+                            emojiViewModel.saveEmoji(emoji.id)
+                        else
+                            emojiViewModel.unSaveEmoji(emoji.id)
+                    },
+                    enabled = isButtonEnabled
                 ) {
                     Icon(
                         imageVector = Icons.Filled.SaveAlt,
                         contentDescription = "",
-                        tint = White
+                        tint = if (isButtonEnabled) Color.White else Color.Gray
                     )
                 }
 

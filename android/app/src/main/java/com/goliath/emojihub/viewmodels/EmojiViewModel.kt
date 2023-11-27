@@ -13,6 +13,8 @@ import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -25,6 +27,9 @@ class EmojiViewModel @Inject constructor(
     var videoUri: Uri = Uri.EMPTY
     var currentEmoji: Emoji? = null
     var isBottomSheetShown by mutableStateOf(false)
+
+    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val saveEmojiState = _saveEmojiState.asStateFlow()
 
     val emojiList = emojiUseCase.emojiList
 
@@ -53,8 +58,11 @@ class EmojiViewModel @Inject constructor(
         return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
     }
 
-    suspend fun saveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+    fun saveEmoji(id: String) {
+        viewModelScope.launch {
+            val result = emojiUseCase.saveEmoji(id)
+            _saveEmojiState.value = result
+        }
     }
 
     suspend fun unSaveEmoji(id: String) {
