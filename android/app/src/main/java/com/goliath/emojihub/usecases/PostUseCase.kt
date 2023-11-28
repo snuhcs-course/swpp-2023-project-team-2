@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Post
+import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +18,7 @@ sealed interface PostUseCase {
     suspend fun updatePostList(data: PagingData<Post>)
     suspend fun fetchPostList(): Flow<PagingData<Post>>
     suspend fun uploadPost(content: String): Boolean
-    suspend fun getPostWithId(id: String)
+    suspend fun getPostWithId(id: String): PostDto?
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
 }
@@ -49,8 +50,8 @@ class PostUseCaseImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPostWithId(id: String) {
-        repository.getPostWithId(id)
+    override suspend fun getPostWithId(id: String): PostDto? {
+        return repository.getPostWithId(id)
     }
 
     override suspend fun editPost(id: String, content: String) {

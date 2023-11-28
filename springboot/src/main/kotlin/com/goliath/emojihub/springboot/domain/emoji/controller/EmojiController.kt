@@ -13,7 +13,21 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/emoji")
 class EmojiController(private val emojiService: EmojiService) {
 
-    // Get randomly selected emojis with a limit of `numLimit`
+    companion object {
+        const val CREATED_EMOJIS = "created_emojis"
+        const val SAVED_EMOJIS = "saved_emojis"
+    }
+
+    @PostMapping
+    fun postEmoji(
+        @CurrentUser username: String,
+        @RequestPart(value = "file") file: MultipartFile,
+        @RequestPart(value = "thumbnail") thumbnail: MultipartFile,
+        @RequestPart postEmojiRequest: PostEmojiRequest
+    ): ResponseEntity<Unit> {
+        return ResponseEntity(emojiService.postEmoji(username, file, thumbnail, postEmojiRequest.emoji_unicode, postEmojiRequest.emoji_label), HttpStatus.CREATED)
+    }
+
     @GetMapping
     fun getEmojis(
         @RequestParam(value = "sortByDate", defaultValue = 0.toString()) sortByDate: Int,
@@ -23,20 +37,25 @@ class EmojiController(private val emojiService: EmojiService) {
         return ResponseEntity.ok(emojiService.getEmojis(sortByDate, index, count))
     }
 
+    @GetMapping("/me/created")
+    fun getMyCreatedEmojis(
+        @CurrentUser username: String
+    ): ResponseEntity<List<EmojiDto>> {
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS))
+    }
+
+    @GetMapping("/me/saved")
+    fun getMySavedEmojis(
+        @CurrentUser username: String
+    ): ResponseEntity<List<EmojiDto>> {
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS))
+    }
+
     @GetMapping("/{id}")
     fun getEmoji(
         @PathVariable(value = "id") id: String,
     ): ResponseEntity<EmojiDto> {
         return ResponseEntity.ok(emojiService.getEmoji(id))
-    }
-
-    @PostMapping
-    fun postEmoji(
-        @CurrentUser username: String,
-        @RequestPart(value = "file") file: MultipartFile,
-        @RequestPart postEmojiRequest: PostEmojiRequest
-    ): ResponseEntity<Unit> {
-        return ResponseEntity(emojiService.postEmoji(username, file, postEmojiRequest), HttpStatus.CREATED)
     }
 
     @PutMapping("/save")
