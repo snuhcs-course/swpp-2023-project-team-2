@@ -1,8 +1,13 @@
 package com.goliath.emojihub.usecases
 
+import androidx.paging.PagingData
+import androidx.paging.map
+import androidx.paging.testing.asSnapshot
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
+import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
@@ -12,6 +17,8 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
@@ -35,9 +42,34 @@ class EmojiUseCaseImplTest {
         mockLogClass()
     }
 
-//    @Test
-    fun fetchEmojiList() {
-        TODO("Implement after pagination is implemented")
+    @Test
+    fun updateEmojiList_withSamplePagingEmojiData_updatesEmojiListStateFlow() {
+        // given
+        val samplePagingEmojiData = mockk<PagingData<Emoji>>()
+        // when
+        runBlocking { emojiUseCaseImpl.updateEmojiList(samplePagingEmojiData) }
+        // then
+        assertEquals(samplePagingEmojiData, emojiUseCaseImpl.emojiList.value)
+    }
+
+    @Test
+    fun fetchEmojiList_returnsFlowOfEmojiPagingData() {
+        // given
+        val sampleEmojiPagingDataFlow = spyk<Flow<PagingData<EmojiDto>>>()
+        val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
+        coEvery {
+            emojiRepository.fetchEmojiList()
+        } returns sampleEmojiPagingDataFlow
+        // when
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiUseCaseImpl.fetchEmojiList() }
+        // then
+        coVerify(exactly = 1) { emojiRepository.fetchEmojiList() }
+        runBlocking {
+            assertEquals(
+                sampleAnswer.asSnapshot(),
+                fetchedEmojiPagingDataFlow.asSnapshot()
+            )
+        }
     }
 
     @Test
