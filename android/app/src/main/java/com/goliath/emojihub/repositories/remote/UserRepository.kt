@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 interface UserRepository {
     suspend fun fetchUserList(): Array<UserDtoList>
-    fun fetchUser(name: String)
+    fun fetchUser(id: String)
     suspend fun registerUser(dto: RegisterUserDto): Response<LoginResponseDto>
     suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
 }

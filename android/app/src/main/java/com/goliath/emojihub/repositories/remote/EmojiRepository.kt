@@ -70,12 +70,14 @@ class EmojiRepositoryImpl @Inject constructor(
         }
         catch (e: IOException) {
             Log.d("EmojiRepository", "IOException")
-            e.printStackTrace()
             false
         }
         catch (e: HttpException) {
             Log.d("EmojiRepository", "HttpException")
-            e.printStackTrace()
+            false
+        }
+        catch (e: Exception) {
+            Log.d("EmojiRepository", e.message.toString())
             false
         }
     }
