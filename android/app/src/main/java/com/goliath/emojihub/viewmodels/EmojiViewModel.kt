@@ -27,7 +27,7 @@ class EmojiViewModel @Inject constructor(
 ): ViewModel() {
     var videoUri: Uri = Uri.EMPTY
     var currentEmoji: Emoji? = null
-    var bottomSheetContent by mutableStateOf(BottomSheetContent.VIEW_REACTION)
+    var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
     private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
     val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()

@@ -27,7 +27,7 @@ import com.goliath.emojihub.models.Emoji
 import kotlinx.coroutines.launch
 
 enum class BottomSheetContent {
-    VIEW_REACTION, ADD_REACTION
+    VIEW_REACTION, ADD_REACTION, EMPTY
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +48,7 @@ fun CustomBottomSheet (
         },
     ) {
         when (bottomSheetContent) {
+            BottomSheetContent.EMPTY -> {}
             BottomSheetContent.VIEW_REACTION -> {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     Row(
