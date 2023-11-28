@@ -81,15 +81,15 @@ class EmojiRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveEmoji(id: String): Result<Unit> {
-//        return emojiApi.saveEmoji(id)
         return try {
             val response = emojiApi.saveEmoji(id)
+            Log.d("SESESE", "mseeage is : ${response.code()}")
 
             if (response.isSuccessful) {
-                Log.d("SE", "success Emoji Id: $id")
+                Log.d("SESESE", "success Emoji Id: $id")
                 Result.success(Unit)
             } else {
-                Log.d("SE", "fail Emoji Id: $id, ${response.code()}")
+                Log.d("SESESE", "fail Emoji Id: $id, ${response.code()}")
                 Result.failure(RuntimeException("Error saving emoji"))
             }
         } catch (e: Exception) {
@@ -99,13 +99,13 @@ class EmojiRepositoryImpl @Inject constructor(
 
     override suspend fun unSaveEmoji(id: String): Result<Unit> {
         return try {
-            val response = emojiApi.saveEmoji(id)
+            val response = emojiApi.unSaveEmoji(id)
 
             if (response.isSuccessful) {
-                Log.d("SE(unsave)", "success Emoji Id: $id")
+                Log.d("SESESE(unsave)", "success Emoji Id: $id")
                 Result.success(Unit)
             } else {
-                Log.d("SE(unsave)", "fail Emoji Id: $id, ${response.code()}")
+                Log.d("SESESE(unsave)", "fail Emoji Id: $id, ${response.code()}")
                 Result.failure(RuntimeException("Error saving emoji"))
             }
         } catch (e: Exception) {

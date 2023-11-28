@@ -53,18 +53,6 @@ fun EmojiCell (
     emoji: Emoji,
     onSelected: (Emoji) -> Unit
 ) {
-    val emojiViewModel = hiltViewModel<EmojiViewModel>()
-    val saveEmojiState = emojiViewModel.saveEmojiState.collectAsState().value
-    var isButtonEnabled by remember { mutableStateOf(true) }
-
-    LaunchedEffect(saveEmojiState) {
-        saveEmojiState?.let {
-            if (it.isSuccess) {
-                isButtonEnabled = false
-            }
-        }
-    }
-
     val thumbnailLink = emoji.thumbnailLink.takeIf{ it.isNotEmpty()} ?:"https://i.pinimg.com/236x/4b/05/0c/4b050ca4fcf588eedc58aa6135f5eecf.jpg"
     Log.d("create_TN", "${emoji.thumbnailLink}")
 
@@ -100,18 +88,12 @@ fun EmojiCell (
             ) {
                 IconButton(
                     modifier = Modifier.size(20.dp),
-                    onClick = {
-                        if(isButtonEnabled)
-                            emojiViewModel.saveEmoji(emoji.id)
-                        else
-                            emojiViewModel.unSaveEmoji(emoji.id)
-                    },
-                    enabled = isButtonEnabled
+                    onClick = {},
                 ) {
                     Icon(
                         imageVector = Icons.Filled.SaveAlt,
                         contentDescription = "",
-                        tint = if (isButtonEnabled) Color.White else Color.Gray
+                        tint = White
                     )
                 }
 

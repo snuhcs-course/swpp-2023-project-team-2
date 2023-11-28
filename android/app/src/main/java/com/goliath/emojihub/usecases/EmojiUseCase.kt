@@ -56,33 +56,10 @@ class EmojiUseCaseImpl @Inject constructor(
     }
 
     override suspend fun saveEmoji(id: String): Result<Unit> {
-        Log.d("SE", "id given : $id,  ${emojiRepository.saveEmoji(id)}")
         return emojiRepository.saveEmoji(id)
-//        val response = emojiRepository.saveEmoji(id)
-//        if (response)
-//        response.let {
-//            if (it.isSuccessful) {
-//                Log.d("Emoji Saved", "Emoji Id: $id")
-//                return true
-//            } else {
-//                errorController.setErrorState(it.code())
-//                return false
-//            }
-//        }
     }
 
     override suspend fun unSaveEmoji(id: String): Result<Unit> {
-        Log.d("SE(unsave)", "id given : $id,  ${emojiRepository.unSaveEmoji(id)}")
         return emojiRepository.unSaveEmoji(id)
-//        val response = emojiRepository.unSaveEmoji(id)
-//        response.let {
-//            if (it.isSuccessful) {
-//                Log.d("Emoji Saved", "Emoji Id: $id")
-//                return true
-//            } else {
-//                errorController.setErrorState(it.code())
-//                return false
-//            }
-//        }
     }
 }

@@ -31,12 +31,14 @@ class EmojiViewModel @Inject constructor(
     private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
     val saveEmojiState = _saveEmojiState.asStateFlow()
 
+    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
+
     val emojiList = emojiUseCase.emojiList
 
     private val _topK = 3
 
-    fun fetchEmojiList()
-    {
+    fun fetchEmojiList() {
         viewModelScope.launch {
             emojiUseCase.fetchEmojiList()
                 .cachedIn(viewModelScope)
@@ -65,7 +67,10 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    suspend fun unSaveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+    fun unSaveEmoji(id: String) {
+        viewModelScope.launch {
+        val result = emojiUseCase.unSaveEmoji(id)
+        _unSaveEmojiState.value = result
+        }
     }
 }
