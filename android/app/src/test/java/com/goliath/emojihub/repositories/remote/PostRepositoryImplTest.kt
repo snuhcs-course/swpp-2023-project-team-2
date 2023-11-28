@@ -36,7 +36,7 @@ class PostRepositoryImplTest {
     }
 
     @Test
-    fun fetchPostList_returnsPagingSourceFactory() {
+    fun fetchPostList_returnsFlowOfPagingDataOfPostDto() {
         // given
         val numSamplePosts = 10
         val samplePostDtoList = List(numSamplePosts) { samplePostDto }
