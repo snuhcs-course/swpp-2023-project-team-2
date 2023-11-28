@@ -12,10 +12,8 @@ fun String.toEmoji(): String {
 fun reactionsToString (reactions: List<String>): String {
     var emojisStr = ""
 
-    if (reactions.isEmpty()) {
-        emojisStr = "아직 반응이 없습니다."
-    } else if (reactions.size >= 3) {
-        for (emoji in 0 until 3) {
+    if (reactions.size >= 3) {
+        for (emoji in reactions) {
             emojisStr += emoji
             emojisStr += " "
         }
@@ -25,7 +23,7 @@ fun reactionsToString (reactions: List<String>): String {
             emojisStr += emoji
             emojisStr += " "
         }
-        emojisStr += "개의 반응"
+        emojisStr += "${reactions.size}개의 반응"
     }
     return emojisStr
 }

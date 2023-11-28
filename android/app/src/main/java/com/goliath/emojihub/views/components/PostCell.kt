@@ -69,23 +69,30 @@ fun PostCell(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // TODO: should be replaced according to Figma
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
-                            bottomSheetState.show()
-                        }
-                    },
+                if (post.reaction.isNotEmpty()) {
+                    TextButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
+                                bottomSheetState.show()
+                            }
+                        },
 
-                    ) {
+                        ) {
+                        Text(
+                            text = reactionsToString(post.reaction), //TODO: Replace with reaction_unicode sent from backend
+                            fontSize = 13.sp,
+                            color = EmojiHubDetailLabel
+                        )
+                    }
+                } else { //TODO: Find a better way to not display anything
                     Text(
-                        text = reactionsToString(post.reaction), //FIXME: post.reaction is empty
+                        text = "",
                         fontSize = 13.sp,
                         color = EmojiHubDetailLabel
                     )

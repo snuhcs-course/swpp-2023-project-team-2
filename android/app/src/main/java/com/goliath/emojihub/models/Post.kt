@@ -10,8 +10,7 @@ class Post(
     val modifiedAt: String = dto.modifiedAt
     val createdBy: String = dto.createdBy
     val content: String = dto.content
-    val reaction: List<String> = listOf()
-    //val reaction: List<String> = dto.reaction
+    val reaction: List<String> = dto.reaction
 }
 
 data class PostDto(
@@ -20,7 +19,7 @@ data class PostDto(
     @SerializedName("modified_at") val modifiedAt: String,
     @SerializedName("created_by") val createdBy: String,
     val content: String,
-    @SerializedName("reaction") val reaction: List<String>
+    @SerializedName("reactions") val reaction: List<String>
 )
 
 data class UploadPostDto(
