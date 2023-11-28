@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.models.Emoji
 import kotlinx.coroutines.launch
+import com.goliath.emojihub.ui.theme.Color.White
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -46,6 +47,7 @@ fun CustomBottomSheet (
                 bottomSheetState.hide()
             }
         },
+        containerColor = White,
     ) {
         when (bottomSheetContent) {
             BottomSheetContent.EMPTY -> {}
@@ -77,7 +79,8 @@ fun CustomBottomSheet (
                                 // TODO: fetch user's emojis and display
                             },
                             modifier = Modifier
-                                .padding(horizontal = 15.dp),
+                                .weight(1f)
+                                .padding(end = 8.dp),
                             shape = RoundedCornerShape(50.dp),
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.White,
@@ -95,7 +98,8 @@ fun CustomBottomSheet (
                                 // TODO: fetch user's saved emojis and display
                             },
                             modifier = Modifier
-                                .padding(horizontal = 15.dp),
+                                .weight(1f)
+                                .padding(start = 8.dp),
                             shape = RoundedCornerShape(50.dp),
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.White,
