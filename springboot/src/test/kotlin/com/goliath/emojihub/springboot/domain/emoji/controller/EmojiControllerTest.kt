@@ -81,10 +81,16 @@ internal class EmojiControllerTest @Autowired constructor(
     fun getMyCreatedEmojis() {
         // given
         val username = "custom_username"
-        Mockito.`when`(emojiService.getMyEmojis(username, CREATED_EMOJIS)).thenReturn(emojiList)
+        val index = 1
+        val count = testDto.createdEmojiSize
+        Mockito.`when`(emojiService.getMyEmojis(username, CREATED_EMOJIS, index, count)).thenReturn(emojiList)
 
         // when
-        val result = this.mockMvc.perform(get("/api/emoji/me/created"))
+        val result = this.mockMvc.perform(
+            get("/api/emoji/me/created")
+                .param("index", index.toString())
+                .param("count", count.toString())
+        )
 
         // then
         result.andExpect(status().isOk)
@@ -97,7 +103,7 @@ internal class EmojiControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
             .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
             .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
-        verify(emojiService, times(1)).getMyEmojis(username, CREATED_EMOJIS)
+        verify(emojiService, times(1)).getMyEmojis(username, CREATED_EMOJIS, index, count)
     }
 
     @Test
@@ -106,10 +112,16 @@ internal class EmojiControllerTest @Autowired constructor(
     fun getMySavedEmojis() {
         // given
         val username = "custom_username"
-        Mockito.`when`(emojiService.getMyEmojis(username, SAVED_EMOJIS)).thenReturn(emojiList)
+        val index = 1
+        val count = testDto.savedEmojiSize
+        Mockito.`when`(emojiService.getMyEmojis(username, SAVED_EMOJIS, index, count)).thenReturn(emojiList)
 
         // when
-        val result = this.mockMvc.perform(get("/api/emoji/me/saved"))
+        val result = this.mockMvc.perform(
+            get("/api/emoji/me/saved")
+                .param("index", index.toString())
+                .param("count", count.toString())
+        )
 
         // then
         result.andExpect(status().isOk)
@@ -122,7 +134,7 @@ internal class EmojiControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
             .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
             .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
-        verify(emojiService, times(1)).getMyEmojis(username, SAVED_EMOJIS)
+        verify(emojiService, times(1)).getMyEmojis(username, SAVED_EMOJIS, index, count)
     }
 
     @Test

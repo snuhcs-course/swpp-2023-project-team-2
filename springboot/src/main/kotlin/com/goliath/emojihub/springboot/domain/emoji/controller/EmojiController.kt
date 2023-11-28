@@ -39,16 +39,20 @@ class EmojiController(private val emojiService: EmojiService) {
 
     @GetMapping("/me/created")
     fun getMyCreatedEmojis(
-        @CurrentUser username: String
+        @CurrentUser username: String,
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int,
     ): ResponseEntity<List<EmojiDto>> {
-        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS))
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS, index, count))
     }
 
     @GetMapping("/me/saved")
     fun getMySavedEmojis(
-        @CurrentUser username: String
+        @CurrentUser username: String,
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int,
     ): ResponseEntity<List<EmojiDto>> {
-        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS))
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS, index, count))
     }
 
     @GetMapping("/{id}")
