@@ -2,23 +2,26 @@ package com.goliath.emojihub.usecases
 
 import android.net.Uri
 import android.util.Log
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.CreatedEmoji
-import com.goliath.emojihub.models.EmojiDto
-
+import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EmojiUseCase {
-    val emojiListState: StateFlow<List<EmojiDto>>
-    suspend fun fetchEmojiList(numInt: Int)
+    val emojiList: StateFlow<PagingData<Emoji>>
+    suspend fun updateEmojiList(data: PagingData<Emoji>)
+    suspend fun fetchEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Boolean
@@ -32,18 +35,15 @@ class EmojiUseCaseImpl @Inject constructor(
     private val errorController: ApiErrorController
 ): EmojiUseCase {
 
-    private val _emojiListState = MutableStateFlow<List<EmojiDto>>(emptyList())
-    override val emojiListState: StateFlow<List<EmojiDto>>
-        get() = _emojiListState.asStateFlow()
+    private val _emojiList = MutableStateFlow<PagingData<Emoji>>(PagingData.empty())
+    override val emojiList: StateFlow<PagingData<Emoji>>
+        get() = _emojiList
 
-    override suspend fun fetchEmojiList(numInt: Int) {
-        try{
-            val emojiList = emojiRepository.fetchEmojiList(numInt)
-            _emojiListState.emit(emojiList)
-            Log.d("Fetch_E_L", "USECASE DONE: $emojiList")
-        } catch (e: Exception) {
-            errorController.setErrorState(-1)
-        }
+    override suspend fun updateEmojiList(data: PagingData<Emoji>) {
+        _emojiList.emit(data)
+    }
+    override suspend fun fetchEmojiList(): Flow<PagingData<Emoji>> {
+        return emojiRepository.fetchEmojiList().map { it.map { dto -> Emoji(dto) } }
     }
 
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {

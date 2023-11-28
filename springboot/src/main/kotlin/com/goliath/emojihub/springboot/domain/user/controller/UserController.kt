@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/user")
 class UserController(private val userService: UserService) {
+
     @GetMapping
     fun getUsers(): ResponseEntity<List<UserDto>> {
         return ResponseEntity.ok(userService.getUsers())

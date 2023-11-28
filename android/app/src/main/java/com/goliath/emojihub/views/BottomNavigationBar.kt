@@ -8,11 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
-import com.goliath.emojihub.models.createDummyEmoji
-import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
+import com.goliath.emojihub.views.components.CreatedEmojiListView
+import com.goliath.emojihub.views.components.CreatedPostListView
 import com.goliath.emojihub.views.components.PlayEmojiView
+import com.goliath.emojihub.views.components.SavedEmojiListView
 
 @Composable
 fun BottomNavigationBar(
@@ -53,6 +54,18 @@ fun BottomNavigationBar(
             }
             val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
             CreatePostPage(postViewModel)
+        }
+
+        composable(NavigationDestination.MyPostList) {
+            CreatedPostListView()
+        }
+
+        composable(NavigationDestination.MyEmojiList) {
+            CreatedEmojiListView()
+        }
+
+        composable(NavigationDestination.MySavedEmojiList) {
+            SavedEmojiListView()
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.goliath.emojihub.springboot.domain.post.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.WithCustomUser
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
@@ -34,6 +35,11 @@ internal class PostControllerTest @Autowired constructor(
     @MockBean
     lateinit var postService: PostService
 
+    companion object {
+        private val testDto = TestDto()
+        private val postList = testDto.postList
+    }
+
     @Test
     @WithCustomUser
     @DisplayName("게시글 POST 테스트")
@@ -64,31 +70,12 @@ internal class PostControllerTest @Autowired constructor(
         // given
         val index = 1
         val count = 10
-
-        val list = mutableListOf<PostDto>()
-        val size = 2
-        val id = "test_id"
-        val createdBy = "test_created_by"
-        val content = "test_content"
-        val createdAt = "test_created_at"
-        val modifiedAt = "test_modified_at"
-        for (i in 0 until size) {
-            list.add(
-                PostDto(
-                    id = id + i,
-                    created_by = createdBy + i,
-                    content = content + i,
-                    created_at = createdAt + i,
-                    modified_at = modifiedAt + i
-                )
-            )
-        }
         given(
             postService.getPosts(
                 anyInt(),
                 anyInt(),
             )
-        ).willReturn(list)
+        ).willReturn(postList)
 
         // when
         val result = this.mockMvc.perform(
@@ -100,13 +87,43 @@ internal class PostControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(size)))
-            .andExpect(jsonPath("$[0].id").value(id + 0))
-            .andExpect(jsonPath("$[0].created_by").value(createdBy + 0))
-            .andExpect(jsonPath("$[0].content").value(content + 0))
-            .andExpect(jsonPath("$[0].created_at").value(createdAt + 0))
-            .andExpect(jsonPath("$[0].modified_at").value(modifiedAt + 0))
-        verify(postService).getPosts(index, count)
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(postList.size)))
+            .andExpect(jsonPath("$[0].id").value(postList[0].id))
+            .andExpect(jsonPath("$[0].created_by").value(postList[0].created_by))
+            .andExpect(jsonPath("$[0].content").value(postList[0].content))
+            .andExpect(jsonPath("$[0].created_at").value(postList[0].created_at))
+            .andExpect(jsonPath("$[0].modified_at").value(postList[0].modified_at))
+        verify(postService, times(1)).getPosts(index, count)
+    }
+
+    @Test
+    @WithCustomUser
+    @DisplayName("자신의 게시글 데이터 가져오기 테스트")
+    fun getMyPosts() {
+        // given
+        val username = "custom_username"
+        val realUsername = postList[0].created_by
+        val posts = mutableListOf<PostDto>()
+        for (post in postList) {
+            if (post.created_by == realUsername) {
+                posts.add(post)
+            }
+        }
+        given(postService.getMyPosts(username)).willReturn(posts)
+
+        // when
+        val result = this.mockMvc.perform(get("/api/post/me"))
+
+        // then
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.length()", Matchers.equalTo(posts.size)))
+            .andExpect(jsonPath("$[0].id").value(posts[0].id))
+            .andExpect(jsonPath("$[0].created_by").value(posts[0].created_by))
+            .andExpect(jsonPath("$[0].content").value(posts[0].content))
+            .andExpect(jsonPath("$[0].created_at").value(posts[0].created_at))
+            .andExpect(jsonPath("$[0].modified_at").value(posts[0].modified_at))
+        verify(postService, times(1)).getMyPosts(username)
     }
 
     @Test
@@ -114,26 +131,20 @@ internal class PostControllerTest @Autowired constructor(
     @DisplayName("특정 게시글 데이터 가져오기 테스트")
     fun getPost() {
         // given
-        val postDto = PostDto(
-            id = "test_id",
-            created_by = "test_created_by",
-            content = "test_content",
-            created_at = "test_created_at",
-            modified_at = "test_modified_at",
-        )
-        given(postService.getPost(any())).willReturn(postDto)
+        val post = postList[0]
+        given(postService.getPost(any())).willReturn(post)
 
         // when
-        val result = mockMvc.perform(get("/api/post/{id}", postDto.id))
+        val result = mockMvc.perform(get("/api/post/{id}", post.id))
 
         // then
         result.andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(postDto.id))
-            .andExpect(jsonPath("$.created_by").value(postDto.created_by))
-            .andExpect(jsonPath("$.content").value(postDto.content))
-            .andExpect(jsonPath("$.created_at").value(postDto.created_at))
-            .andExpect(jsonPath("$.modified_at").value(postDto.modified_at))
-        verify(postService).getPost(postDto.id)
+            .andExpect(jsonPath("$.id").value(post.id))
+            .andExpect(jsonPath("$.created_by").value(post.created_by))
+            .andExpect(jsonPath("$.content").value(post.content))
+            .andExpect(jsonPath("$.created_at").value(post.created_at))
+            .andExpect(jsonPath("$.modified_at").value(post.modified_at))
+        verify(postService).getPost(post.id)
     }
 
     @Test

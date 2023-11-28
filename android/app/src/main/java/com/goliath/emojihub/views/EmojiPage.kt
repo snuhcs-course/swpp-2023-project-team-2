@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.models.createDummyEmoji
@@ -43,7 +44,6 @@ import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
 fun EmojiPage(
-//    emojiList: List<Emoji>
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -64,12 +64,12 @@ fun EmojiPage(
         }
     }
 
+    val emojiList = viewModel.emojiList.collectAsLazyPagingItems()
+
     LaunchedEffect(Unit)
     {
-        viewModel.fetchEmojiList(10)
+        viewModel.fetchEmojiList()
     }
-
-    val emojiList = viewModel.emojiList.collectAsState().value
 
     Column(Modifier.background(White)) {
         TopNavigationBar("Emoji", shouldNavigate = false) {
@@ -107,19 +107,15 @@ fun EmojiPage(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(emojiList, key = { it.id }) { emoji ->
-                    EmojiCell(emoji = emoji) {
-                        viewModel.currentEmoji = emoji
-                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                items(emojiList.itemCount) { index ->
+                    emojiList[index]?.let{
+                        EmojiCell(emoji = it) { selectedEmoji ->
+                            viewModel.currentEmoji = selectedEmoji
+                            navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        }
                     }
                 }
             }
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun EmojiPagePreview() {
-//    EmojiPage(emojiList = (1..10).map { createDummyEmoji() })
-//}

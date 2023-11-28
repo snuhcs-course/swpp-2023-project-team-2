@@ -1,11 +1,13 @@
 package com.goliath.emojihub.springboot.domain.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.WithCustomUser
 import com.goliath.emojihub.springboot.domain.user.dto.LoginRequest
 import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.domain.user.service.UserService
+import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
 
@@ -31,26 +33,17 @@ internal class UserControllerTest @Autowired constructor(
     @MockBean
     lateinit var userService: UserService
 
+    companion object {
+        private val testDto = TestDto()
+        private val userList = testDto.userList
+    }
+
     @Test
     @WithCustomUser
     @DisplayName("유저 데이터들 가져오기 테스트")
     fun getUsers() {
         // given
-        val list = mutableListOf<UserDto>()
-        val size = 2
-        val email = "test_email"
-        val username = "test_username"
-        val password = "test_password"
-        for (i in 0 until size) {
-            list.add(
-                UserDto(
-                    email = email + i,
-                    username = username + i,
-                    password = password + i,
-                )
-            )
-        }
-        given(userService.getUsers()).willReturn(list)
+        given(userService.getUsers()).willReturn(userList)
 
         // when
         val result = mockMvc.perform(get("/api/user"))
@@ -58,10 +51,10 @@ internal class UserControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", equalTo(size)))
-            .andExpect(jsonPath("$[0].email").value(email + 0))
-            .andExpect(jsonPath("$[0].username").value(username + 0))
-            .andExpect(jsonPath("$[0].password").value(password + 0))
+            .andExpect(jsonPath("$.length()", equalTo(userList.size)))
+            .andExpect(jsonPath("$[0].email").value(userList[0].email))
+            .andExpect(jsonPath("$[0].username").value(userList[0].username))
+            .andExpect(jsonPath("$[0].password").value(userList[0].password))
         verify(userService, times(1)).getUsers()
     }
 
@@ -153,5 +146,61 @@ internal class UserControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
         verify(userService, times(1)).signOut(username)
+    }
+
+    @Test
+    @WithCustomUser
+    @DisplayName("에러 핸들링 테스트1: 커스텀 에러")
+    fun errorHandling1() {
+        // given
+        val exception = CustomHttp409("Id already exists.")
+        val request = SignUpRequest(
+            email = "test_email",
+            username = "test_username",
+            password = "test_password"
+        )
+        given(userService.signUp(any(), any(), any())).willThrow(exception)
+
+        // when
+        val result = mockMvc.perform(
+            post("/api/user/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .with(csrf())
+        )
+
+        // then
+        result.andExpect(status().isConflict)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.errorCode").value(exception.status.value()))
+            .andExpect(jsonPath("$.detail").value(exception.message))
+        verify(userService, times(1)).signUp(request.email, request.username, request.password)
+    }
+
+    @Test
+    @WithCustomUser
+    @DisplayName("에러 핸들링 테스트2: 커스텀 에러")
+    fun errorHandling2() {
+        // given
+        val exception = RuntimeException()
+        val request = SignUpRequest(
+            email = "test_email",
+            username = "test_username",
+            password = "test_password"
+        )
+        given(userService.signUp(any(), any(), any())).willThrow(exception)
+
+        // when
+        val result = mockMvc.perform(
+            post("/api/user/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .with(csrf())
+        )
+
+        // then
+        result.andExpect(status().isInternalServerError)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        verify(userService, times(1)).signUp(request.email, request.username, request.password)
     }
 }
