@@ -52,7 +52,9 @@ class X3dRepositoryImpl @Inject constructor(
         val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor, topK)
         if (inferenceResults.isEmpty() || inferenceResults[0].score < SCORE_THRESHOLD) {
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
-            return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))
+            return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE),
+                CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE),
+                CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))
         }
         return x3dDataSource.indexToEmojiInfo(
             inferenceResults, classNameFilePath, classUnicodeFilePath
