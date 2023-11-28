@@ -93,15 +93,17 @@ internal class PostServiceTest {
         // given
         val username = "test_username"
         val wrongUsername = "wrong_username"
+        val index = 1
+        val count = testDto.postSize
         val list = testDto.postList
         Mockito.`when`(userDao.existUser(username)).thenReturn(true)
         Mockito.`when`(userDao.existUser(wrongUsername)).thenReturn(false)
-        Mockito.`when`(postDao.getMyPosts(username)).thenReturn(list)
+        Mockito.`when`(postDao.getMyPosts(username, index, count)).thenReturn(list)
 
         // when
-        val result = postService.getMyPosts(username)
+        val result = postService.getMyPosts(username, index, count)
         val assertThrows = assertThrows(CustomHttp404::class.java) {
-            postService.getMyPosts(wrongUsername)
+            postService.getMyPosts(wrongUsername, index, count)
         }
 
         // then
@@ -111,7 +113,7 @@ internal class PostServiceTest {
         )
         verify(userDao, times(1)).existUser(username)
         verify(userDao, times(1)).existUser(wrongUsername)
-        verify(postDao, times(1)).getMyPosts(username)
+        verify(postDao, times(1)).getMyPosts(username, index, count)
     }
 
     @Test
