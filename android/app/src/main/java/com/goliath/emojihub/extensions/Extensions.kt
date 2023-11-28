@@ -1,7 +1,5 @@
 package com.goliath.emojihub.extensions
 
-import android.util.Log
-
 fun String.toEmoji(): String {
     return try {
         this.trim().split(" ").map { it.removePrefix("U+").toInt(16) }
@@ -13,15 +11,16 @@ fun String.toEmoji(): String {
 
 fun reactionsToString (reactions: List<String>): String {
     var emojisStr = ""
-    if (reactions.size >= 3) {
-        Log.d("emojiStr", "${reactions.size}")
+
+    if (reactions.isEmpty()) {
+        emojisStr = "아직 반응이 없습니다."
+    } else if (reactions.size >= 3) {
         for (emoji in 0 until 3) {
             emojisStr += emoji
             emojisStr += " "
         }
         emojisStr += "외 ${reactions.size - 3}개의 반응"
     } else {
-        Log.d("emojiStr", "${reactions.size}")
         for (emoji in reactions) {
             emojisStr += emoji
             emojisStr += " "

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
@@ -20,9 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.extensions.reactionsToString
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -31,6 +35,7 @@ fun PostCell(
 ) {
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
+    val emojiViewModel = hiltViewModel<EmojiViewModel>()
 
     Box(
         modifier = Modifier
@@ -70,13 +75,27 @@ fun PostCell(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = post.reaction.toString(),
-                    fontSize = 13.sp,
-                    color = EmojiHubDetailLabel
-                )
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
+                            bottomSheetState.show()
+                        }
+                    },
+
+                    ) {
+                    Text(
+                        text = reactionsToString(post.reaction), //FIXME: post.reaction is empty
+                        fontSize = 13.sp,
+                        color = EmojiHubDetailLabel
+                    )
+                }
+
                 IconButton(onClick = {
-                    coroutineScope.launch { bottomSheetState.show() }
+                    coroutineScope.launch {
+                        emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
+                        bottomSheetState.show()
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Filled.AddReaction,

@@ -25,7 +25,6 @@ import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
-import com.goliath.emojihub.views.components.BottomSheetContent
 import com.goliath.emojihub.views.components.CustomBottomSheet
 import com.goliath.emojihub.views.components.PostCell
 import com.goliath.emojihub.views.components.TopNavigationBar
@@ -80,7 +79,7 @@ fun FeedPage() {
 
     if (bottomSheetController.isVisible) {
         CustomBottomSheet(
-            bottomSheetContent = BottomSheetContent.ADD_REACTION,
+            bottomSheetContent = emojiViewModel.bottomSheetContent,
             emojiList = emojiList
         ) { emoji ->
             emojiViewModel.currentEmoji = emoji
