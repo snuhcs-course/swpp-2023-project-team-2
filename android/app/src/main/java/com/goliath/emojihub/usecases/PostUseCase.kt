@@ -25,6 +25,7 @@ sealed interface PostUseCase {
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
 }
+
 class PostUseCaseImpl @Inject constructor(
     private val repository: PostRepository,
     private val errorController: ApiErrorController

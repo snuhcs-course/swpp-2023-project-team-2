@@ -65,20 +65,16 @@ fun ProfilePage(
     var showSignOutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        postViewModel.fetchPostList()
+        postViewModel.fetchMyPostList()
         emojiViewModel.fetchMyCreatedEmojiList()
         emojiViewModel.fetchMySavedEmojiList()
     }
 
-    LazyColumn(
-        Modifier.background(White)
-    ) {
+    LazyColumn(Modifier.background(White)) {
         item {
             TopNavigationBar("Profile", shouldNavigate = false)
 
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 if (currentUser?.accessToken.isNullOrEmpty()) {
                     EmptyProfile()
                 } else {
@@ -112,7 +108,7 @@ fun ProfilePage(
 
                         ProfileMenuCellWithPreview(
                             label = "내가 작성한 포스트",
-                            detailLabel = "count",
+                            detailLabel = myPostList.itemCount.toString(),
                             navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
                         ) {
                             items(myPostList.itemCount) { index ->

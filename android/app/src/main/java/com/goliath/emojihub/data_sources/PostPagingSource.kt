@@ -22,7 +22,7 @@ class PostPagingSource @Inject constructor(
                     api.fetchPostList(cursor).body()
                 }
                 PostFetchType.MY -> {
-                    api.fetchPostList(cursor).body()
+                    api.fetchMyPostList(cursor).body()
                 }
             }
             val data = response ?: listOf()
