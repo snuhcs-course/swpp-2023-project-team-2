@@ -2,12 +2,13 @@ package com.goliath.emojihub.springboot.domain.post.dto
 
 import kotlin.streams.asSequence
 
-class PostDto(
+data class PostDto(
     var id: String = "",
     var created_by: String = "",
     var content: String = "",
     var created_at: String = "",
     var modified_at: String = "",
+    var reactions: MutableList<String>? = mutableListOf()
 ) {
     constructor(username: String, content: String, dateTime: String) : this() {
         val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

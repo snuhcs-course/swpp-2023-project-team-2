@@ -7,14 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,19 +26,18 @@ class EmojiViewModel @Inject constructor(
     var currentEmoji: Emoji? = null
     var isBottomSheetShown by mutableStateOf(false)
 
-    private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
-    val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
+    val emojiList = emojiUseCase.emojiList
 
     private val _topK = 3
 
-    fun fetchEmojiList(numInt: Int)
+    fun fetchEmojiList()
     {
         viewModelScope.launch {
-            emojiUseCase.fetchEmojiList(numInt)
-
-            val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
-            _emojiList.emit(emojis)
-            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
+            emojiUseCase.fetchEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateEmojiList(it)
+                }
         }
     }
 
