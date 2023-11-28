@@ -1,4 +1,4 @@
-name: Springboot CI on Push
+name: Springboot CI/CD on Push
 
 on:
   push:
@@ -25,6 +25,12 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Add test account key from secrets
+      run: |
+        echo "${{ secrets.FIREBASE_TEST_ACCOUNT_KEY }}" | base64 -d > \
+        src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json
+        ls -al src/test/kotlin/com/goliath/emojihub/springboot/
+
     # Build & Test
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -50,7 +56,10 @@ jobs:
     - name: Execute remote commands
       run: |
         ssh -v ${{ secrets.SPRINGBOOT_USERNAME }}@${{ secrets.SPRINGBOOT_HOST_DNS }} \
-        "kill $(pgrep -f springboot-0.0.1-SNAPSHOT.jar) || true && \
-        cd ${{ secrets.SPRINGBOOT_ROOT_DIR }} && \
-        sudo nohup /usr/bin/java -jar ${{ secrets.SPRINGBOOT_TARGET_DIR }}/*.jar & \
+        "echo hello"
+        ssh -v ${{ secrets.SPRINGBOOT_USERNAME }}@${{ secrets.SPRINGBOOT_HOST_DNS }} \
+        "sudo kill -9 \$(pgrep -f springboot-0.0.1-SNAPSHOT.jar) || true"
+        ssh -v ${{ secrets.SPRINGBOOT_USERNAME }}@${{ secrets.SPRINGBOOT_HOST_DNS }} \
+        "cd ${{ secrets.SPRINGBOOT_ROOT_DIR }} && pwd && \
+        sudo nohup /usr/bin/java -jar ${{ secrets.SPRINGBOOT_TARGET_DIR }}/*.jar \
         > ${{ secrets.SPRINGBOOT_ROOT_DIR }}/app.log 2>&1 &"
