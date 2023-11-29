@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.NavigateBefore
+import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -157,33 +161,41 @@ fun TransformVideoPage(
                     Text(
                         text = "영상과 가장 잘 어울리는\n이모지를 골라주세요",
                         color = com.goliath.emojihub.ui.theme.Color.White,
-                        fontSize = 20.sp,
+                        fontSize = 14.sp,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(40.dp))
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ){
-                        IconButton(onClick = {
-                            currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
+                        if(currentEmojiIndex > 0) {
+                            IconButton(onClick = {
+                                currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NavigateBefore,
+                                    contentDescription = "Previous emoji",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Previous emoji",
-                                tint = Color.White,
-                                modifier = Modifier.size(48.dp)
-                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
-                        Spacer(modifier = Modifier.width(45.dp))
+
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
+                                .weight(1f)
                                 .size(120.dp)
                                 .background(
-                                    color = Color.White.copy(alpha = 0.5f), // Adjust alpha for transparency
-                                    shape = RoundedCornerShape(12.dp) // Adjust corner size for roundness
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(12.dp)
                                 )
                         ) {
                             Text(
@@ -191,42 +203,32 @@ fun TransformVideoPage(
                                 fontSize = 60.sp
                             )
                         }
-                        Spacer(modifier = Modifier.width(45.dp))
-                        IconButton(onClick = {
-                            currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
+                        if(currentEmojiIndex < 2) {
+                            IconButton(onClick = {
+                                currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NavigateNext,
+                                    contentDescription = "Next emoji",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Next emoji",
-                                tint = Color.White,
-                                modifier = Modifier.size(48.dp)
-                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
+
                     Spacer(modifier = Modifier.height(15.dp))
                     Text(
                         text = createdEmojiList[currentEmojiIndex].emojiClassName,
-                        fontSize = 18.sp,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = com.goliath.emojihub.ui.theme.Color.White
                     )
-//                    Spacer(modifier = Modifier.height(16.dp))
-//                    Button(
-//                        onClick = {
-//                            // Handle emoji selection
-//                        }
-//                    ) {
-//                        Text(text = "이모지 선택")
-//                    }
-//                    Text (
-//                        text = createdEmojiList[0].emojiClassName,
-//                        fontSize = 48.sp
-//                    )
-//                    Text (
-//                        text = "완료되었습니다",
-//                        fontSize = 24.sp,
-//                    )
                 }
             }
 
