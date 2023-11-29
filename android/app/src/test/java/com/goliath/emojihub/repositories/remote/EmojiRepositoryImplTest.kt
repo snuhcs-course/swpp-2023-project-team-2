@@ -84,9 +84,6 @@ class EmojiRepositoryImplTest {
         every {
             emojiRepositoryImpl.createVideoThumbnail(any(), any())
         } returns File("sampleThumbnailFile")
-        coEvery {
-            emojiRepositoryImpl.uploadEmoji(any(), any())
-        } answers { callOriginal() }
 
         // when
         val isUploaded = runBlocking {
@@ -111,9 +108,6 @@ class EmojiRepositoryImplTest {
         every {
             emojiRepositoryImpl.createVideoThumbnail(any(), any())
         } returns File("sampleThumbnailFile")
-        coEvery {
-            emojiRepositoryImpl.uploadEmoji(any(), any())
-        } answers { callOriginal() }
 
         // when
         val isUploaded = runBlocking {
@@ -138,9 +132,6 @@ class EmojiRepositoryImplTest {
         every {
             emojiRepositoryImpl.createVideoThumbnail(any(), any())
         } returns File("sampleThumbnailFile")
-        coEvery {
-            emojiRepositoryImpl.uploadEmoji(any(), any())
-        } answers { callOriginal() }
 
         // when
         val isUploaded = runBlocking {
@@ -165,9 +156,6 @@ class EmojiRepositoryImplTest {
         every {
             emojiRepositoryImpl.createVideoThumbnail(any(), any())
         } returns File("sampleThumbnailFile")
-        coEvery {
-            emojiRepositoryImpl.uploadEmoji(any(), any())
-        } answers { callOriginal() }
 
         // when
         val isUploaded = runBlocking {
