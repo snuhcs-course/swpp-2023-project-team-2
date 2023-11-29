@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -113,8 +114,8 @@ fun TransformVideoPage(
                                 coroutineScope.launch {
                                     // FIXME: add choose emoji dialog from topK emojis
                                     val success = viewModel.uploadEmoji(
-                                        createdEmojiList[0].emojiUnicode,
-                                        createdEmojiList[0].emojiClassName,
+                                        createdEmojiList[currentEmojiIndex].emojiUnicode,
+                                        createdEmojiList[currentEmojiIndex].emojiClassName,
                                         videoFile
                                     )
                                     Log.d("TransformVideoPage", "success: $success")
@@ -154,60 +155,70 @@ fun TransformVideoPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "영상과 가장 잘 어울리는 이모지를 골라주세요",
+                        text = "영상과 가장 잘 어울리는\n이모지를 골라주세요",
                         color = com.goliath.emojihub.ui.theme.Color.White,
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(
-                                color = Color.Gray.copy(alpha = 0.3f), // Adjust alpha for transparency
-                                shape = RoundedCornerShape(12.dp) // Adjust corner size for roundness
-                            )
-                    ) {
-                        Text(
-                            text = createdEmojiList[currentEmojiIndex].emojiUnicode.toEmoji(),
-                            fontSize = 48.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         IconButton(onClick = {
                             currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
-                        }) {
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "Previous emoji",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
                             )
                         }
-                        Text(
-                            text = createdEmojiList[currentEmojiIndex].emojiClassName,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                        Spacer(modifier = Modifier.width(45.dp))
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.5f), // Adjust alpha for transparency
+                                    shape = RoundedCornerShape(12.dp) // Adjust corner size for roundness
+                                )
+                        ) {
+                            Text(
+                                text = createdEmojiList[currentEmojiIndex].emojiUnicode.toEmoji(),
+                                fontSize = 60.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(45.dp))
                         IconButton(onClick = {
                             currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
-                        }) {
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Next emoji"
+                                contentDescription = "Next emoji",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            // Handle emoji selection
-                        }
-                    ) {
-                        Text(text = "이모지 선택")
-                    }
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Text(
+                        text = createdEmojiList[currentEmojiIndex].emojiClassName,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = com.goliath.emojihub.ui.theme.Color.White
+                    )
+//                    Spacer(modifier = Modifier.height(16.dp))
+//                    Button(
+//                        onClick = {
+//                            // Handle emoji selection
+//                        }
+//                    ) {
+//                        Text(text = "이모지 선택")
+//                    }
 //                    Text (
 //                        text = createdEmojiList[0].emojiClassName,
 //                        fontSize = 48.sp
