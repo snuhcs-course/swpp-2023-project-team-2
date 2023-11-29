@@ -99,6 +99,7 @@ class PostUseCaseImplTest {
             "sampleUpdatedAt",
             "sampleUserId",
             "sampleUserAvatarUrl",
+            listOf("sampleReaction1", "sampleReaction2"),
         )
         coEvery {
             postRepository.getPostWithId(any())
