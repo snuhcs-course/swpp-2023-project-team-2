@@ -27,14 +27,15 @@ class PostService(
 
     fun getPosts(index: Int, count: Int): List<PostDto> {
         if (index <= 0) throw CustomHttp400("Index should be positive integer.")
-        // count는 0보다 커야 함
         if (count <= 0) throw CustomHttp400("Count should be positive integer.")
         return postDao.getPosts(index, count)
     }
 
-    fun getMyPosts(username: String): List<PostDto> {
+    fun getMyPosts(username: String, index: Int, count: Int): List<PostDto> {
+        if (index <= 0) throw CustomHttp400("Index should be positive integer.")
+        if (count <= 0) throw CustomHttp400("Count should be positive integer.")
         if (!userDao.existUser(username)) throw CustomHttp404("User doesn't exist.")
-        return postDao.getMyPosts(username)
+        return postDao.getMyPosts(username, index, count)
     }
 
     fun getPost(postId: String): PostDto? {

@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @WebMvcTest(PostController::class)
 internal class PostControllerTest @Autowired constructor(
     private val mockMvc: MockMvc
-){
+) {
 
     @Autowired
     private lateinit var objectMapper: ObjectMapper
@@ -103,16 +103,22 @@ internal class PostControllerTest @Autowired constructor(
         // given
         val username = "custom_username"
         val realUsername = postList[0].created_by
+        val index = 1
+        val count = testDto.postSize
         val posts = mutableListOf<PostDto>()
         for (post in postList) {
             if (post.created_by == realUsername) {
                 posts.add(post)
             }
         }
-        given(postService.getMyPosts(username)).willReturn(posts)
+        given(postService.getMyPosts(username, index, count)).willReturn(posts)
 
         // when
-        val result = this.mockMvc.perform(get("/api/post/me"))
+        val result = this.mockMvc.perform(
+            get("/api/post/me")
+                .param("index", index.toString())
+                .param("count", count.toString())
+        )
 
         // then
         result.andExpect(status().isOk)
@@ -123,7 +129,7 @@ internal class PostControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].content").value(posts[0].content))
             .andExpect(jsonPath("$[0].created_at").value(posts[0].created_at))
             .andExpect(jsonPath("$[0].modified_at").value(posts[0].modified_at))
-        verify(postService, times(1)).getMyPosts(username)
+        verify(postService, times(1)).getMyPosts(username, index, count)
     }
 
     @Test

@@ -40,12 +40,12 @@ class PostDao(
         return list
     }
 
-    fun getMyPosts(username: String): List<PostDto> {
+    fun getMyPosts(username: String, index: Int, count: Int): List<PostDto> {
         val list = mutableListOf<PostDto>()
         val postsRef = db.collection(POST_COLLECTION_NAME)
         val postQuery = postsRef.whereEqualTo("created_by", username)
-            .orderBy("created_at", Query.Direction.DESCENDING)
-        val documents = postQuery.get().get().documents
+            .orderBy(CREATED_AT, Query.Direction.DESCENDING)
+        val documents: List<QueryDocumentSnapshot> = postQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(PostDto::class.java))
         }
