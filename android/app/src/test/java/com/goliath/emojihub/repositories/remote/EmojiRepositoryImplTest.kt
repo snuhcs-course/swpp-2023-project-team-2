@@ -65,6 +65,48 @@ class EmojiRepositoryImplTest {
         }
     }
 
+    @Test
+    fun fetchMyCreatedEmojiList_returnsFlowOfPagingDataOfEmojiDto() {
+        // given
+        val numSampleEmojis = 10
+        val sampleEmojiDtoList = List(numSampleEmojis) { sampleEmojiDto }
+        val expectedFetchedEmojiDtoList = List(numSampleEmojis*2) { sampleEmojiDto }
+        // *2 because of .asSnapshot() load one more time
+        coEvery {
+            emojiApi.fetchMyCreatedEmojiList(any(), any(), any())
+        } returns Response.success(sampleEmojiDtoList)
+        // when
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchMyCreatedEmojiList() }
+        val fetchedEmojiDtoList = runBlocking { fetchedEmojiPagingDataFlow.asSnapshot() }
+        // then
+        coVerify(exactly = 2) { emojiApi.fetchMyCreatedEmojiList(any(), any(), any()) }
+        runBlocking {
+            assertEquals(expectedFetchedEmojiDtoList.size, fetchedEmojiDtoList.size)
+            assertEquals(expectedFetchedEmojiDtoList, fetchedEmojiDtoList)
+        }
+    }
+
+    @Test
+    fun fetchMySavedEmojiList_returnsFlowOfPagingDataOfEmojiDto() {
+        // given
+        val numSampleEmojis = 10
+        val sampleEmojiDtoList = List(numSampleEmojis) { sampleEmojiDto }
+        val expectedFetchedEmojiDtoList = List(numSampleEmojis*2) { sampleEmojiDto }
+        // *2 because of .asSnapshot() load one more time
+        coEvery {
+            emojiApi.fetchMySavedEmojiList(any(), any(), any())
+        } returns Response.success(sampleEmojiDtoList)
+        // when
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchMySavedEmojiList() }
+        val fetchedEmojiDtoList = runBlocking { fetchedEmojiPagingDataFlow.asSnapshot() }
+        // then
+        coVerify(exactly = 2) { emojiApi.fetchMySavedEmojiList(any(), any(), any()) }
+        runBlocking {
+            assertEquals(expectedFetchedEmojiDtoList.size, fetchedEmojiDtoList.size)
+            assertEquals(expectedFetchedEmojiDtoList, fetchedEmojiDtoList)
+        }
+    }
+
 //    @Test
     fun getEmojiWithId() {
         TODO("Not yet implemented")
