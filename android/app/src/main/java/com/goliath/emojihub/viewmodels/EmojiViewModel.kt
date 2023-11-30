@@ -11,6 +11,7 @@ import androidx.paging.cachedIn
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
+import com.goliath.emojihub.views.components.BottomSheetContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ class EmojiViewModel @Inject constructor(
 ): ViewModel() {
     var videoUri: Uri = Uri.EMPTY
     var currentEmoji: Emoji? = null
-    var isBottomSheetShown by mutableStateOf(false)
+    var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList

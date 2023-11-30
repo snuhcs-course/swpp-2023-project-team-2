@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -20,15 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.bottomSheet
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.BottomNavigationBar
 import com.goliath.emojihub.views.LoginNavigation
-import com.goliath.emojihub.views.LoginPage
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.pageItemList
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,7 +68,6 @@ class RootActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun LoginView() {
     val navController = rememberNavController()
@@ -85,9 +82,11 @@ fun LoginView() {
 @Composable
 fun RootView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+    val bottomSheet = bottomSheet()
 
     CompositionLocalProvider(
-        LocalNavController provides navController
+        LocalNavController provides navController,
+        LocalBottomSheetController provides bottomSheet
     ) {
         Scaffold(
             bottomBar =  {
