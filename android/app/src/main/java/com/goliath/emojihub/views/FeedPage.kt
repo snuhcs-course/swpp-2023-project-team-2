@@ -40,6 +40,7 @@ import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.views.components.EmojiCell
+import com.goliath.emojihub.views.components.EmojiCellDisplay
 import com.goliath.emojihub.views.components.PostCell
 import com.goliath.emojihub.views.components.TopNavigationBar
 
@@ -151,7 +152,7 @@ fun FeedPage() {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(emojiList, key = { it.id }) { emoji ->
-                        EmojiCell(emoji = emoji) {
+                        EmojiCell(emoji = emoji, displayMode = EmojiCellDisplay.VERTICAL) {
                             emojiViewModel.currentEmoji = emoji
                             navController.navigate(NavigationDestination.PlayEmojiVideo)
                         }
