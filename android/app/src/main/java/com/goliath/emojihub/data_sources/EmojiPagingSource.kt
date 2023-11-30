@@ -6,14 +6,29 @@ import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
 import javax.inject.Inject
 
+enum class EmojiFetchType {
+    GENERAL, MY_CREATED, MY_SAVED
+}
+
 class EmojiPagingSource @Inject constructor(
-    private val api: EmojiApi
+    private val api: EmojiApi,
+    private val type: EmojiFetchType
 ): PagingSource<Int, EmojiDto>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EmojiDto> {
         val cursor = params.key ?: 1
         val count = params.loadSize
         return try {
-            val response = api.fetchEmojiList(1, cursor, count).body()
+            val response: List<EmojiDto>? = when (type) {
+                EmojiFetchType.GENERAL -> {
+                    api.fetchEmojiList(1, cursor, count).body()
+                }
+                EmojiFetchType.MY_CREATED -> {
+                    api.fetchMyCreatedEmojiList(1, cursor, count).body()
+                }
+                EmojiFetchType.MY_SAVED -> {
+                    api.fetchMySavedEmojiList(1, cursor, count).body()
+                }
+            }
             val data = response ?: listOf()
             LoadResult.Page(
                 data = data,

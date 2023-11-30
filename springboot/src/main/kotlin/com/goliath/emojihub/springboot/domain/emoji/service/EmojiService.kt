@@ -11,6 +11,7 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.lang.Integer.min
 
 @Service
 class EmojiService(
@@ -34,24 +35,32 @@ class EmojiService(
         return emojiDao.getEmojis(sortByDate, index, count)
     }
 
-    fun getMyEmojis(username: String, field: String): List<EmojiDto> {
+    fun getMyEmojis(username: String, field: String, index: Int, count: Int): List<EmojiDto> {
+        // index는 양의 정수여야 함
+        if (index <= 0) throw CustomHttp400("Index should be positive integer.")
+        // count는 0보다 커야 함
+        if (count <= 0) throw CustomHttp400("Count should be positive integer.")
         val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
         val emojiIdList = if (field == CREATED_EMOJIS) {
             user.created_emojis
         } else {
             user.saved_emojis
         }
-        val emojiList = mutableListOf<EmojiDto>()
+        var emojiList = mutableListOf<EmojiDto>()
         if (emojiIdList != null && emojiIdList.size != 0) {
             for (emojiId in emojiIdList) {
-                val emoji = emojiDao.getEmoji(emojiId)
-                if (emoji != null) {
-                    emojiList.add(emoji)
-                }
+                val emoji = emojiDao.getEmoji(emojiId) ?: continue
+                emojiList.add(emoji)
             }
+            // sort
             if (emojiList.size != 0) {
                 emojiList.sortByDescending { it.created_at }
             }
+            // pagination
+            emojiList =  emojiList.subList(
+                min((index - 1) * count, emojiList.size - 1),
+                min(index * count, emojiList.size)
+            )
         }
         return emojiList
     }
@@ -61,7 +70,13 @@ class EmojiService(
         return emojiDao.getEmoji(emojiId)
     }
 
-    fun postEmoji(username: String, file: MultipartFile, thumbnail: MultipartFile, emojiUnicode: String, emojiLabel: String) {
+    fun postEmoji(
+        username: String,
+        file: MultipartFile,
+        thumbnail: MultipartFile,
+        emojiUnicode: String,
+        emojiLabel: String
+    ) {
         val dateTime = getDateTimeNow()
         val emoji = emojiDao.insertEmoji(username, file, thumbnail, emojiUnicode, emojiLabel, dateTime)
         userDao.insertId(username, emoji.id, CREATED_EMOJIS)

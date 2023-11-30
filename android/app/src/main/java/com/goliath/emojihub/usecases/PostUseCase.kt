@@ -15,13 +15,17 @@ import javax.inject.Inject
 
 sealed interface PostUseCase {
     val postList: StateFlow<PagingData<Post>>
+    val myPostList: StateFlow<PagingData<Post>>
     suspend fun updatePostList(data: PagingData<Post>)
+    suspend fun updateMyPostList(data: PagingData<Post>)
     suspend fun fetchPostList(): Flow<PagingData<Post>>
+    suspend fun fetchMyPostList(): Flow<PagingData<Post>>
     suspend fun uploadPost(content: String): Boolean
     suspend fun getPostWithId(id: String): PostDto?
     suspend fun editPost(id: String, content: String)
     suspend fun deletePost(id: String)
 }
+
 class PostUseCaseImpl @Inject constructor(
     private val repository: PostRepository,
     private val errorController: ApiErrorController
@@ -31,12 +35,24 @@ class PostUseCaseImpl @Inject constructor(
     override val postList: StateFlow<PagingData<Post>>
         get() = _postList
 
+    private val _myPostList = MutableStateFlow<PagingData<Post>>(PagingData.empty())
+    override val myPostList: StateFlow<PagingData<Post>>
+        get() = _myPostList
+
     override suspend fun updatePostList(data: PagingData<Post>) {
         _postList.emit(data)
     }
 
+    override suspend fun updateMyPostList(data: PagingData<Post>) {
+        _myPostList.emit(data)
+    }
+
     override suspend fun fetchPostList(): Flow<PagingData<Post>> {
         return repository.fetchPostList().map { it.map { dto -> Post(dto) } }
+    }
+
+    override suspend fun fetchMyPostList(): Flow<PagingData<Post>> {
+        return repository.fetchMyPostList().map { it.map { dto -> Post(dto) } }
     }
 
     override suspend fun uploadPost(content: String): Boolean {
