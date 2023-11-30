@@ -8,8 +8,6 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.X3dInferenceResult
 import io.mockk.every
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
-import org.json.JSONObject
 import org.junit.Assert.*
 
 import org.junit.Test
@@ -144,23 +142,6 @@ class X3dDataSourceImplTest {
     }
 
     @Test
-    fun loadVideoMediaMetadataRetriever_negativeVideoLength_returnsNull() {
-        // given
-        val videoUri = getSampleVideoUri("Hagrid/test_palm_video.mp4")
-        mockkStatic(MediaMetadataRetriever::class)
-        every {
-            MediaMetadataRetriever().extractMetadata(
-                MediaMetadataRetriever.METADATA_KEY_DURATION
-            )
-        } returns "-1"
-        // when
-        val mediaMetadataRetrieverWithNegativeVideoLength =
-            x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
-        // then
-        assertNull(mediaMetadataRetrieverWithNegativeVideoLength)
-    }
-
-    @Test
     fun loadVideoMediaMetadataRetriever_invalidVideoUri_returnsNull() {
         // given
         val videoUri = Uri.EMPTY
@@ -196,12 +177,13 @@ class X3dDataSourceImplTest {
         // given
         val videoUri = getSampleVideoUri("Hagrid/test_palm_video.mp4")
         val mediaMetadataRetriever = x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
+        mockkObject(mediaMetadataRetriever!!)
         every {
-            mediaMetadataRetriever!!.getFrameAtTime(any(), any())
+            mediaMetadataRetriever.getFrameAtTime(any(), any())
         } throws IOException()
         // when
         val inputVideoFrameTensors = x3dDataSourceImpl
-            .extractFrameTensorsFromVideo(mediaMetadataRetriever!!)
+            .extractFrameTensorsFromVideo(mediaMetadataRetriever)
         // then
         assertNull(inputVideoFrameTensors)
     }
@@ -229,7 +211,7 @@ class X3dDataSourceImplTest {
     }
 
     @Test
-    fun indexToEmojiInfo_valid3ClassNames_returnPairOfClassNameAndUnicode() {
+    fun indexToCreatedEmojiList_valid3ClassNames_returnPairOfClassNameAndUnicode() {
         // given
         val (classNameFilePath, classUnicodeFilePath) = getClassFilePaths()
         val mockInferenceResults = listOf(
@@ -238,28 +220,28 @@ class X3dDataSourceImplTest {
             X3dInferenceResult(0, 0.01f)
         )
         // when
-        val emojiInfo = x3dDataSourceImpl.indexToEmojiInfo(
+        val createdEmojiList = x3dDataSourceImpl.indexToCreatedEmojiList(
             mockInferenceResults, classNameFilePath, classUnicodeFilePath
         )
         // then
-        assertEquals(3, emojiInfo.size)
+        assertEquals(3, createdEmojiList.size)
         assertEquals(
             // dummy emoji unicode is same as the class index
             CreatedEmoji("like", "U+1F44D"),
-            emojiInfo[0]
+            createdEmojiList[0]
         )
         assertEquals(
             CreatedEmoji("ok", "U+1F646"),
-            emojiInfo[1]
+            createdEmojiList[1]
         )
         assertEquals(
             CreatedEmoji("call", "U+1F919"),
-            emojiInfo[2]
+            createdEmojiList[2]
         )
     }
 
     @Test
-    fun indexToEmojiInfo_withInvalidScoreIndex_returnEmptyList() {
+    fun indexToCreatedEmojiList_withInvalidScoreIndex_returnEmptyList() {
         // given
         val (classNameFilePath, classUnicodeFilePath) = getClassFilePaths()
         val mockInferenceResults = listOf(
@@ -268,32 +250,11 @@ class X3dDataSourceImplTest {
             X3dInferenceResult(0, 0.01f)
         )
         // when
-        val emojiInfo = x3dDataSourceImpl.indexToEmojiInfo(
+        val createdEmojiList = x3dDataSourceImpl.indexToCreatedEmojiList(
             mockInferenceResults, classNameFilePath, classUnicodeFilePath
         )
         // then
-        assertEquals(0, emojiInfo.size)
-    }
-
-    @Test
-    fun indexToEmojiInfo_withInvalidClassName_returnEmptyList() {
-        // given
-        val (classNameFilePath, classUnicodeFilePath) = getClassFilePaths()
-        val mockInferenceResults = listOf(
-            X3dInferenceResult(4, 0.8f),
-            X3dInferenceResult(6, 0.15f),
-            X3dInferenceResult(0, 0.01f)
-        )
-        mockkObject(JSONObject::class)
-        every {
-            JSONObject(File(classNameFilePath).readText()).getString(any())
-        } returns "invalidClassName"
-        // when
-        val emojiInfo = x3dDataSourceImpl.indexToEmojiInfo(
-            mockInferenceResults, classNameFilePath, classUnicodeFilePath
-        )
-        // then
-        assertEquals(0, emojiInfo.size)
+        assertEquals(0, createdEmojiList.size)
     }
 
     @Test

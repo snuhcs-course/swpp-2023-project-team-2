@@ -28,7 +28,7 @@ interface X3dDataSource {
     fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
     fun runInference(x3dModule: Module, videoTensor: Tensor, topK: Int): List<X3dInferenceResult>
-    fun indexToEmojiInfo(
+    fun indexToCreatedEmojiList(
         inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
@@ -180,7 +180,7 @@ class X3dDataSourceImpl @Inject constructor(
         return topKScores.map { X3dInferenceResult(it.index, it.value) }
     }
 
-    override fun indexToEmojiInfo(
+    override fun indexToCreatedEmojiList(
         inferenceResults: List<X3dInferenceResult>,
         classNameFilePath: String,
         classUnicodeFilePath: String
@@ -189,17 +189,17 @@ class X3dDataSourceImpl @Inject constructor(
         val classUnicodeJSONObject = JSONObject(File(classUnicodeFilePath).readText())
 
         val createdEmojiList = mutableListOf<CreatedEmoji>()
-        for (result in inferenceResults) {
-            try {
+        return try {
+            for (result in inferenceResults) {
                 val className = classNameJSONObject.getString(result.scoreIdx.toString())
                 val classUnicode = classUnicodeJSONObject.getString(className)
                 createdEmojiList.add(CreatedEmoji(className, classUnicode))
-            } catch (e: Exception) {
-                Log.e("X3dDataSource", "Error loading class name or unicode ${e.message}")
-                return emptyList()
             }
+            createdEmojiList
+        } catch (e: Exception) {
+            Log.e("X3dDataSource", "Error loading class name or unicode ${e.message}")
+            emptyList()
         }
-        return createdEmojiList
     }
 
     fun assetFilePath(assetName: String): String {
