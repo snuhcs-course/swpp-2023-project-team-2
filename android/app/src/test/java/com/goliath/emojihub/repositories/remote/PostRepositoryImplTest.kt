@@ -20,7 +20,6 @@ import org.junit.runners.JUnit4
 class PostRepositoryImplTest {
     private val postApi = mockk<PostApi>()
     private val postRepositoryImpl = PostRepositoryImpl(postApi)
-
     @Before
     fun setUp() {
         mockLogClass()

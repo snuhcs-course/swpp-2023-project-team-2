@@ -2,16 +2,28 @@ package com.goliath.emojihub.views
 
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.NavigateBefore
+import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -26,6 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
@@ -49,6 +64,7 @@ fun TransformVideoPage(
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var currentEmojiIndex by remember { mutableStateOf(0) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -102,8 +118,8 @@ fun TransformVideoPage(
                                 coroutineScope.launch {
                                     // FIXME: add choose emoji dialog from topK emojis
                                     val success = viewModel.uploadEmoji(
-                                        createdEmojiList[0].emojiUnicode,
-                                        createdEmojiList[0].emojiClassName,
+                                        createdEmojiList[currentEmojiIndex].emojiUnicode,
+                                        createdEmojiList[currentEmojiIndex].emojiClassName,
                                         videoFile
                                     )
                                     Log.d("TransformVideoPage", "success: $success")
@@ -136,21 +152,82 @@ fun TransformVideoPage(
 
             if (createdEmojiList.isNotEmpty()) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = createdEmojiList[0].emojiUnicode.toEmoji(),
-                        fontSize = 48.sp
+                        text = "영상과 가장 잘 어울리는\n이모지를 골라주세요",
+                        color = com.goliath.emojihub.ui.theme.Color.White,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
                     )
-                    Text (
-                        text = createdEmojiList[0].emojiClassName,
-                        fontSize = 48.sp
-                    )
-                    Text (
-                        text = "완료되었습니다",
-                        fontSize = 24.sp,
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        if(currentEmojiIndex > 0) {
+                            IconButton(onClick = {
+                                currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NavigateBefore,
+                                    contentDescription = "Previous emoji",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .weight(1f)
+                                .size(120.dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                        ) {
+                            Text(
+                                text = createdEmojiList[currentEmojiIndex].emojiUnicode.toEmoji(),
+                                fontSize = 60.sp
+                            )
+                        }
+                        if(currentEmojiIndex < 2) {
+                            IconButton(onClick = {
+                                currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NavigateNext,
+                                    contentDescription = "Next emoji",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Text(
+                        text = createdEmojiList[currentEmojiIndex].emojiClassName,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = com.goliath.emojihub.ui.theme.Color.White
                     )
                 }
             }

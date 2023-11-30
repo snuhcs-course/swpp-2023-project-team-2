@@ -44,7 +44,7 @@ data class PostDto(
     @SerializedName("modified_at") val modifiedAt: String,
     @SerializedName("created_by") val createdBy: String,
     val content: String,
-    @SerializedName("reaction") val reaction: List<String>
+    @SerializedName("reactions") val reaction: List<String>
 )
 
 data class UploadPostDto(
