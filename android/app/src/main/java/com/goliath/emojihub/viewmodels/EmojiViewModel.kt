@@ -23,7 +23,7 @@ import javax.inject.Inject
 class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
-    var videoUri: Uri = Uri.EMPTY
+    lateinit var videoUri: Uri
     var currentEmoji: Emoji? = null
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
     var selectedEmojiClass by mutableStateOf<String?>("전체")
@@ -31,8 +31,9 @@ class EmojiViewModel @Inject constructor(
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
     val mySavedEmojiList = emojiUseCase.mySavedEmojiList
-
-    private val _topK = 3
+    companion object {
+        private const val _topK = 3
+    }
 
     fun fetchEmojiList() {
         viewModelScope.launch {
@@ -81,6 +82,6 @@ class EmojiViewModel @Inject constructor(
     }
 
     suspend fun unSaveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+        emojiUseCase.unSaveEmoji(id)
     }
 }

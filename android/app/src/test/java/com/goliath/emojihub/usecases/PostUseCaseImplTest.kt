@@ -3,17 +3,17 @@ package com.goliath.emojihub.usecases
 import androidx.paging.PagingData
 import androidx.paging.map
 import androidx.paging.testing.asSnapshot
+import com.goliath.emojihub.createDeterministicDummyPostDtoList
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Post
-import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
 import com.goliath.emojihub.repositories.remote.PostRepository
+import com.goliath.emojihub.samplePostDto
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -40,9 +40,19 @@ class PostUseCaseImplTest {
     }
 
     @Test
+    fun updateMyPostList_withSamplePagingPostData_updatesMyPostListStateFlow() {
+        // given
+        val samplePagingPostData = mockk<PagingData<Post>>()
+        // when
+        runBlocking { postUseCaseImpl.updateMyPostList(samplePagingPostData) }
+        // then
+        assertEquals(samplePagingPostData, postUseCaseImpl.myPostList.value)
+    }
+
+    @Test
     fun fetchPostList_returnsFlowOfPostPagingData() {
         // given
-        val samplePostPagingDataFlow = spyk<Flow<PagingData<PostDto>>>()
+        val samplePostPagingDataFlow = createDeterministicDummyPostDtoList(5)
         val sampleAnswer = samplePostPagingDataFlow.map { it.map { dto -> Post(dto) } }
         coEvery {
             postRepository.fetchPostList()
@@ -52,10 +62,38 @@ class PostUseCaseImplTest {
         // then
         coVerify(exactly = 1) { postRepository.fetchPostList() }
         runBlocking {
-            assertEquals(
-                sampleAnswer.asSnapshot(),
-                fetchedPostPagingDataFlow.asSnapshot()
-            )
+            val sampleAnswerAsSnapshot = sampleAnswer.asSnapshot()
+            val fetchedPostPagingDataFlowAsSnapshot = fetchedPostPagingDataFlow.asSnapshot()
+            for (i in sampleAnswerAsSnapshot.indices) {
+                assertEquals(
+                    sampleAnswerAsSnapshot[i],
+                    fetchedPostPagingDataFlowAsSnapshot[i]
+                )
+            }
+        }
+    }
+
+    @Test
+    fun fetchMyPostList_returnsFlowOfPostPagingData() {
+        // given
+        val samplePostPagingDataFlow = createDeterministicDummyPostDtoList(5)
+        val sampleAnswer = samplePostPagingDataFlow.map { it.map { dto -> Post(dto) } }
+        coEvery {
+            postRepository.fetchMyPostList()
+        } returns samplePostPagingDataFlow
+        // when
+        val fetchedPostPagingDataFlow = runBlocking { postUseCaseImpl.fetchMyPostList() }
+        // then
+        coVerify(exactly = 1) { postRepository.fetchMyPostList() }
+        runBlocking {
+            val sampleAnswerAsSnapshot = sampleAnswer.asSnapshot()
+            val fetchedPostPagingDataFlowAsSnapshot = fetchedPostPagingDataFlow.asSnapshot()
+            for (i in sampleAnswerAsSnapshot.indices) {
+                assertEquals(
+                    sampleAnswerAsSnapshot[i],
+                    fetchedPostPagingDataFlowAsSnapshot[i]
+                )
+            }
         }
     }
 
@@ -93,14 +131,6 @@ class PostUseCaseImplTest {
     fun getPostWithId_success_returnsPostDto() {
         // given
         val sampleId = "sampleId"
-        val samplePostDto = PostDto(
-            sampleId,
-            "sampleCreatedAt",
-            "sampleUpdatedAt",
-            "sampleUserId",
-            "sampleUserAvatarUrl",
-            listOf("sampleReaction1", "sampleReaction2"),
-        )
         coEvery {
             postRepository.getPostWithId(any())
         } returns samplePostDto
