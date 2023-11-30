@@ -2,7 +2,6 @@ package com.goliath.emojihub.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.models.dummyEmoji
 import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color
@@ -47,9 +44,7 @@ import com.goliath.emojihub.views.components.ProfileMenuCellWithPreview
 import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
-fun ProfilePage(
-
-) {
+fun ProfilePage() {
     val navController = LocalNavController.current
     val scrollState = rememberScrollState()
 
@@ -61,124 +56,120 @@ fun ProfilePage(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
-    LazyColumn(
-        Modifier.background(White)
-    ) {
-        item {
-            TopNavigationBar("Profile", shouldNavigate = false)
+    Column(Modifier.background(White).fillMaxSize()) {
+        TopNavigationBar("Profile", shouldNavigate = false)
 
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (currentUser?.accessToken.isNullOrEmpty()) {
-                    EmptyProfile()
-                } else {
-                    Column(Modifier.padding(horizontal = 16.dp)) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Start,
-                            verticalArrangement = Arrangement.Top
-                        ) {
-                            Spacer(modifier = Modifier.height(32.dp))
-
-                            Text(
-                                text = "Username",
-                                fontSize = 12.sp,
-                                color = EmojiHubDetailLabel
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "@" + currentUser?.name,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(34.dp))
-                        }
-
-                        Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        ProfileMenuCellWithPreview(
-                            label = "내가 작성한 포스트",
-                            detailLabel = "count",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
-                        ) {
-                            // TODO: should show my posts
-                            items(listOf(dummyPost, dummyPost, dummyPost)) {
-                                PreviewPostCell(post = it)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        ProfileMenuCellWithPreview(
-                            label = "내가 만든 이모지",
-                            detailLabel = "더보기",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) },
-                            content = {
-                                // should show my emojis
-                            }
-                        )
-
+        if (currentUser?.accessToken.isNullOrEmpty()) {
+            EmptyProfile()
+        } else {
+            LazyColumn(Modifier.padding(horizontal = 16.dp)) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top
+                    ) {
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        ProfileMenuCellWithPreview(
-                            label = "저장된 이모지",
-                            detailLabel = "더보기",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
-                        ) {
-                            // TODO: should show saved emoji list
-                            items(listOf(
+                        Text(
+                            text = "Username",
+                            fontSize = 12.sp,
+                            color = EmojiHubDetailLabel
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "@" + currentUser?.name,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(34.dp))
+                    }
+
+                    Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ProfileMenuCellWithPreview(
+                        label = "내가 작성한 포스트",
+                        detailLabel = "count",
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
+                    ) {
+                        // TODO: should show my posts
+                        items(listOf(dummyPost, dummyPost, dummyPost)) {
+                            PreviewPostCell(post = it)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ProfileMenuCellWithPreview(
+                        label = "내가 만든 이모지",
+                        detailLabel = "더보기",
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) },
+                        content = {
+                            // should show my emojis
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    ProfileMenuCellWithPreview(
+                        label = "저장된 이모지",
+                        detailLabel = "더보기",
+                        navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
+                    ) {
+                        // TODO: should show saved emoji list
+                        items(
+                            listOf(
                                 dummyEmoji, dummyEmoji,
-                                dummyEmoji, dummyEmoji)
-                            ) {
-                                EmojiCell(emoji = it, onSelected = {})
-                            }
+                                dummyEmoji, dummyEmoji
+                            )
+                        ) {
+                            EmojiCell(emoji = it, onSelected = {})
                         }
-
-                        Spacer(modifier = Modifier.height(32.dp))
-                        Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        ProfileMenuCell(label = "로그아웃") {
-                            showLogoutDialog = true
-                        }
-                        ProfileMenuCell(label = "회원 탈퇴", isDestructive = true) {
-                            showSignOutDialog = true
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    if (showLogoutDialog) {
-                        CustomDialog(
-                            title = "로그아웃",
-                            body = "로그아웃하시겠습니까?",
-                            needsCancelButton = true,
-                            onDismissRequest = { showLogoutDialog = false },
-                            dismiss = { showLogoutDialog = false },
-                            confirm = { userViewModel.logout() }
-                        )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ProfileMenuCell(label = "로그아웃") {
+                        showLogoutDialog = true
+                    }
+                    ProfileMenuCell(label = "회원 탈퇴", isDestructive = true) {
+                        showSignOutDialog = true
                     }
 
-                    if (showSignOutDialog) {
-                        CustomDialog(
-                            title = "회원 탈퇴",
-                            body = "계정을 삭제하시겠습니까?",
-                            confirmText = "삭제",
-                            isDestructive = true,
-                            needsCancelButton = true,
-                            onDismissRequest = { showSignOutDialog = false },
-                            dismiss = { showSignOutDialog = false },
-                            confirm = { userViewModel.signOut() }
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+            }
+
+            if (showLogoutDialog) {
+                CustomDialog(
+                    title = "로그아웃",
+                    body = "로그아웃하시겠습니까?",
+                    needsCancelButton = true,
+                    onDismissRequest = { showLogoutDialog = false },
+                    dismiss = { showLogoutDialog = false },
+                    confirm = { userViewModel.logout() }
+                )
+            }
+
+            if (showSignOutDialog) {
+                CustomDialog(
+                    title = "회원 탈퇴",
+                    body = "계정을 삭제하시겠습니까?",
+                    confirmText = "삭제",
+                    isDestructive = true,
+                    needsCancelButton = true,
+                    onDismissRequest = { showSignOutDialog = false },
+                    dismiss = { showSignOutDialog = false },
+                    confirm = { userViewModel.signOut() }
+                )
             }
         }
     }

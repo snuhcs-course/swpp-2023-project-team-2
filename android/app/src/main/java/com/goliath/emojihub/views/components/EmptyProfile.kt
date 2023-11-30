@@ -3,8 +3,11 @@ package com.goliath.emojihub.views.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -16,11 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color
 
 @Composable
 fun EmptyProfile() {
+    val navController = LocalNavController.current
+
     Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(120.dp))
@@ -46,10 +54,8 @@ fun EmptyProfile() {
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = { /* Implement */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp),
+            onClick = { navController.navigate(NavigationDestination.Onboard) },
+            modifier = Modifier.fillMaxWidth().height(44.dp),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
