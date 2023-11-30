@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
-sealed interface PostUseCase {
+interface PostUseCase {
     val postList: StateFlow<PagingData<Post>>
     val myPostList: StateFlow<PagingData<Post>>
     suspend fun updatePostList(data: PagingData<Post>)
@@ -26,6 +27,7 @@ sealed interface PostUseCase {
     suspend fun deletePost(id: String)
 }
 
+@Singleton
 class PostUseCaseImpl @Inject constructor(
     private val repository: PostRepository,
     private val errorController: ApiErrorController

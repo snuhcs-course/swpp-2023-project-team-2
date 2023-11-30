@@ -23,8 +23,12 @@ class X3dRepositoryImpl @Inject constructor(
         const val classToUnicodeFileName = "Hagrid/hagrid_classname_to_unicode.json"
         const val SCORE_THRESHOLD = 0.4F
         // FIXME: Default emojis should be topK different emojis
-        const val DEFAULT_EMOJI_NAME = "love it"
-        const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
+        const val DEFAULT_EMOJI_NAME_1 = "love it"
+        const val DEFAULT_EMOJI_UNICODE_1 = "U+2764 U+FE0F"
+        const val DEFAULT_EMOJI_NAME_2 = "like"
+        const val DEFAULT_EMOJI_UNICODE_2 = "U+1F44D"
+        const val DEFAULT_EMOJI_NAME_3 = "ok"
+        const val DEFAULT_EMOJI_UNICODE_3 = "U+1F646"
     }
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
         val x3dModule = x3dDataSource.loadModule(moduleName)
@@ -53,7 +57,9 @@ class X3dRepositoryImpl @Inject constructor(
         val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor, topK)
         if (inferenceResults.isEmpty() || inferenceResults[0].score < SCORE_THRESHOLD) {
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
-            return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))
+            return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME_1, DEFAULT_EMOJI_UNICODE_1),
+                CreatedEmoji(DEFAULT_EMOJI_NAME_2, DEFAULT_EMOJI_UNICODE_2),
+                CreatedEmoji(DEFAULT_EMOJI_NAME_3, DEFAULT_EMOJI_UNICODE_3))
         }
         return x3dDataSource.indexToCreatedEmojiList(
             inferenceResults, idToClassFileName, classToUnicodeFileName
