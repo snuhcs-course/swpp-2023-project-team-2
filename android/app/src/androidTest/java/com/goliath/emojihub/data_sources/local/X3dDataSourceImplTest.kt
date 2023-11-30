@@ -226,7 +226,6 @@ class X3dDataSourceImplTest {
         // then
         assertEquals(3, createdEmojiList.size)
         assertEquals(
-            // dummy emoji unicode is same as the class index
             CreatedEmoji("like", "U+1F44D"),
             createdEmojiList[0]
         )
