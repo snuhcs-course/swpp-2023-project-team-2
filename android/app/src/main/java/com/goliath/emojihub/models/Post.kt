@@ -11,6 +11,31 @@ class Post(
     val createdBy: String = dto.createdBy
     val content: String = dto.content
     val reaction: List<String> = dto.reaction
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Post
+        if (id != other.id) return false
+        if (createdAt != other.createdAt) return false
+        if (modifiedAt != other.modifiedAt) return false
+        if (createdBy != other.createdBy) return false
+        if (content != other.content) return false
+        if (reaction != other.reaction) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + modifiedAt.hashCode()
+        result = 31 * result + createdBy.hashCode()
+        result = 31 * result + content.hashCode()
+        result = 31 * result + reaction.hashCode()
+        return result
+    }
 }
 
 data class PostDto(
