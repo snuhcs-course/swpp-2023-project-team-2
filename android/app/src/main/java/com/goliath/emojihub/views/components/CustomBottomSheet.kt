@@ -22,10 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
 import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -40,6 +43,12 @@ fun CustomBottomSheet (
 ){
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
+    val viewModel = hiltViewModel<EmojiViewModel>()
+
+    var selectedEmojiClass = viewModel.selectedEmojiClass
+    val emojisByClass = emojiList.groupBy { it.unicode }
+    val allCategory = listOf("전체") + emojisByClass.keys.toList()
+    val emojiCounts = emojisByClass.mapValues { it.value.size }
 
     ModalBottomSheet(
         onDismissRequest = {
@@ -59,10 +68,19 @@ fun CustomBottomSheet (
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         //TODO: display each emoji class (as an IconButton?) and its count [Figma]
-                        Text(
-                            text = "전체",
-                            fontWeight = FontWeight.Bold
-                        )
+                        EmojiClassFilterRow(
+                            emojiClass = allCategory,
+                            emojiCounts = emojiCounts,
+                            onEmojiClassSelected = { selectedEmojiClass = it}
+                        ) {
+                            items(allCategory.size) { emojiClass ->
+                                EmojiClassFilterButton(
+                                    text = if (allCategory[emojiClass] == "전체") "전체" else "${allCategory[emojiClass].toEmoji()}${emojiCounts[allCategory[emojiClass]]}",
+                                    isSelected = allCategory[emojiClass] == selectedEmojiClass,
+                                    onSelected = { selectedEmojiClass = allCategory[emojiClass] }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -125,9 +143,25 @@ fun CustomBottomSheet (
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(emojiList, key = { it.id }) { emoji ->
-                    EmojiCell(emoji = emoji) {
-                        emojiCellClicked(emoji)
+                when (bottomSheetContent) {
+                    BottomSheetContent.EMPTY -> {}
+
+                    BottomSheetContent.VIEW_REACTION -> {
+                        emojisByClass[selectedEmojiClass]?.let { emojilist ->
+                            items(emojilist, key = { it.id }) { emoji ->
+                                EmojiCell(emoji = emoji) {
+                                    emojiCellClicked(emoji)
+                                }
+                            }
+                        }
+                    }
+
+                    BottomSheetContent.ADD_REACTION -> {
+                        items(emojiList, key = { it.id }) { emoji ->
+                            EmojiCell(emoji = emoji) {
+                                emojiCellClicked(emoji)
+                            }
+                        }
                     }
                 }
             }

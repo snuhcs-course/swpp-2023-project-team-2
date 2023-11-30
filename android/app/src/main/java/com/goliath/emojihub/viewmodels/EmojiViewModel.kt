@@ -26,6 +26,7 @@ class EmojiViewModel @Inject constructor(
     var videoUri: Uri = Uri.EMPTY
     var currentEmoji: Emoji? = null
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
+    var selectedEmojiClass by mutableStateOf<String?>("전체")
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
