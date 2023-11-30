@@ -11,6 +11,7 @@ import androidx.paging.cachedIn
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
+import com.goliath.emojihub.views.components.BottomSheetContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,15 +23,16 @@ import javax.inject.Inject
 class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
-    var videoUri: Uri = Uri.EMPTY
+    lateinit var videoUri: Uri
     var currentEmoji: Emoji? = null
-    var isBottomSheetShown by mutableStateOf(false)
+    var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
     val mySavedEmojiList = emojiUseCase.mySavedEmojiList
-
-    private val _topK = 3
+    companion object {
+        private const val _topK = 3
+    }
 
     fun fetchEmojiList() {
         viewModelScope.launch {
@@ -79,6 +81,6 @@ class EmojiViewModel @Inject constructor(
     }
 
     suspend fun unSaveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+        emojiUseCase.unSaveEmoji(id)
     }
 }

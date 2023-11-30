@@ -4,7 +4,6 @@ import com.goliath.emojihub.data_sources.local.X3dDataSource
 import com.goliath.emojihub.data_sources.local.X3dDataSourceImpl
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
