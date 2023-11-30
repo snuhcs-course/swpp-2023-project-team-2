@@ -18,35 +18,36 @@ class X3dRepositoryImpl @Inject constructor(
     private val x3dDataSource: X3dDataSource
 ): X3dRepository {
     companion object{
+        const val moduleName = "Hagrid/efficient_x3d_s_hagrid_float.pt"
+        const val idToClassFileName = "Hagrid/hagrid_id_to_classname.json"
+        const val classToUnicodeFileName = "Hagrid/hagrid_classname_to_unicode.json"
         const val SCORE_THRESHOLD = 0.4F
         // FIXME: Default emojis should be topK different emojis
         const val DEFAULT_EMOJI_NAME = "love it"
         const val DEFAULT_EMOJI_UNICODE = "U+2764 U+FE0F"
     }
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
-        val x3dModule = x3dDataSource.loadModule("Hagrid/efficient_x3d_s_hagrid_float.pt")
+        val x3dModule = x3dDataSource.loadModule(moduleName)
             ?: return emptyList()
         val (classNameFilePath, classUnicodeFilePath) = x3dDataSource.checkAnnotationFilesExist(
-            "Hagrid/hagrid_id_to_classname.json",
-            "Hagrid/hagrid_classname_to_unicode.json"
-        )?: return emptyList()
+            idToClassFileName, classToUnicodeFileName)?: return emptyList()
         val videoTensor = loadVideoTensor(videoUri) ?: return emptyList()
         return predictEmojiClass(
             x3dModule, videoTensor, classNameFilePath, classUnicodeFilePath, topK
         )
     }
 
-    private fun loadVideoTensor(videoUri: Uri): Tensor? {
+    fun loadVideoTensor(videoUri: Uri): Tensor? {
         val mediaMetadataRetriever =
             x3dDataSource.loadVideoMediaMetadataRetriever(videoUri) ?: return null
         return x3dDataSource.extractFrameTensorsFromVideo(mediaMetadataRetriever)
     }
 
-    private fun predictEmojiClass(
+    fun predictEmojiClass(
         x3dModule: Module,
         videoTensor: Tensor,
-        classNameFilePath: String,
-        classUnicodeFilePath: String,
+        idToClassFileName: String,
+        classToUnicodeFileName: String,
         topK: Int
     ): List<CreatedEmoji> {
         val inferenceResults = x3dDataSource.runInference(x3dModule, videoTensor, topK)
@@ -54,8 +55,8 @@ class X3dRepositoryImpl @Inject constructor(
             Log.w("X3d Repository", "Score is lower than threshold, return default emoji")
             return listOf(CreatedEmoji(DEFAULT_EMOJI_NAME, DEFAULT_EMOJI_UNICODE))
         }
-        return x3dDataSource.indexToEmojiInfo(
-            inferenceResults, classNameFilePath, classUnicodeFilePath
+        return x3dDataSource.indexToCreatedEmojiList(
+            inferenceResults, idToClassFileName, classToUnicodeFileName
         )
     }
 }
