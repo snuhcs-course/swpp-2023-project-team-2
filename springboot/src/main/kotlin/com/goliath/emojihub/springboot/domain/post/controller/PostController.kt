@@ -32,9 +32,11 @@ class PostController(private val postService: PostService) {
 
     @GetMapping("/me")
     fun getMyPosts(
-        @CurrentUser username: String
-    ): ResponseEntity<List<PostDto>>{
-        return ResponseEntity.ok(postService.getMyPosts(username))
+        @CurrentUser username: String,
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
+    ): ResponseEntity<List<PostDto>> {
+        return ResponseEntity.ok(postService.getMyPosts(username, index, count))
     }
 
     @GetMapping("/{id}")

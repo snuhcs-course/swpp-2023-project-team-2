@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
-sealed interface UserUseCase {
+interface UserUseCase {
     val userState: StateFlow<User?>
 
     suspend fun fetchUserList()

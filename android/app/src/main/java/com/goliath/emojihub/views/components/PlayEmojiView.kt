@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileDownloadOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,13 @@ fun PlayEmojiView(
             setMediaItem(MediaItem.fromUri(currentEmoji.videoLink))
             repeatMode = Player.REPEAT_MODE_ALL
             prepare()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.stop()
+            exoPlayer.release()
         }
     }
 

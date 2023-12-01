@@ -107,6 +107,8 @@ internal class PostDaoTest {
     fun getMyPosts() {
         // given
         val username = userList[0].username
+        val index = 1
+        val count = testDto.postSize
         val postListForUser = mutableListOf<PostDto>()
         postListForUser.add(postList[1])
         postListForUser.add(postList[0])
@@ -114,7 +116,7 @@ internal class PostDaoTest {
             .thenReturn(testDB.collection(POST_COLLECTION_NAME))
 
         // when
-        val result = postDao.getMyPosts(username)
+        val result = postDao.getMyPosts(username, index, count)
 
         // then
         assertAll(

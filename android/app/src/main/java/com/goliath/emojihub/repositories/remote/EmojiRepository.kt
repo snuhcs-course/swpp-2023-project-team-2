@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.goliath.emojihub.data_sources.EmojiFetchType
 import com.goliath.emojihub.data_sources.EmojiPagingSource
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.models.EmojiDto
@@ -16,7 +17,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.File
@@ -27,6 +29,8 @@ import javax.inject.Singleton
 
 interface EmojiRepository {
     suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
     suspend fun saveEmoji(id: String): Result<Unit>
@@ -42,7 +46,21 @@ class EmojiRepositoryImpl @Inject constructor(
     override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.GENERAL) }
+        ).flow
+    }
+
+    override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_CREATED) }
+        ).flow
+    }
+
+    override suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_SAVED) }
         ).flow
     }
 
@@ -52,30 +70,31 @@ class EmojiRepositoryImpl @Inject constructor(
 
     override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
         val emojiDtoJson = Gson().toJson(emojiDto)
-        val emojiDtoRequestBody = RequestBody.create("application/json".toMediaTypeOrNull(), emojiDtoJson)
+        val emojiDtoRequestBody = emojiDtoJson.toRequestBody("application/json".toMediaTypeOrNull())
 
-        val videoFileRequestBody = RequestBody.create("video/mp4".toMediaTypeOrNull(), videoFile)
+        val videoFileRequestBody = videoFile.asRequestBody("video/mp4".toMediaTypeOrNull())
         val videoFileMultipartBody = MultipartBody.Part.createFormData("file", videoFile.name, videoFileRequestBody)
 
         val thumbnailFile = createVideoThumbnail(context, videoFile)
-
-        val thumbnailRequestBody = RequestBody.create("image/jpg".toMediaTypeOrNull(),
-            thumbnailFile!!
-        )
-        val thumbnailMultipartBody = MultipartBody.Part.createFormData("thumbnail", thumbnailFile?.name, thumbnailRequestBody)
+        val thumbnailRequestBody = thumbnailFile!!
+            .asRequestBody("image/jpg".toMediaTypeOrNull())
+        val thumbnailMultipartBody = MultipartBody.Part.createFormData("thumbnail",
+            thumbnailFile.name, thumbnailRequestBody)
 
         return try {
             emojiApi.uploadEmoji(videoFileMultipartBody, thumbnailMultipartBody, emojiDtoRequestBody)
             true
         }
         catch (e: IOException) {
-            Log.d("EmojiRepository", "IOException")
-            e.printStackTrace()
+            Log.e("EmojiRepository", "IOException")
             false
         }
         catch (e: HttpException) {
-            Log.d("EmojiRepository", "HttpException")
-            e.printStackTrace()
+            Log.e("EmojiRepository", "HttpException")
+            false
+        }
+        catch (e: Exception) {
+            Log.e("EmojiRepository", "Unknown Exception: ${e.message}")
             false
         }
     }
@@ -117,7 +136,7 @@ class EmojiRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    private fun createVideoThumbnail(context: Context, videoFile: File): File? {
+    fun createVideoThumbnail(context: Context, videoFile: File): File? {
         val retriever = MediaMetadataRetriever()
         try {
             retriever.setDataSource(videoFile.absolutePath)
@@ -132,8 +151,7 @@ class EmojiRepositoryImpl @Inject constructor(
                 return thumbnailFile
             }
         } catch (e: Exception) {
-            Log.d("create_TN", "ERROR...")
-            e.printStackTrace()
+            Log.e("EmojiRepository_create_TN", "ERROR creating thumbnail: ${e.message?:"Unknown error"}")
         } finally {
             retriever.release()
         }

@@ -20,8 +20,14 @@ import javax.inject.Singleton
 
 interface EmojiUseCase {
     val emojiList: StateFlow<PagingData<Emoji>>
+    val myCreatedEmojiList: StateFlow<PagingData<Emoji>>
+    val mySavedEmojiList: StateFlow<PagingData<Emoji>>
     suspend fun updateEmojiList(data: PagingData<Emoji>)
+    suspend fun updateMyCreatedEmojiList(data: PagingData<Emoji>)
+    suspend fun updateMySavedEmojiList(data: PagingData<Emoji>)
     suspend fun fetchEmojiList(): Flow<PagingData<Emoji>>
+    suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>>
+    suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
     suspend fun saveEmoji(id: String): Result<Unit>
@@ -39,11 +45,36 @@ class EmojiUseCaseImpl @Inject constructor(
     override val emojiList: StateFlow<PagingData<Emoji>>
         get() = _emojiList
 
+    private val _myCreatedEmojiList = MutableStateFlow<PagingData<Emoji>>(PagingData.empty())
+    override val myCreatedEmojiList: StateFlow<PagingData<Emoji>>
+        get() = _myCreatedEmojiList
+
+    private val _mySavedEmojiList = MutableStateFlow<PagingData<Emoji>>(PagingData.empty())
+    override val mySavedEmojiList: StateFlow<PagingData<Emoji>>
+        get() = _mySavedEmojiList
+
     override suspend fun updateEmojiList(data: PagingData<Emoji>) {
         _emojiList.emit(data)
     }
+
+    override suspend fun updateMyCreatedEmojiList(data: PagingData<Emoji>) {
+        _myCreatedEmojiList.emit(data)
+    }
+
+    override suspend fun updateMySavedEmojiList(data: PagingData<Emoji>) {
+        _mySavedEmojiList.emit(data)
+    }
+
     override suspend fun fetchEmojiList(): Flow<PagingData<Emoji>> {
         return emojiRepository.fetchEmojiList().map { it.map { dto -> Emoji(dto) } }
+    }
+
+    override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>> {
+        return emojiRepository.fetchMyCreatedEmojiList().map { it.map { dto -> Emoji(dto) } }
+    }
+
+    override suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>> {
+        return emojiRepository.fetchMySavedEmojiList().map { it.map { dto -> Emoji(dto) } }
     }
 
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {

@@ -86,6 +86,9 @@ internal class EmojiServiceTest {
         val user = testDto.userList[0]
         val username = user.username
         val wrongUsername = "wrong_username"
+        val index = 1
+        val countCreated = testDto.createdEmojiSize
+        val countSaved = testDto.savedEmojiSize
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
         Mockito.`when`(userDao.getUser(wrongUsername)).thenReturn(null)
         for (emoji in testDto.emojiList) {
@@ -93,10 +96,10 @@ internal class EmojiServiceTest {
         }
 
         // when
-        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS)
-        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS)
+        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS, index, countCreated)
+        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS, index, countSaved)
         val assertThrows = assertThrows(CustomHttp404::class.java) {
-            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS)
+            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS, index, countCreated)
         }
 
         // then

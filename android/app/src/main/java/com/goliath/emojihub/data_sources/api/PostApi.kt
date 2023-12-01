@@ -17,6 +17,11 @@ interface PostApi {
         @Query("index") index: Int
     ): Response<List<PostDto>>
 
+    @GET("post/me")
+    suspend fun fetchMyPostList(
+        @Query("index") index: Int
+    ): Response<List<PostDto>>
+
     @GET("post")
     suspend fun getPostWithId(
         @Path("id") id: String

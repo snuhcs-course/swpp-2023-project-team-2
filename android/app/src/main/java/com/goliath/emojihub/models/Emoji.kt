@@ -14,6 +14,36 @@ class Emoji(
     val unicode: String = dto.unicode
     val label: String = dto.label
     val id: String = dto.id
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Emoji
+        if (createdBy != other.createdBy) return false
+        if (isSaved != other.isSaved) return false
+        if (createdAt != other.createdAt) return false
+        if (savedCount != other.savedCount) return false
+        if (videoLink != other.videoLink) return false
+        if (thumbnailLink != other.thumbnailLink) return false
+        if (unicode != other.unicode) return false
+        if (label != other.label) return false
+        if (id != other.id) return false
+
+        return true
+    }
+    override fun hashCode(): Int {
+        var result = createdBy.hashCode()
+        result = 31 * result + isSaved.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + savedCount
+        result = 31 * result + videoLink.hashCode()
+        result = 31 * result + thumbnailLink.hashCode()
+        result = 31 * result + unicode.hashCode()
+        result = 31 * result + label.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
 }
 
 data class EmojiDto(
