@@ -1,5 +1,6 @@
 package com.goliath.emojihub.usecases
 
+import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
@@ -20,8 +21,8 @@ interface UserUseCase {
     suspend fun fetchUser(id: String)
     suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
-    fun logout()
-    fun signOut()
+    suspend fun logout()
+    suspend fun signOut()
 }
 
 @Singleton
@@ -62,17 +63,37 @@ class UserUseCaseImpl @Inject constructor(
                 val accessToken = it.body()?.accessToken
                 _userState.update { User(UserDto(accessToken ?: "", name)) }
                 EmojiHubApplication.preferences.accessToken = accessToken
+                Log.d("logout", "success ${EmojiHubApplication.preferences.accessToken}")
             } else {
                 errorController.setErrorState(it.code())
             }
         }
     }
 
-    override fun logout() {
-        _userState.update { null }
+    override suspend fun logout() {
+        val response = repository.logout()
+        response.let {
+            if (it.isSuccessful) {
+                Log.d("logout", "success ${EmojiHubApplication.preferences.accessToken}")
+                _userState.update { null }
+                EmojiHubApplication.preferences.accessToken = null
+            } else {
+                Log.d("logout", "fail ${it.code()}")
+                errorController.setErrorState(it.code())
+            }
+        }
     }
 
-    override fun signOut() {
-        _userState.update { null }
+    override suspend fun signOut() {
+        val accessToken = EmojiHubApplication.preferences.accessToken ?: return
+        val response = repository.signOut(accessToken)
+        response.let {
+            if (it.isSuccessful) {
+                _userState.update { null }
+                EmojiHubApplication.preferences.accessToken = null
+            } else {
+                errorController.setErrorState(it.code())
+            }
+        }
     }
 }
