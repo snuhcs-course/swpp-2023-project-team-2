@@ -126,7 +126,7 @@ fun CustomBottomSheet (
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 items(emojiList, key = { it.id }) { emoji ->
-                    EmojiCell(emoji = emoji) {
+                    EmojiCell(emoji = emoji, displayMode = EmojiCellDisplay.VERTICAL) {
                         emojiCellClicked(emoji)
                     }
                 }

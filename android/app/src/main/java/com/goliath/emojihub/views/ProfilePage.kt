@@ -38,6 +38,7 @@ import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.EmojiCell
+import com.goliath.emojihub.views.components.EmojiCellDisplay
 import com.goliath.emojihub.views.components.EmptyProfile
 import com.goliath.emojihub.views.components.PreviewPostCell
 import com.goliath.emojihub.views.components.ProfileMenuCell
@@ -129,7 +130,7 @@ fun ProfilePage(
                         ) {
                             items(myCreatedEmojiList.itemCount) { index ->
                                 myCreatedEmojiList[index]?.let {
-                                    EmojiCell(emoji = it, onSelected = {})
+                                    EmojiCell(emoji = it, displayMode = EmojiCellDisplay.HORIZONTAL, onSelected = {})
                                 }
                             }
                         }
@@ -143,7 +144,7 @@ fun ProfilePage(
                         ) {
                             items(mySavedEmojiList.itemCount) { index ->
                                 mySavedEmojiList[index]?.let {
-                                    EmojiCell(emoji = it, onSelected = {})
+                                    EmojiCell(emoji = it, displayMode = EmojiCellDisplay.HORIZONTAL, onSelected = {})
                                 }
                             }
                         }
