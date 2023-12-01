@@ -7,6 +7,7 @@ import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
+import com.goliath.emojihub.models.X3dInferenceResult
 import io.mockk.every
 import io.mockk.mockkStatic
 import kotlinx.coroutines.flow.Flow
@@ -79,3 +80,16 @@ fun createDeterministicDummyPostDtoList(listSize : Int): Flow<PagingData<PostDto
 fun createDeterministicDummyPostList(listSize: Int): Flow<PagingData<Post>> {
     return createDeterministicDummyPostDtoList(listSize).map { it.map { dto -> Post(dto) } }
 }
+
+// X3D TESTING UTILS
+
+val sampleX3dInferenceResultListOverScoreThreshold = listOf(
+    X3dInferenceResult(4, 0.8f),
+    X3dInferenceResult(6, 0.15f),
+    X3dInferenceResult(0, 0.01f)
+)
+val sampleX3dInferenceResultListUnderScoreThreshold = listOf(
+    X3dInferenceResult(4, 0.3f),
+    X3dInferenceResult(6, 0.15f),
+    X3dInferenceResult(0, 0.01f)
+)
