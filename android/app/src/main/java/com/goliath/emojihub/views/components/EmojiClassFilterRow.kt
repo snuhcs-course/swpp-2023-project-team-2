@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -15,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.ui.theme.Color
+import com.goliath.emojihub.ui.theme.Color.LightGray
+import com.goliath.emojihub.ui.theme.Color.Transparent
 
 @Composable
 fun EmojiClassFilterRow(
@@ -43,16 +46,16 @@ fun EmojiClassFilterButton(
    TextButton(
        onClick = onSelected,
        modifier = Modifier
-           .padding(4.dp)
-           .background(color = Color.Transparent)
-           .clip(CircleShape),
-
-   ) {
+           .padding(4.dp),
+       colors = ButtonDefaults.textButtonColors(
+              backgroundColor = if (isSelected) LightGray else Transparent,
+              contentColor = Color.Black,
+         )
+       )
+    {
        Text(
            text = text,
-           modifier = Modifier.padding(4.dp),
            fontWeight = FontWeight.Bold,
-           color = if (isSelected) Color.EmojiHubDetailLabel else Color.Black,
        )
    }
 }
