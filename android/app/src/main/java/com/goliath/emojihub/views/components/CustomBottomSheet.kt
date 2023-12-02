@@ -30,12 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
 import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
+import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -50,6 +54,8 @@ fun CustomBottomSheet (
 ){
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
+    val viewModel = hiltViewModel<EmojiViewModel>()
+    val navController = LocalNavController.current
 
     var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
     val emojisByClass = emojiList.groupBy { it.unicode }
@@ -74,7 +80,6 @@ fun CustomBottomSheet (
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        //TODO: display each emoji class (as an IconButton?) and its count [Figma]
                         EmojiClassFilterRow(
                             emojiClass = emojiClassFilters,
                             emojiCounts = emojiCounts,
@@ -159,8 +164,9 @@ fun CustomBottomSheet (
 
                     BottomSheetContent.VIEW_REACTION -> {
                         items(if (selectedEmojiClass == "전체") emojiList else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
-                            EmojiCell(emoji = emoji) {
-                                emojiCellClicked(emoji)
+                            EmojiCell(emoji = emoji) {selectedEmoji ->
+                                viewModel.currentEmoji = selectedEmoji
+                                navController.navigate(NavigationDestination.PlayEmojiVideo)
                             }
                         }
                     }
