@@ -50,11 +50,11 @@ class RootActivity : ComponentActivity() {
         setContent {
             EmojiHubTheme {
                 Box(Modifier.fillMaxSize().background(Color.White)) {
-                    val token = userViewModel.userState.collectAsState().value?.accessToken
+                    val accessToken = userViewModel.accessTokenState.collectAsState().value
                     val error by apiErrorController.apiErrorState.collectAsState()
 
                     RootView(startDestination =
-                        if (token.isNullOrEmpty()) NavigationDestination.Onboard
+                        if (accessToken.isNullOrEmpty()) NavigationDestination.Onboard
                         else NavigationDestination.MainPage
                     )
 

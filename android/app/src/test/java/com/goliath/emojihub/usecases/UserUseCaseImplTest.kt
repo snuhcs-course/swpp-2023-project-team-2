@@ -101,7 +101,7 @@ class UserUseCaseImplTest {
         coVerify(exactly = 1) { userRepository.login(any()) }
         assertEquals(
             sampleAccessToken,
-            userUseCaseImpl.userState.value?.accessToken
+            userUseCaseImpl.accessTokenState.value?.accessToken
         )
     }
 

@@ -59,7 +59,7 @@ fun ProfilePage() {
     Column(Modifier.background(White).fillMaxSize()) {
         TopNavigationBar("Profile", shouldNavigate = false)
 
-        if (currentUser?.accessToken.isNullOrEmpty()) {
+        if (currentUser?.name.isNullOrEmpty()) {
             EmptyProfile()
         } else {
             LazyColumn(Modifier.padding(horizontal = 16.dp)) {
