@@ -1,6 +1,7 @@
 package com.goliath.emojihub.repositories.remote
 
 import androidx.paging.testing.asSnapshot
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.UploadPostDto
@@ -87,7 +88,7 @@ class PostRepositoryImplTest {
         val uploadPostDto = UploadPostDto(samplePostDto.content)
         coEvery {
             postApi.uploadPost(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
         // when
         val response = runBlocking { postRepositoryImpl.uploadPost(uploadPostDto) }
         // then
@@ -114,7 +115,7 @@ class PostRepositoryImplTest {
         // given
         coEvery {
             postApi.getPostWithId(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
         // when
         val postDto = runBlocking { postRepositoryImpl.getPostWithId("1234") }
         // then

@@ -1,5 +1,6 @@
 package com.goliath.emojihub.repositories.remote
 
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.api.UserApi
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.LoginUserDto
@@ -60,7 +61,7 @@ class UserRepositoryImplTest {
         )
         coEvery {
             userApi.registerUser(any())
-        } returns Response.error(409, mockk(relaxed=true))
+        } returns Response.error(CustomError.CONFLICT.statusCode, mockk(relaxed=true))
         // when
         val response = runBlocking { userRepositoryImpl.registerUser(sampleRegisterUserDto) }
         // then
@@ -90,7 +91,7 @@ class UserRepositoryImplTest {
         val loginUserDto = LoginUserDto("UnknownName", "samplePassword")
         coEvery {
             userApi.login(any())
-        } returns Response.error(404, mockk(relaxed=true))
+        } returns Response.error(CustomError.NOT_FOUND.statusCode, mockk(relaxed=true))
         // when
         val response = runBlocking { userRepositoryImpl.login(loginUserDto) }
         // then
@@ -105,7 +106,7 @@ class UserRepositoryImplTest {
         val loginUserDto = LoginUserDto("sampleName", "WrongPassword")
         coEvery {
             userApi.login(any())
-        } returns Response.error(401, mockk(relaxed=true))
+        } returns Response.error(CustomError.UNAUTHORIZED.statusCode, mockk(relaxed=true))
         // when
         val response = runBlocking { userRepositoryImpl.login(loginUserDto) }
         // then
