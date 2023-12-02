@@ -14,6 +14,7 @@ class PostViewModel @Inject constructor(
 ): ViewModel() {
 
     val postList = postUseCase.postList
+    val myPostList = postUseCase.myPostList
 
     suspend fun fetchPostList() {
         viewModelScope.launch {
@@ -21,6 +22,16 @@ class PostViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
                 .collect {
                     postUseCase.updatePostList(it)
+                }
+        }
+    }
+
+    suspend fun fetchMyPostList() {
+        viewModelScope.launch {
+            postUseCase.fetchMyPostList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    postUseCase.updateMyPostList(it)
                 }
         }
     }

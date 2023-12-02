@@ -2,6 +2,7 @@ package com.goliath.emojihub.usecases
 
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.LocalStorage
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.RegisterUserDto
@@ -75,7 +76,7 @@ class UserUseCaseImplTest {
         val sampleRegisterUserDto = RegisterUserDto(sampleEmail, sampleName, samplePassword)
         coEvery {
             userRepository.registerUser(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
         // when
         val isSuccessfulRegister = runBlocking {
             userUseCaseImpl.registerUser(

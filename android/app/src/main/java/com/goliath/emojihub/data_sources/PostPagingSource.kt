@@ -6,13 +6,25 @@ import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.models.PostDto
 import javax.inject.Inject
 
+enum class PostFetchType {
+    GENERAL, MY
+}
+
 class PostPagingSource @Inject constructor(
-    private val api: PostApi
+    private val api: PostApi,
+    private val type: PostFetchType
 ): PagingSource<Int, PostDto>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PostDto> {
         val cursor = params.key ?: 1
         return try {
-            val response = api.fetchPostList(cursor).body()
+            val response: List<PostDto>? = when (type) {
+                PostFetchType.GENERAL -> {
+                    api.fetchPostList(cursor).body()
+                }
+                PostFetchType.MY -> {
+                    api.fetchMyPostList(cursor).body()
+                }
+            }
             val data = response ?: listOf()
             LoadResult.Page(
                 data = data,
