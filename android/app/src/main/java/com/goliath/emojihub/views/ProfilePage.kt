@@ -68,21 +68,20 @@ fun ProfilePage() {
         emojiViewModel.fetchMySavedEmojiList()
     }
 
-    LazyColumn(Modifier.background(White)) {
-        item {
-            TopNavigationBar("Profile", shouldNavigate = false)
+    Column(Modifier.background(White).fillMaxSize()) {
+        TopNavigationBar("Profile", shouldNavigate = false)
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (currentUser?.name.isNullOrEmpty()) {
-                    EmptyProfile()
-                } else {
-                    Column(Modifier.padding(horizontal = 16.dp)) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Start,
-                            verticalArrangement = Arrangement.Top
-                        ) {
-                            Spacer(modifier = Modifier.height(32.dp))
+        if (currentUser?.name.isNullOrEmpty()) {
+            EmptyProfile()
+        } else {
+            LazyColumn(Modifier.padding(horizontal = 16.dp)) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        Spacer(modifier = Modifier.height(32.dp))
 
                         Text(
                             text = "Username",
@@ -104,15 +103,14 @@ fun ProfilePage() {
                     Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                        ProfileMenuCellWithPreview(
-                            label = "내가 작성한 포스트",
-                            detailLabel = myPostList.itemCount.toString(),
-                            navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
-                        ) {
-                            items(myPostList.itemCount) { index ->
-                                myPostList[index]?.let {
-                                    PreviewPostCell(post = it)
-                                }
+                    ProfileMenuCellWithPreview(
+                        label = "내가 작성한 포스트",
+                        detailLabel = myPostList.itemCount.toString(),
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyPostList) }
+                    ) {
+                        items(myPostList.itemCount) { index ->
+                            myPostList[index]?.let {
+                                PreviewPostCell(post = it)
                             }
                         }
                     }
@@ -121,29 +119,34 @@ fun ProfilePage() {
                     Divider(color = Color.EmojiHubDividerColor, thickness = 1.dp)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                        ProfileMenuCellWithPreview(
-                            label = "내가 만든 이모지",
-                            detailLabel = "더보기",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) }
-                        ) {
-                            items(myCreatedEmojiList.itemCount) { index ->
-                                myCreatedEmojiList[index]?.let {
-                                    EmojiCell(emoji = it, displayMode = EmojiCellDisplay.HORIZONTAL, onSelected = {})
-                                }
+                    ProfileMenuCellWithPreview(
+                        label = "내가 만든 이모지",
+                        detailLabel = "더보기",
+                        navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) }
+                    ) {
+                        items(myCreatedEmojiList.itemCount) { index ->
+                            myCreatedEmojiList[index]?.let {
+                                EmojiCell(
+                                    emoji = it,
+                                    displayMode = EmojiCellDisplay.HORIZONTAL,
+                                    onSelected = {})
                             }
                         }
+                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                        ProfileMenuCellWithPreview(
-                            label = "저장된 이모지",
-                            detailLabel = "더보기",
-                            navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
-                        ) {
-                            items(mySavedEmojiList.itemCount) { index ->
-                                mySavedEmojiList[index]?.let {
-                                    EmojiCell(emoji = it, displayMode = EmojiCellDisplay.HORIZONTAL, onSelected = {})
-                                }
+                    ProfileMenuCellWithPreview(
+                        label = "저장된 이모지",
+                        detailLabel = "더보기",
+                        navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
+                    ) {
+                        items(mySavedEmojiList.itemCount) { index ->
+                            mySavedEmojiList[index]?.let {
+                                EmojiCell(
+                                    emoji = it,
+                                    displayMode = EmojiCellDisplay.HORIZONTAL,
+                                    onSelected = {})
                             }
                         }
                     }

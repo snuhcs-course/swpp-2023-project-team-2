@@ -1,6 +1,5 @@
 package com.goliath.emojihub.data_sources
 
-import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.data_sources.api.PostApi
@@ -84,7 +83,6 @@ class AuthInterceptor @Inject constructor(): Interceptor {
         } else {
             request.header("Authorization", "Bearer $accessToken")
         }
-        Log.d("header", accessToken ?: "")
         return chain.proceed(request.build())
     }
 }

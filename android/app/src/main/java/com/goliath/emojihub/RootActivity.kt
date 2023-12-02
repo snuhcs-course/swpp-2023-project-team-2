@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.data_sources.BottomNavigationController
+import com.goliath.emojihub.data_sources.bottomSheet
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
@@ -88,13 +89,15 @@ class RootActivity : ComponentActivity() {
     @Composable
     fun RootView(startDestination: String) {
         val navController = rememberNavController()
+        val bottomSheet = bottomSheet()
         val bottomNavigationController = remember {
             BottomNavigationController()
         }
 
         CompositionLocalProvider(
             LocalNavController provides navController,
-            LocalBottomNavigationController provides bottomNavigationController
+            LocalBottomNavigationController provides bottomNavigationController,
+            LocalBottomSheetController provides bottomSheet
         ) {
             NavHost(
                 navController = navController,
