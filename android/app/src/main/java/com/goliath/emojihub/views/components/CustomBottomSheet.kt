@@ -1,7 +1,6 @@
 package com.goliath.emojihub.views.components
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,9 +39,7 @@ import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
-import com.goliath.emojihub.ui.theme.Color.EmojiHubGray
 import com.goliath.emojihub.ui.theme.Color.LightGray
-import com.goliath.emojihub.ui.theme.Color.Transparent
 import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
@@ -107,7 +103,6 @@ fun CustomBottomSheet (
                                     isSelected = emojiClassFilters[emojiClass] == selectedEmojiClass,
                                     onSelected = {
                                         selectedEmojiClass = emojiClassFilters[emojiClass]
-                                        Log.d("EmojiClass", "selectedEmojiClass: $selectedEmojiClass")
                                     }
                                 )
                             }
@@ -125,8 +120,6 @@ fun CustomBottomSheet (
                     ) {
                         OutlinedButton(
                             onClick = {
-                                Log.d("addReaction", "myCreatedEmoji count: ${myCreatedEmojiList.itemCount}")
-                                // TODO: fetch user's emojis and display
                                 displayMyCreatedEmojis = true
                             },
                             modifier = Modifier
@@ -146,8 +139,6 @@ fun CustomBottomSheet (
 
                         OutlinedButton(
                             onClick = {
-                                // TODO: fetch user's saved emojis and display
-                                Log.d("addReaction", "mySavedEmoji count: ${mySavedEmojiList.itemCount}")
                                 displayMyCreatedEmojis = false
                             },
                             modifier = Modifier
