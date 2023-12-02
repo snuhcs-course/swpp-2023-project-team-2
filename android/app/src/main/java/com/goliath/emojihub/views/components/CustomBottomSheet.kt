@@ -1,10 +1,13 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -13,22 +16,26 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
 import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
-import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -43,11 +50,10 @@ fun CustomBottomSheet (
 ){
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
-    val viewModel = hiltViewModel<EmojiViewModel>()
 
-    var selectedEmojiClass = viewModel.selectedEmojiClass
+    var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
     val emojisByClass = emojiList.groupBy { it.unicode }
-    val allCategory = listOf("전체") + emojisByClass.keys.toList()
+    val emojiClassFilters = listOf("전체") + emojisByClass.keys.toList()
     val emojiCounts = emojisByClass.mapValues { it.value.size }
 
     ModalBottomSheet(
@@ -57,6 +63,7 @@ fun CustomBottomSheet (
             }
         },
         containerColor = White,
+        modifier = Modifier.fillMaxHeight(),
     ) {
         when (bottomSheetContent) {
             BottomSheetContent.EMPTY -> {}
@@ -69,15 +76,18 @@ fun CustomBottomSheet (
                     ) {
                         //TODO: display each emoji class (as an IconButton?) and its count [Figma]
                         EmojiClassFilterRow(
-                            emojiClass = allCategory,
+                            emojiClass = emojiClassFilters,
                             emojiCounts = emojiCounts,
                             onEmojiClassSelected = { selectedEmojiClass = it}
                         ) {
-                            items(allCategory.size) { emojiClass ->
+                            items(emojiClassFilters.size) { emojiClass ->
                                 EmojiClassFilterButton(
-                                    text = if (allCategory[emojiClass] == "전체") "전체" else "${allCategory[emojiClass].toEmoji()}${emojiCounts[allCategory[emojiClass]]}",
-                                    isSelected = allCategory[emojiClass] == selectedEmojiClass,
-                                    onSelected = { selectedEmojiClass = allCategory[emojiClass] }
+                                    text = if (emojiClassFilters[emojiClass] == "전체") "전체" else "${emojiClassFilters[emojiClass].toEmoji()}${emojiCounts[emojiClassFilters[emojiClass]]}",
+                                    isSelected = emojiClassFilters[emojiClass] == selectedEmojiClass,
+                                    onSelected = {
+                                        selectedEmojiClass = emojiClassFilters[emojiClass]
+                                        Log.d("EmojiClass", "selectedEmojiClass: $selectedEmojiClass")
+                                    }
                                 )
                             }
                         }
@@ -134,7 +144,8 @@ fun CustomBottomSheet (
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Divider(color = EmojiHubDividerColor, thickness = 0.5.dp)
+        Spacer(modifier = Modifier.height(16.dp))
 
         Column(Modifier.padding(horizontal = 16.dp)) {
             LazyVerticalGrid(
@@ -147,11 +158,9 @@ fun CustomBottomSheet (
                     BottomSheetContent.EMPTY -> {}
 
                     BottomSheetContent.VIEW_REACTION -> {
-                        emojisByClass[selectedEmojiClass]?.let { emojilist ->
-                            items(emojilist, key = { it.id }) { emoji ->
-                                EmojiCell(emoji = emoji) {
-                                    emojiCellClicked(emoji)
-                                }
+                        items(if (selectedEmojiClass == "전체") emojiList else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
+                            EmojiCell(emoji = emoji) {
+                                emojiCellClicked(emoji)
                             }
                         }
                     }

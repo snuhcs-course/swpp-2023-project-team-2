@@ -14,9 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.ui.theme.Color
-import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
 fun EmojiClassFilterRow(
@@ -25,8 +23,6 @@ fun EmojiClassFilterRow(
     onEmojiClassSelected: (String) -> Unit,
     content: LazyListScope.() -> Unit
 ) {
-    val viewModel = hiltViewModel<EmojiViewModel>()
-    val selectedEmojiClass = viewModel.selectedEmojiClass
     val listState = rememberLazyListState()
 
     // Display a row of buttons for each emoji class
