@@ -16,7 +16,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -25,7 +24,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import retrofit2.Response
 import java.io.File
 
 @RunWith(JUnit4::class)
@@ -210,14 +208,14 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.saveEmoji(sampleId)
-        } returns Response.success(Unit)
+        } returns Result.success(Unit)
         // when
-        val isSuccess = runBlocking {
+        val result = runBlocking {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
         coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
-        assertTrue(isSuccess)
+        assertTrue(result.isSuccess)
     }
 
     @Test
@@ -226,15 +224,14 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.saveEmoji(sampleId)
-        } returns Response.error(404, mockk(relaxed=true))
+        } returns Result.failure(Exception("Failed to save Emoji (Id: $sampleId), 404"))
         // when
-        val isSuccess = runBlocking {
+        val result = runBlocking {
             emojiUseCaseImpl.saveEmoji(sampleId)
         }
         // then
         coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
-        verify(exactly = 1) { apiErrorController.setErrorState(404) }
-        assertFalse(isSuccess)
+        assertTrue(result.isFailure)
     }
 
     @Test
@@ -243,14 +240,14 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.unSaveEmoji(sampleId)
-        } returns Response.success(Unit)
+        } returns Result.success(Unit)
         // when
-        val isSuccess = runBlocking {
+        val result = runBlocking {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
         coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
-        assertTrue(isSuccess)
+        assertTrue(result.isSuccess)
     }
 
     @Test
@@ -259,14 +256,13 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.unSaveEmoji(sampleId)
-        } returns Response.error(404, mockk(relaxed=true))
+        } returns Result.failure(Exception("Failed to unsave Emoji (Id: $sampleId), 404"))
         // when
-        val isSuccess = runBlocking {
+        val result = runBlocking {
             emojiUseCaseImpl.unSaveEmoji(sampleId)
         }
         // then
         coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
-        verify(exactly = 1) { apiErrorController.setErrorState(404) }
-        assertFalse(isSuccess)
+        assertTrue(result.isFailure)
     }
 }

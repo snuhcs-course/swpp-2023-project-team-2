@@ -162,28 +162,62 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun saveEmoji_success_returnsUnit() {
+    fun saveEmoji_success_setSaveEmojiStateSuccess() = runTest {
         // given
-        val id = "sampleId"
+        val sampleId = "sampleId"
         coEvery {
             emojiUseCase.saveEmoji(any())
-        } returns true
+        } returns Result.success(Unit)
         // when
-        runBlocking { emojiViewModel.saveEmoji(id) }
+        emojiViewModel.saveEmoji(sampleId)
+        advanceUntilIdle()
         // then
-        coVerify { emojiUseCase.saveEmoji(id) }
+        coVerify { emojiUseCase.saveEmoji(sampleId) }
+        assertTrue(emojiViewModel.saveEmojiState.value?.isSuccess == true)
     }
 
     @Test
-    fun unSaveEmoji_success_returnsUnit() {
+    fun saveEmoji_failure_setSaveEmojiStateFailure() = runTest {
         // given
-        val id = "sampleId"
+        val sampleId = "sampleId"
+        coEvery {
+            emojiUseCase.saveEmoji(any())
+        } returns Result.failure(Exception("Failed to save Emoji (sampleId: $sampleId), 404"))
+        // when
+        emojiViewModel.saveEmoji(sampleId)
+        advanceUntilIdle()
+        // then
+        coVerify { emojiUseCase.saveEmoji(sampleId) }
+        assertTrue(emojiViewModel.saveEmojiState.value?.isFailure == true)
+    }
+
+    @Test
+    fun unSaveEmoji_success_setUnSaveEmojiStateFailure() = runTest {
+        // given
+        val sampleId = "sampleId"
         coEvery {
             emojiUseCase.unSaveEmoji(any())
-        } returns true
+        } returns Result.success(Unit)
         // when
-        runBlocking { emojiViewModel.unSaveEmoji(id) }
+        emojiViewModel.unSaveEmoji(sampleId)
+        advanceUntilIdle()
         // then
-        coVerify { emojiUseCase.unSaveEmoji(id) }
+        coVerify { emojiUseCase.unSaveEmoji(sampleId) }
+        assertTrue(emojiViewModel.unSaveEmojiState.value?.isSuccess == true)
+    }
+
+    @Test
+    fun unSaveEmoji_failure_setUnSaveEmojiStateFailure() = runTest {
+        // given
+        val sampleId = "sampleId"
+        coEvery {
+            emojiUseCase.unSaveEmoji(any())
+        } returns Result.failure(Exception("Failed to unsave Emoji (sampleId: $sampleId), 404"))
+        // when
+        emojiViewModel.unSaveEmoji(sampleId)
+        advanceUntilIdle()
+        // then
+        coVerify { emojiUseCase.unSaveEmoji(sampleId) }
+        assertTrue(emojiViewModel.unSaveEmojiState.value?.isFailure == true)
     }
 }
