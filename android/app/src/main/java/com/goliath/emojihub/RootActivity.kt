@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -50,16 +49,13 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color.White)) {
+                Box(Modifier.fillMaxSize().background(Color.White)) {
                     val token = userViewModel.userState.collectAsState().value?.accessToken
                     val error by apiErrorController.apiErrorState.collectAsState()
 
                     RootView(startDestination =
                         if (token.isNullOrEmpty()) NavigationDestination.Onboard
-                        else NavigationDestination.OnLogin
+                        else NavigationDestination.MainPage
                     )
 
                     if (!error?.body().isNullOrEmpty()) {
@@ -89,38 +85,8 @@ class RootActivity : ComponentActivity() {
         }
     }
 
-    private fun NavGraphBuilder.mainGraph(
-        navController: NavHostController
-    ) {
-        navigation(
-            startDestination = NavigationDestination.MainPage,
-            route = NavigationDestination.OnLogin,
-        ) {
-            composable(NavigationDestination.MainPage) {
-                MainPage()
-            }
-
-            composable(NavigationDestination.TransformVideo) {
-                val emojiViewModel = hiltViewModel<EmojiViewModel>()
-                TransformVideoPage(emojiViewModel)
-            }
-
-            composable(NavigationDestination.PlayEmojiVideo) {
-                val emojiViewModel = hiltViewModel<EmojiViewModel>()
-                PlayEmojiView(emojiViewModel)
-            }
-
-            composable(NavigationDestination.CreatePost) {
-                val postViewModel = hiltViewModel<PostViewModel>()
-                CreatePostPage(postViewModel)
-            }
-        }
-    }
-
     @Composable
-    fun RootView(
-        startDestination: String
-    ) {
+    fun RootView(startDestination: String) {
         val navController = rememberNavController()
         val bottomNavigationController = remember {
             BottomNavigationController()
@@ -136,7 +102,24 @@ class RootActivity : ComponentActivity() {
             ) {
                 onboardGraph()
 
-                mainGraph(navController = navController)
+                composable(NavigationDestination.MainPage) {
+                    MainPage()
+                }
+
+                composable(NavigationDestination.TransformVideo) {
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    TransformVideoPage(emojiViewModel)
+                }
+
+                composable(NavigationDestination.PlayEmojiVideo) {
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    PlayEmojiView(emojiViewModel)
+                }
+
+                composable(NavigationDestination.CreatePost) {
+                    val postViewModel = hiltViewModel<PostViewModel>()
+                    CreatePostPage(postViewModel)
+                }
             }
         }
     }

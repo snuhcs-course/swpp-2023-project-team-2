@@ -54,8 +54,7 @@ fun LoginPage() {
     val coroutineScope = rememberCoroutineScope()
     val navController = LocalNavController.current
 
-    Box(
-        modifier = Modifier
+    Box(modifier = Modifier
             .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
@@ -92,9 +91,9 @@ fun LoginPage() {
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
-                      coroutineScope.launch {
-                          userViewModel.login(username.text, password.text)
-                      }
+                    coroutineScope.launch {
+                        userViewModel.login(username.text, password.text)
+                    }
                 },
                 modifier = Modifier.padding(top = 24.dp).fillMaxWidth().height(44.dp),
                 shape = RoundedCornerShape(50),
@@ -134,7 +133,7 @@ fun LoginPage() {
                 color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier.clickable {
-                    navController.navigate(NavigationDestination.OnLogin)
+                    navController.navigate(NavigationDestination.MainPage)
                 }
             )
             Spacer(modifier = Modifier.height(24.dp))

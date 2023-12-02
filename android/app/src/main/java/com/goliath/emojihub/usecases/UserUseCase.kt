@@ -16,7 +16,6 @@ import javax.inject.Singleton
 sealed interface UserUseCase {
     val userState: StateFlow<User?>
 
-    suspend fun fetchUserList()
     suspend fun fetchUser(id: String)
     suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
@@ -33,12 +32,6 @@ class UserUseCaseImpl @Inject constructor(
     private val _userState = MutableStateFlow<User?>(null)
     override val userState: StateFlow<User?>
         get() = _userState
-
-    // TODO: remove
-    override suspend fun fetchUserList() {
-        val userDtoList = repository.fetchUserList()
-        print(userDtoList)
-    }
 
     override suspend fun fetchUser(id: String) {
         repository.fetchUser(id)
