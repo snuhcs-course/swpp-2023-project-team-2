@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
-interface UserUseCase {
+sealed interface UserUseCase {
+    val accessTokenState: StateFlow<String?>
     val userState: StateFlow<User?>
 
-    suspend fun fetchUserList()
     suspend fun fetchUser(id: String)
     suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
@@ -30,15 +30,13 @@ class UserUseCaseImpl @Inject constructor(
     private val errorController: ApiErrorController
 ): UserUseCase {
 
-    private val _userState = MutableStateFlow<User?>(null)
+    private val _accessTokenState: MutableStateFlow<String?> = MutableStateFlow(EmojiHubApplication.preferences.accessToken)
+    override val accessTokenState: StateFlow<String?>
+        get() = _accessTokenState
+
+    private val _userState: MutableStateFlow<User?> = MutableStateFlow(User(UserDto(EmojiHubApplication.preferences.currentUser ?: "")))
     override val userState: StateFlow<User?>
         get() = _userState
-
-    // TODO: remove
-    override suspend fun fetchUserList() {
-        val userDtoList = repository.fetchUserList()
-        print(userDtoList)
-    }
 
     override suspend fun fetchUser(id: String) {
         repository.fetchUser(id)
@@ -60,7 +58,8 @@ class UserUseCaseImpl @Inject constructor(
         response.let {
             if (it.isSuccessful) {
                 val accessToken = it.body()?.accessToken
-                _userState.update { User(UserDto(accessToken ?: "", name)) }
+                _accessTokenState.update { accessToken }
+                _userState.update { User(UserDto(name)) }
                 EmojiHubApplication.preferences.accessToken = accessToken
             } else {
                 errorController.setErrorState(it.code())
@@ -69,10 +68,14 @@ class UserUseCaseImpl @Inject constructor(
     }
 
     override fun logout() {
+        EmojiHubApplication.preferences.accessToken = null
+        _accessTokenState.update { null }
         _userState.update { null }
     }
 
     override fun signOut() {
+        EmojiHubApplication.preferences.accessToken = null
+        _accessTokenState.update { null }
         _userState.update { null }
     }
 }

@@ -9,12 +9,8 @@ import javax.inject.Inject
 class UserViewModel @Inject constructor(
     private val userUseCase: UserUseCase
 ): ViewModel() {
-
+    val accessTokenState = userUseCase.accessTokenState
     val userState = userUseCase.userState
-
-    suspend fun fetchUserList() {
-        userUseCase.fetchUserList()
-    }
 
     suspend fun fetchUser(id: String) {
         userUseCase.fetchUser(id)

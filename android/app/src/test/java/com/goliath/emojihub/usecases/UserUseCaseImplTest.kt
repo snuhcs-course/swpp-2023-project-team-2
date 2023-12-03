@@ -28,7 +28,7 @@ import retrofit2.Response
 class UserUseCaseImplTest {
     private val userRepository = mockk<UserRepository>()
     private val apiErrorController = spyk<ApiErrorController>()
-    private val userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
+    private lateinit var userUseCaseImpl : UserUseCaseImpl
 
     private val sampleEmail = "sampleEmail"
     private val sampleName = "sampleName"
@@ -41,6 +41,10 @@ class UserUseCaseImplTest {
         override var accessToken: String?
             get() = fakePreference.getOrDefault("accessToken", "")
             set(value) = fakePreference.set("accessToken", value!!)
+
+        override var currentUser: String?
+            get() = fakePreference.getOrDefault("currentUser", "")
+            set(value) = fakePreference.set("currentUser", value!!)
     }
 
     @Before
@@ -48,6 +52,7 @@ class UserUseCaseImplTest {
         mockLogClass()
         mockkObject(EmojiHubApplication.Companion)
         every { EmojiHubApplication.preferences } returns FakeSharedLocalStorage()
+        userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
     }
 
     @Test
@@ -102,7 +107,7 @@ class UserUseCaseImplTest {
         coVerify(exactly = 1) { userRepository.login(any()) }
         assertEquals(
             sampleAccessToken,
-            userUseCaseImpl.userState.value?.accessToken
+            userUseCaseImpl.accessTokenState.value
         )
     }
 
