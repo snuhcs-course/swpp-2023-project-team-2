@@ -51,7 +51,7 @@ class EmojiViewModelTest {
             emojiUseCase.fetchEmojiList(1)
         } returns sampleFetchedEmojiList
         // when
-        emojiViewModel.fetchEmojiList(1)
+        emojiViewModel.fetchEmojiList()
         advanceUntilIdle()
         // then
         coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }

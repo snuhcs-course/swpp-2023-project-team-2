@@ -117,7 +117,7 @@ fun EmojiPage(
                         contentColor = White
                     )
                 ) {
-                    Text("Sort by Date", fontSize = 12.sp)
+                    Text(text = if (viewModel.sortingMode == 1) "Sort by Date" else "Sort by Save Count", fontSize = 12.sp)
                 }
             }
 

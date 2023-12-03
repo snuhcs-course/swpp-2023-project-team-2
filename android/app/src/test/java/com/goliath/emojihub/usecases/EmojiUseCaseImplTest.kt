@@ -75,12 +75,12 @@ class EmojiUseCaseImplTest {
         val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
-            emojiRepository.fetchEmojiList()
+            emojiRepository.fetchEmojiList(1)
         } returns sampleEmojiPagingDataFlow
         // when
-        val fetchedEmojiPagingDataFlow = runBlocking { emojiUseCaseImpl.fetchEmojiList() }
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiUseCaseImpl.fetchEmojiList(1) }
         // then
-        coVerify(exactly = 1) { emojiRepository.fetchEmojiList() }
+        coVerify(exactly = 1) { emojiRepository.fetchEmojiList(1) }
         runBlocking {
             val sampleAnswerAsSnapshot = sampleAnswer.asSnapshot()
             val fetchedEmojiPagingDataFlowAsSnapshot = fetchedEmojiPagingDataFlow.asSnapshot()

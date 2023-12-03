@@ -56,7 +56,7 @@ class EmojiRepositoryImplTest {
             emojiApi.fetchEmojiList(any(), any(), any())
         } returns Response.success(sampleEmojiDtoList)
         // when
-        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchEmojiList() }
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchEmojiList(1) }
         val fetchedEmojiDtoList = runBlocking { fetchedEmojiPagingDataFlow.asSnapshot() }
         // then
         coVerify(exactly = 2) { emojiApi.fetchEmojiList(any(), any(), any()) }
