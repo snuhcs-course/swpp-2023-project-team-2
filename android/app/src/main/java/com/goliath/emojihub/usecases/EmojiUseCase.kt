@@ -25,7 +25,7 @@ interface EmojiUseCase {
     suspend fun updateEmojiList(data: PagingData<Emoji>)
     suspend fun updateMyCreatedEmojiList(data: PagingData<Emoji>)
     suspend fun updateMySavedEmojiList(data: PagingData<Emoji>)
-    suspend fun fetchEmojiList(): Flow<PagingData<Emoji>>
+    suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<Emoji>>
     suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
@@ -65,8 +65,8 @@ class EmojiUseCaseImpl @Inject constructor(
         _mySavedEmojiList.emit(data)
     }
 
-    override suspend fun fetchEmojiList(): Flow<PagingData<Emoji>> {
-        return emojiRepository.fetchEmojiList().map { it.map { dto -> Emoji(dto) } }
+    override suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<Emoji>> {
+        return emojiRepository.fetchEmojiList(sortByDate).map { it.map { dto -> Emoji(dto) } }
     }
 
     override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>> {

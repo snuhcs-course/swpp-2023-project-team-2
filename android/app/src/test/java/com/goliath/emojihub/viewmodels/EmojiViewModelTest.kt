@@ -48,13 +48,13 @@ class EmojiViewModelTest {
         // given
         val sampleFetchedEmojiList = createDeterministicDummyEmojiList(10)
         coEvery {
-            emojiUseCase.fetchEmojiList()
+            emojiUseCase.fetchEmojiList(1)
         } returns sampleFetchedEmojiList
         // when
-        emojiViewModel.fetchEmojiList()
+        emojiViewModel.fetchEmojiList(1)
         advanceUntilIdle()
         // then
-        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList() }
+        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
     }
 

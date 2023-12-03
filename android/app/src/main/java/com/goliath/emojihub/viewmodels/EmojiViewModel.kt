@@ -3,6 +3,7 @@ package com.goliath.emojihub.viewmodels
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -35,6 +36,8 @@ class EmojiViewModel @Inject constructor(
     private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
     val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
+    var sortingMode by mutableIntStateOf(0)
+
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
     val mySavedEmojiList = emojiUseCase.mySavedEmojiList
@@ -44,12 +47,17 @@ class EmojiViewModel @Inject constructor(
 
     fun fetchEmojiList() {
         viewModelScope.launch {
-            emojiUseCase.fetchEmojiList()
+            emojiUseCase.fetchEmojiList(sortingMode)
                 .cachedIn(viewModelScope)
                 .collect {
                     emojiUseCase.updateEmojiList(it)
                 }
         }
+    }
+
+    fun toggleSortingMode() {
+        sortingMode = if (sortingMode == 1 ) 0 else 1
+        fetchEmojiList()
     }
 
     fun fetchMyCreatedEmojiList() {
