@@ -8,6 +8,7 @@ import javax.inject.Singleton
 
 interface LocalStorage {
     var accessToken: String?
+    val currentUser: String?
 }
 
 @Singleton
@@ -20,4 +21,8 @@ class SharedLocalStorage(
     override var accessToken: String?
         get() = preferences.getString("accessToken", "")
         set(value) = preferences.edit().putString("accessToken", value).apply()
+
+    override var currentUser: String?
+        get() = preferences.getString("currentUser", "")
+        set(value) = preferences.edit().putString("currentUser", value).apply()
 }

@@ -14,6 +14,8 @@ import com.goliath.emojihub.usecases.EmojiUseCase
 import com.goliath.emojihub.views.components.BottomSheetContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -26,6 +28,12 @@ class EmojiViewModel @Inject constructor(
     lateinit var videoUri: Uri
     var currentEmoji: Emoji? = null
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
+
+    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val saveEmojiState = _saveEmojiState.asStateFlow()
+
+    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
@@ -76,11 +84,17 @@ class EmojiViewModel @Inject constructor(
         return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
     }
 
-    suspend fun saveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+    fun saveEmoji(id: String) {
+        viewModelScope.launch {
+            val result = emojiUseCase.saveEmoji(id)
+            _saveEmojiState.value = result
+        }
     }
 
-    suspend fun unSaveEmoji(id: String) {
-        emojiUseCase.unSaveEmoji(id)
+    fun unSaveEmoji(id: String) {
+        viewModelScope.launch {
+        val result = emojiUseCase.unSaveEmoji(id)
+        _unSaveEmojiState.value = result
+        }
     }
 }

@@ -49,7 +49,10 @@ enum class CustomError(
     },
     CONFLICT(409) {
         override fun body(): String = "이미 있는 계정입니다."
-    };
+    },
+    INTERNAL_SERVER_ERROR(500) {
+        override fun body(): String = "접속 오류가 발생했습니다."
+    },;
 
     companion object {
         fun getBy(statusCode: Int) = values().firstOrNull { it.statusCode == statusCode }

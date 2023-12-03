@@ -25,6 +25,8 @@ import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
+import com.goliath.emojihub.views.components.EmojiCell
+import com.goliath.emojihub.views.components.EmojiCellDisplay
 import com.goliath.emojihub.views.components.CustomBottomSheet
 import com.goliath.emojihub.views.components.PostCell
 import com.goliath.emojihub.views.components.TopNavigationBar

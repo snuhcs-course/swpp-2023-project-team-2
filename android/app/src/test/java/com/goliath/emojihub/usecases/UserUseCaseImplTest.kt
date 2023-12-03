@@ -2,6 +2,7 @@ package com.goliath.emojihub.usecases
 
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.LocalStorage
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.RegisterUserDto
@@ -27,7 +28,7 @@ import retrofit2.Response
 class UserUseCaseImplTest {
     private val userRepository = mockk<UserRepository>()
     private val apiErrorController = spyk<ApiErrorController>()
-    private val userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
+    private lateinit var userUseCaseImpl : UserUseCaseImpl
 
     private val sampleEmail = "sampleEmail"
     private val sampleName = "sampleName"
@@ -40,6 +41,10 @@ class UserUseCaseImplTest {
         override var accessToken: String?
             get() = fakePreference.getOrDefault("accessToken", "")
             set(value) = fakePreference.set("accessToken", value!!)
+
+        override var currentUser: String?
+            get() = fakePreference.getOrDefault("currentUser", "")
+            set(value) = fakePreference.set("currentUser", value!!)
     }
 
     @Before
@@ -47,6 +52,7 @@ class UserUseCaseImplTest {
         mockLogClass()
         mockkObject(EmojiHubApplication.Companion)
         every { EmojiHubApplication.preferences } returns FakeSharedLocalStorage()
+        userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
     }
 
     @Test
@@ -75,7 +81,7 @@ class UserUseCaseImplTest {
         val sampleRegisterUserDto = RegisterUserDto(sampleEmail, sampleName, samplePassword)
         coEvery {
             userRepository.registerUser(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
         // when
         val isSuccessfulRegister = runBlocking {
             userUseCaseImpl.registerUser(
@@ -101,7 +107,7 @@ class UserUseCaseImplTest {
         coVerify(exactly = 1) { userRepository.login(any()) }
         assertEquals(
             sampleAccessToken,
-            userUseCaseImpl.userState.value?.accessToken
+            userUseCaseImpl.accessTokenState.value
         )
     }
 
