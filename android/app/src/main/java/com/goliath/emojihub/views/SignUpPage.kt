@@ -43,7 +43,6 @@ fun SignUpPage() {
 
     Box(
         modifier = Modifier
-            .testTag("SignUpPage")
             .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
