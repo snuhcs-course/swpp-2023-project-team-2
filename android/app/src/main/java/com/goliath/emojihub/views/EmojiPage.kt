@@ -19,13 +19,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.views.components.EmojiCell
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -33,16 +31,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.views.components.EmojiCellDisplay
 import com.goliath.emojihub.views.components.TopNavigationBar
 
 @Composable
 fun EmojiPage(
-    emojiList: List<Emoji>
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -63,7 +61,14 @@ fun EmojiPage(
         }
     }
 
-    Column(Modifier.testTag("emojiPage").background(White)) {
+    val emojiList = viewModel.emojiList.collectAsLazyPagingItems()
+
+    LaunchedEffect(Unit)
+    {
+        viewModel.fetchEmojiList()
+    }
+
+    Column(Modifier.background(White)) {
         TopNavigationBar("Emoji", shouldNavigate = false) {
             IconButton(onClick = {
                 when (PackageManager.PERMISSION_GRANTED) {
@@ -99,19 +104,15 @@ fun EmojiPage(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(emojiList, key = { it.id }) { emoji ->
-                    EmojiCell(emoji = emoji) {
-                        viewModel.currentEmoji = emoji
-                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                items(emojiList.itemCount) { index ->
+                    emojiList[index]?.let{
+                        EmojiCell(emoji = it, displayMode = EmojiCellDisplay.VERTICAL) { selectedEmoji ->
+                            viewModel.currentEmoji = selectedEmoji
+                            navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun EmojiPagePreview() {
-    EmojiPage(emojiList = (1..10).map { createDummyEmoji() })
 }

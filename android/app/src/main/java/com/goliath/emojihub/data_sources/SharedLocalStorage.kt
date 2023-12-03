@@ -6,14 +6,23 @@ import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
+interface LocalStorage {
+    var accessToken: String?
+    val currentUser: String?
+}
+
 @Singleton
 class SharedLocalStorage(
     @ApplicationContext private val context: Context
-) {
+) : LocalStorage {
     private val preferences: SharedPreferences =
         context.getSharedPreferences("EMOJI_HUB", MODE_PRIVATE)
 
-    var accessToken: String?
+    override var accessToken: String?
         get() = preferences.getString("accessToken", "")
         set(value) = preferences.edit().putString("accessToken", value).apply()
+
+    override var currentUser: String?
+        get() = preferences.getString("currentUser", "")
+        set(value) = preferences.edit().putString("currentUser", value).apply()
 }

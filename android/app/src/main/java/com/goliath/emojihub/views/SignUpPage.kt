@@ -19,18 +19,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.ui.theme.Color
+import com.goliath.emojihub.viewmodels.UserViewModel
+import com.goliath.emojihub.views.components.CustomDialog
+import com.goliath.emojihub.views.components.TopNavigationBar
 import com.goliath.emojihub.views.components.UnderlinedTextField
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpPage() {
@@ -40,22 +45,25 @@ fun SignUpPage() {
 
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
+    val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .background(Color.White)
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .clickable(interactionSource = interactionSource, indication = null) {
-                focusManager.clearFocus()
-            },
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    val userViewModel = hiltViewModel<UserViewModel>()
+
+    Box(Modifier.fillMaxSize().background(Color.White)) {
+        Column(verticalArrangement = Arrangement.Top) {
+            TopNavigationBar(
+                title = "회원가입",
+                navigate = { navController.popBackStack() }
+            ) {}
+
             Spacer(modifier = Modifier.height(24.dp))
             Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clickable(interactionSource = interactionSource, indication = null) {
+                        focusManager.clearFocus() },
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 UnderlinedTextField(
@@ -80,33 +88,42 @@ fun SignUpPage() {
                 ) {
                     focusManager.clearFocus()
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            if (userViewModel.registerUser(email.text, username.text, password.text)) {
+                                showDialog = true
+                            }
+                        }
+
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ), content = {
+                        Text(
+                            text = "계정 생성",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                )
             }
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = { /* TODO Handle Sign Up Click */ },
-                modifier = Modifier
-                    .testTag("signUpButton")
-                    .fillMaxWidth()
-                    .height(44.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ), content = {
-                    Text(
-                        text = "계정 생성",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+        }
+
+        if (showDialog) {
+            CustomDialog(
+                title = "완료",
+                body = "계정 생성이 완료되었습니다."
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpPagePreview() {
-    SignUpPage()
 }

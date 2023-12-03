@@ -18,7 +18,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,21 +32,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.UnderlinedTextField
 import kotlinx.coroutines.launch
-
-@Preview(showBackground = true)
-@Composable
-fun LoginPagePreview() {
-    LoginPage()
-}
 
 @Composable
 fun LoginPage() {
@@ -59,10 +53,9 @@ fun LoginPage() {
 
     val userViewModel = hiltViewModel<UserViewModel>()
     val coroutineScope = rememberCoroutineScope()
+    val navController = LocalNavController.current
 
-    Box(
-        modifier = Modifier
-            .testTag("LoginPage")
+    Box(modifier = Modifier
             .background(Color.White)
             .fillMaxSize()
             .padding(horizontal = 16.dp)
@@ -99,15 +92,11 @@ fun LoginPage() {
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
-                      coroutineScope.launch {
-                          userViewModel.login(username.text, password.text)
-                      }
+                    coroutineScope.launch {
+                        userViewModel.login(username.text, password.text)
+                    }
                 },
-                modifier = Modifier
-                    .testTag("LoginButton")
-                    .padding(top = 24.dp)
-                    .fillMaxWidth()
-                    .height(44.dp),
+                modifier = Modifier.padding(top = 24.dp).fillMaxWidth().height(44.dp),
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -123,15 +112,8 @@ fun LoginPage() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
-                onClick = {
-                    coroutineScope.launch {
-
-                    }
-                },
-                modifier = Modifier
-                    .testTag("RegisterButton")
-                    .fillMaxWidth()
-                    .height(44.dp),
+                onClick = { navController.navigate(NavigationDestination.SignUp) },
+                modifier = Modifier.fillMaxWidth().height(44.dp),
                 shape = RoundedCornerShape(50),
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
@@ -147,24 +129,13 @@ fun LoginPage() {
                 }
             )
             Spacer(modifier = Modifier.weight(1f))
-
-            // fetch entire user list
-            Text(
-                text = userViewModel.userState.collectAsState().value.toString()
-            )
-
             Text(
                 text = "비회원 모드로 시작하기",
                 color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
-                modifier = Modifier
-                    .testTag("GuestModeButton")
-                    .clickable {
-                        /* TODO Handle 비회원 모드 Click*/
-                        coroutineScope.launch {
-                            userViewModel.fetchUserList()
-                        }
-                    }
+                modifier = Modifier.clickable {
+                    navController.navigate(NavigationDestination.MainPage)
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
         }

@@ -1,8 +1,8 @@
 package com.goliath.emojihub.springboot.domain.user.dao
 
-import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.google.cloud.firestore.DocumentSnapshot
+import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import lombok.extern.slf4j.Slf4j
@@ -16,7 +16,6 @@ class UserDao(
 
     companion object {
         const val USER_COLLECTION_NAME = "Users"
-        const val POST_COLLECTION_NAME = "Posts"
     }
 
     fun getUsers(): List<UserDto> {
@@ -32,10 +31,11 @@ class UserDao(
     fun getUser(username: String): UserDto? {
         val future = db.collection(USER_COLLECTION_NAME).document(username).get()
         val document: DocumentSnapshot = future.get()
+        var result: UserDto? = null
         if (document.exists()) {
-            return document.toObject(UserDto::class.java)
+            result = document.toObject(UserDto::class.java)
         }
-        return null
+        return result
     }
 
     fun existUser(username: String): Boolean {
@@ -44,14 +44,32 @@ class UserDao(
         return document.exists()
     }
 
-    fun insertUser(signUpRequest: SignUpRequest) {
+    fun insertUser(userDto: UserDto) {
         db.collection(USER_COLLECTION_NAME)
-            .document(signUpRequest.username)
-            .set(UserDto(signUpRequest))
+            .document(userDto.username)
+            .set(userDto)
     }
 
     fun deleteUser(username: String) {
-        db.collection(POST_COLLECTION_NAME).whereEqualTo("created_by", username).get().get().documents
         db.collection(USER_COLLECTION_NAME).document(username).delete()
+    }
+
+    fun insertId(username: String, id: String, field: String) {
+        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        userRef.update(field, FieldValue.arrayUnion(id))
+    }
+
+    fun deleteId(username: String, id: String, field: String) {
+        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        userRef.update(field, FieldValue.arrayRemove(id))
+    }
+
+    fun deleteAllSavedEmojiId(emojiId: String) {
+        val usersWithDeletedEmoji = db.collection(USER_COLLECTION_NAME)
+            .whereArrayContains("saved_emojis", emojiId)
+            .get().get().documents
+        for (user in usersWithDeletedEmoji) {
+            user.reference.update("saved_emojis", FieldValue.arrayRemove(emojiId))
+        }
     }
 }

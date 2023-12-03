@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.post.controller
 
-import com.goliath.emojihub.springboot.domain.post.dto.GetPostsRequest
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.domain.post.service.PostService
@@ -18,14 +17,26 @@ class PostController(private val postService: PostService) {
         @CurrentUser username: String,
         @RequestBody postRequest: PostRequest,
     ): ResponseEntity<Unit> {
-        return ResponseEntity(postService.postPost(username, postRequest), HttpStatus.CREATED)
+        return ResponseEntity(
+            postService.postPost(username, postRequest.content), HttpStatus.CREATED
+        )
     }
 
     @GetMapping
     fun getPosts(
-        @RequestBody getPostsRequest: GetPostsRequest
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
     ): ResponseEntity<List<PostDto>> {
-        return ResponseEntity.ok(postService.getPosts(getPostsRequest.index, getPostsRequest.count))
+        return ResponseEntity.ok(postService.getPosts(index, count))
+    }
+
+    @GetMapping("/me")
+    fun getMyPosts(
+        @CurrentUser username: String,
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
+    ): ResponseEntity<List<PostDto>> {
+        return ResponseEntity.ok(postService.getMyPosts(username, index, count))
     }
 
     @GetMapping("/{id}")
@@ -41,7 +52,9 @@ class PostController(private val postService: PostService) {
         @PathVariable(value = "id") id: String,
         @RequestBody postRequest: PostRequest,
     ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(postService.patchPost(username, id, postRequest))
+        return ResponseEntity.ok(
+            postService.patchPost(username, id, postRequest.content)
+        )
     }
 
     @DeleteMapping("/{id}")

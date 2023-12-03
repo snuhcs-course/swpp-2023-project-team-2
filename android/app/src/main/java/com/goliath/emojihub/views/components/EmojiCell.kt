@@ -1,5 +1,7 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -21,28 +24,50 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.goliath.emojihub.extensions.toEmoji
-import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.White
+
+enum class EmojiCellDisplay {
+    VERTICAL, HORIZONTAL
+}
 
 @Composable
 fun EmojiCell (
     emoji: Emoji,
+    displayMode: EmojiCellDisplay,
     onSelected: (Emoji) -> Unit
 ) {
+    val thumbnailLink = emoji.thumbnailLink.takeIf{ it.isNotEmpty()} ?:"https://i.pinimg.com/236x/4b/05/0c/4b050ca4fcf588eedc58aa6135f5eecf.jpg"
+    Log.d("create_TN", emoji.thumbnailLink)
+
     Card (
-        modifier = Modifier.fillMaxWidth().height(292.dp).clickable { onSelected(emoji) },
+        modifier = when (displayMode) {
+            EmojiCellDisplay.VERTICAL -> Modifier
+                .fillMaxWidth()
+                .height(292.dp)
+                .clickable { onSelected(emoji) }
+            EmojiCellDisplay.HORIZONTAL -> Modifier
+                .width(132.dp)
+                .height(240.dp)
+                .clickable { onSelected(emoji) } },
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp
     ) {
-        // TODO: Add video thumbnail
-        Box(Modifier.fillMaxSize().background(Black).alpha(0.25F))
+        Box(Modifier.fillMaxSize().background(Color.Gray).alpha(0.25F))
 
-        Box(
-            modifier = Modifier.padding(8.dp)
-        ) {
+        Image(
+            painter = rememberAsyncImagePainter(thumbnailLink),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.Crop
+        )
+
+        Box(modifier = Modifier.padding(8.dp)) {
             Text(
                 text = "@" + emoji.createdBy,
                 modifier = Modifier.align(Alignment.TopStart),
@@ -56,9 +81,7 @@ fun EmojiCell (
             ) {
                 IconButton(
                     modifier = Modifier.size(16.dp),
-                    onClick = {
-                        // TODO: save emoji
-                    }
+                    onClick = {}
                 ) {
                     Icon(
                         imageVector = Icons.Filled.SaveAlt,

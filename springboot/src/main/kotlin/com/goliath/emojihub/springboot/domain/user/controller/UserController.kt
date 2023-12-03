@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/user")
-class UserController (private val userService: UserService) {
+class UserController(private val userService: UserService) {
+
     @GetMapping
     fun getUsers(): ResponseEntity<List<UserDto>> {
         return ResponseEntity.ok(userService.getUsers())
@@ -21,14 +22,17 @@ class UserController (private val userService: UserService) {
     fun signUp(
         @RequestBody signUpRequest: SignUpRequest
     ): ResponseEntity<UserDto.AuthToken> {
-        return ResponseEntity(userService.signUp(signUpRequest), HttpStatus.CREATED)
+        return ResponseEntity(
+            userService.signUp(signUpRequest.email, signUpRequest.username, signUpRequest.password),
+            HttpStatus.CREATED
+        )
     }
 
     @PostMapping("/login")
     fun login(
         @RequestBody loginRequest: LoginRequest
     ): ResponseEntity<UserDto.AuthToken> {
-        return ResponseEntity.ok(userService.login(loginRequest))
+        return ResponseEntity.ok(userService.login(loginRequest.username, loginRequest.password))
     }
 
     @PostMapping("/logout")

@@ -10,27 +10,32 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.extensions.reactionsToString
 import com.goliath.emojihub.models.Post
-import com.goliath.emojihub.models.dummyPost
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PostCell(
     post: Post
 ) {
-    val viewModel = hiltViewModel<EmojiViewModel>()
+    val bottomSheetState = LocalBottomSheetController.current
+    val coroutineScope = rememberCoroutineScope()
+    val emojiViewModel = hiltViewModel<EmojiViewModel>()
 
     Box(
         modifier = Modifier
@@ -64,19 +69,40 @@ fun PostCell(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // TODO: should be replaced according to Figma
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = post.reaction.toString(),
-                    fontSize = 13.sp,
-                    color = EmojiHubDetailLabel
-                )
+                if (post.reaction.isNotEmpty()) {
+                    TextButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
+                                bottomSheetState.show()
+                            }
+                        },
+
+                        ) {
+                        Text(
+                            text = reactionsToString(post.reaction), //TODO: Replace with reaction_unicode sent from backend
+                            fontSize = 13.sp,
+                            color = EmojiHubDetailLabel
+                        )
+                    }
+                } else { //TODO: Find a better way to not display anything
+                    Text(
+                        text = "",
+                        fontSize = 13.sp,
+                        color = EmojiHubDetailLabel
+                    )
+                }
+
                 IconButton(onClick = {
-                    viewModel.isBottomSheetShown = true
+                    coroutineScope.launch {
+                        emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
+                        bottomSheetState.show()
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Filled.AddReaction,
@@ -86,10 +112,4 @@ fun PostCell(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PostCellPreview() {
-    PostCell(dummyPost)
 }

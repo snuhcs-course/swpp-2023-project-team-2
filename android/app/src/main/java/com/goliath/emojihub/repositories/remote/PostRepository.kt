@@ -1,15 +1,22 @@
 package com.goliath.emojihub.repositories.remote
 
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.goliath.emojihub.data_sources.PostFetchType
+import com.goliath.emojihub.data_sources.PostPagingSource
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.models.PostDto
 import com.goliath.emojihub.models.UploadPostDto
+import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface PostRepository {
-    suspend fun fetchPostList(numLimit: Int): List<PostDto>
+    suspend fun fetchPostList(): Flow<PagingData<PostDto>>
+    suspend fun fetchMyPostList(): Flow<PagingData<PostDto>>
     suspend fun uploadPost(dto: UploadPostDto): Response<Unit>
     suspend fun getPostWithId(id: String): PostDto?
     suspend fun editPost(id: String, content: String)
@@ -20,8 +27,18 @@ interface PostRepository {
 class PostRepositoryImpl @Inject constructor(
     private val postApi: PostApi
 ): PostRepository {
-    override suspend fun fetchPostList(numLimit: Int): List<PostDto> {
-        return postApi.fetchPostList(numLimit).body() ?: listOf()
+    override suspend fun fetchPostList(): Flow<PagingData<PostDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource(postApi, PostFetchType.GENERAL) }
+        ).flow
+    }
+
+    override suspend fun fetchMyPostList(): Flow<PagingData<PostDto>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource(postApi, PostFetchType.MY) }
+        ).flow
     }
 
     override suspend fun uploadPost(dto: UploadPostDto): Response<Unit> {

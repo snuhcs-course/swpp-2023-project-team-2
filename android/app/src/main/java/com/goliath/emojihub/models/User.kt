@@ -2,16 +2,13 @@ package com.goliath.emojihub.models
 
 import com.google.gson.annotations.SerializedName
 
-// TODO: implement User and UserDto
 class User(
     dto: UserDto
 ) {
-    var accessToken: String = dto.accessToken
     val name: String = dto.name
 }
 
 data class UserDto(
-    val accessToken: String,
     val name: String
 )
 
@@ -34,9 +31,9 @@ data class UserDtoList(
 )
 
 class RegisterUserDto(
+    @SerializedName("email") val email: String,
     @SerializedName("username") val name: String,
-    val email: String,
-    val password: String,
+    @SerializedName("password") val password: String,
 )
 
 class LoginUserDto(
