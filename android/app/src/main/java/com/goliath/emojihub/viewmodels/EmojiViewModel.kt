@@ -7,13 +7,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.usecases.EmojiUseCase
+import com.goliath.emojihub.views.components.BottomSheetContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,23 +25,50 @@ import javax.inject.Inject
 class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
-    var videoUri: Uri = Uri.EMPTY
+    lateinit var videoUri: Uri
     var currentEmoji: Emoji? = null
-    var isBottomSheetShown by mutableStateOf(false)
+    var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
-    private val _emojiList = MutableStateFlow<List<Emoji>>(emptyList())
-    val emojiList: StateFlow<List<Emoji>> = _emojiList.asStateFlow()
+    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val saveEmojiState = _saveEmojiState.asStateFlow()
 
-    private val _topK = 3
+    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
-    fun fetchEmojiList(numInt: Int)
-    {
+    val emojiList = emojiUseCase.emojiList
+    val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
+    val mySavedEmojiList = emojiUseCase.mySavedEmojiList
+    companion object {
+        private const val _topK = 3
+    }
+
+    fun fetchEmojiList() {
         viewModelScope.launch {
-            emojiUseCase.fetchEmojiList(numInt)
+            emojiUseCase.fetchEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateEmojiList(it)
+                }
+        }
+    }
 
-            val emojis = emojiUseCase.emojiListState.value.map { dto -> Emoji(dto) }
-            _emojiList.emit(emojis)
-            Log.d("Fetch_E_L", "VIEWMODEL DONE: $emojis")
+    fun fetchMyCreatedEmojiList() {
+        viewModelScope.launch {
+            emojiUseCase.fetchMyCreatedEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateMyCreatedEmojiList(it)
+                }
+        }
+    }
+
+    fun fetchMySavedEmojiList() {
+        viewModelScope.launch {
+            emojiUseCase.fetchMySavedEmojiList()
+                .cachedIn(viewModelScope)
+                .collect {
+                    emojiUseCase.updateMySavedEmojiList(it)
+                }
         }
     }
 
@@ -56,11 +84,17 @@ class EmojiViewModel @Inject constructor(
         return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
     }
 
-    suspend fun saveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+    fun saveEmoji(id: String) {
+        viewModelScope.launch {
+            val result = emojiUseCase.saveEmoji(id)
+            _saveEmojiState.value = result
+        }
     }
 
-    suspend fun unSaveEmoji(id: String) {
-        emojiUseCase.saveEmoji(id)
+    fun unSaveEmoji(id: String) {
+        viewModelScope.launch {
+        val result = emojiUseCase.unSaveEmoji(id)
+        _unSaveEmojiState.value = result
+        }
     }
 }

@@ -24,4 +24,5 @@ object Color {
     val EmojiHubRed = Color(0xFFD66464)
     val EmojiHubDividerColor = Color(0x0D000000)
     val EmojiHubGrayIcon = Color(0xFFD3D3D3)
+    val EmojiHubBorderColor = Color(0xFFEAEAEA)
 }

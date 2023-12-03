@@ -7,30 +7,33 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.BottomNavigationController
+import com.goliath.emojihub.data_sources.bottomSheet
 import com.goliath.emojihub.ui.theme.EmojiHubTheme
+import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
-import com.goliath.emojihub.views.BottomNavigationBar
-import com.goliath.emojihub.views.LoginNavigation
+import com.goliath.emojihub.views.CreatePostPage
 import com.goliath.emojihub.views.LoginPage
+import com.goliath.emojihub.views.MainPage
+import com.goliath.emojihub.views.SignUpPage
+import com.goliath.emojihub.views.TransformVideoPage
 import com.goliath.emojihub.views.components.CustomDialog
-import com.goliath.emojihub.views.pageItemList
+import com.goliath.emojihub.views.components.PlayEmojiView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -48,13 +51,13 @@ class RootActivity : ComponentActivity() {
         setContent {
             EmojiHubTheme {
                 Box(Modifier.fillMaxSize().background(Color.White)) {
-                    val token = userViewModel.userState.collectAsState().value?.accessToken
+                    val accessToken = userViewModel.accessTokenState.collectAsState().value
                     val error by apiErrorController.apiErrorState.collectAsState()
-                    if (token.isNullOrEmpty()) {
-                        LoginView()
-                    } else {
-                        RootView()
-                    }
+
+                    RootView(startDestination =
+                        if (accessToken.isNullOrEmpty()) NavigationDestination.Onboard
+                        else NavigationDestination.MainPage
+                    )
 
                     if (!error?.body().isNullOrEmpty()) {
                         CustomDialog(
@@ -68,57 +71,58 @@ class RootActivity : ComponentActivity() {
             }
         }
     }
-}
 
-
-@Composable
-fun LoginView() {
-    val navController = rememberNavController()
-
-    CompositionLocalProvider(
-        LocalNavController provides navController
-    ) {
-        LoginNavigation(navController = navController)
-    }
-}
-
-@Composable
-fun RootView(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
-
-    CompositionLocalProvider(
-        LocalNavController provides navController
-    ) {
-        Scaffold(
-            bottomBar =  {
-                BottomNavigation(
-                    backgroundColor = Color.White
-                ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
-                    pageItemList.forEach { pageItem ->
-                        BottomNavigationItem(
-                            selected = currentRoute == pageItem.screenRoute,
-                            onClick = { navController.navigate(pageItem.screenRoute) {
-                                navController.graph.startDestinationRoute?.let {
-                                    popUpTo(it) { saveState = true }
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            } },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = pageItem.icon),
-                                    contentDescription = "",
-                                    tint = if (currentRoute == pageItem.screenRoute) Color.Black else Color.LightGray)
-                            }
-                        )
-                    }
-                }
-            }
+    private fun NavGraphBuilder.onboardGraph() {
+        navigation(
+            startDestination = NavigationDestination.Login,
+            route = NavigationDestination.Onboard,
         ) {
-            Box(Modifier.padding(it)) {
-                BottomNavigationBar(navController = navController)
+            composable(NavigationDestination.Login) {
+                LoginPage()
+            }
+            composable(NavigationDestination.SignUp) {
+                SignUpPage()
+            }
+        }
+    }
+
+    @Composable
+    fun RootView(startDestination: String) {
+        val navController = rememberNavController()
+        val bottomSheet = bottomSheet()
+        val bottomNavigationController = remember {
+            BottomNavigationController()
+        }
+
+        CompositionLocalProvider(
+            LocalNavController provides navController,
+            LocalBottomNavigationController provides bottomNavigationController,
+            LocalBottomSheetController provides bottomSheet
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination
+            ) {
+                onboardGraph()
+
+                composable(NavigationDestination.MainPage) {
+                    MainPage()
+                }
+
+                composable(NavigationDestination.TransformVideo) {
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    TransformVideoPage(emojiViewModel)
+                }
+
+                composable(NavigationDestination.PlayEmojiVideo) {
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    PlayEmojiView(emojiViewModel)
+                }
+
+                composable(NavigationDestination.CreatePost) {
+                    val postViewModel = hiltViewModel<PostViewModel>()
+                    CreatePostPage(postViewModel)
+                }
             }
         }
     }

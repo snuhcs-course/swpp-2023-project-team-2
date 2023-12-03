@@ -1,5 +1,7 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileDownloadOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,10 +50,11 @@ fun PlayEmojiView(
     // Play video
     val context = LocalContext.current
     val navController = LocalNavController.current
-    val coroutineScope = rememberCoroutineScope()
 
     val currentEmoji = viewModel.currentEmoji!!
 
+    var savedCount by remember { mutableStateOf(currentEmoji.savedCount) }
+    var isSaved by remember { mutableStateOf(currentEmoji.isSaved) }
     var showUnSaveDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
@@ -58,6 +62,13 @@ fun PlayEmojiView(
             setMediaItem(MediaItem.fromUri(currentEmoji.videoLink))
             repeatMode = Player.REPEAT_MODE_ALL
             prepare()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.stop()
+            exoPlayer.release()
         }
     }
 
@@ -71,9 +82,7 @@ fun PlayEmojiView(
             )
     ) {
         AndroidView(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.EmojiHubRed),
+            modifier = Modifier.fillMaxSize(),
             factory = {
                 PlayerView(it).apply {
                     player = exoPlayer
@@ -97,18 +106,20 @@ fun PlayEmojiView(
                     IconButton(
                         modifier = Modifier.size(40.dp),
                         onClick = {
-                            if (currentEmoji.isSaved) {
+                            if (isSaved) {
                                 showUnSaveDialog = true
+                                Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show()
                             } else {
-                                coroutineScope.launch {
-                                    viewModel.saveEmoji(currentEmoji.id)
-                                }
+                                viewModel.saveEmoji(currentEmoji.id)
+                                isSaved = true
+                                savedCount ++
+                                Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
                         Icon(
                             imageVector =
-                            if (currentEmoji.isSaved) {
+                            if (isSaved) {
                                 Icons.Default.FileDownloadOff
                             } else {
                                 Icons.Default.FileDownload
@@ -121,7 +132,7 @@ fun PlayEmojiView(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = currentEmoji.savedCount.toString(),
+                        text = savedCount.toString(),
                         fontSize = 14.sp,
                         color = Color.White
                     )
@@ -152,9 +163,10 @@ fun PlayEmojiView(
                 needsCancelButton = true,
                 onDismissRequest = { showUnSaveDialog = false },
                 confirm = {
-                    coroutineScope.launch {
-                        viewModel.unSaveEmoji(currentEmoji.id)
-                    } },
+                    viewModel.unSaveEmoji(currentEmoji.id)
+                    isSaved = false
+                    savedCount --
+                    showUnSaveDialog = false },
                 dismiss = { showUnSaveDialog = false }
             )
         }
