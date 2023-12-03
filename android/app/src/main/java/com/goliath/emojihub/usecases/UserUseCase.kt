@@ -63,7 +63,7 @@ class UserUseCaseImpl @Inject constructor(
                 val accessToken = it.body()?.accessToken
                 _userState.update { User(UserDto(accessToken ?: "", name)) }
                 EmojiHubApplication.preferences.accessToken = accessToken
-                Log.d("logout", "success ${EmojiHubApplication.preferences.accessToken}")
+                Log.d("login", "success ${EmojiHubApplication.preferences.accessToken}")
             } else {
                 errorController.setErrorState(it.code())
             }
@@ -74,9 +74,10 @@ class UserUseCaseImpl @Inject constructor(
         val response = repository.logout()
         response.let {
             if (it.isSuccessful) {
-                Log.d("logout", "success ${EmojiHubApplication.preferences.accessToken}")
                 _userState.update { null }
                 EmojiHubApplication.preferences.accessToken = null
+                Log.d("logout", "access token after logout: " +
+                        "${EmojiHubApplication.preferences.accessToken}")
             } else {
                 Log.d("logout", "fail ${it.code()}")
                 errorController.setErrorState(it.code())
@@ -91,7 +92,10 @@ class UserUseCaseImpl @Inject constructor(
             if (it.isSuccessful) {
                 _userState.update { null }
                 EmojiHubApplication.preferences.accessToken = null
+                Log.d("signout", "access token after logout: " +
+                        "${EmojiHubApplication.preferences.accessToken}")
             } else {
+                Log.d("signout", "fail ${it.code()}")
                 errorController.setErrorState(it.code())
             }
         }
