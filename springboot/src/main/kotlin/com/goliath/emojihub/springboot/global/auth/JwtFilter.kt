@@ -10,7 +10,6 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 class JwtFilter(private val jwtTokenProvider: JwtTokenProvider) : OncePerRequestFilter() {
 
-    private val EXCLUDE_URLS: List<String> = listOf("/api/user/signup", "/api/user/login")
 
     @Throws(IOException::class, ServletException::class)
     override fun doFilterInternal(
@@ -19,21 +18,15 @@ class JwtFilter(private val jwtTokenProvider: JwtTokenProvider) : OncePerRequest
         filterChain: FilterChain
     ) {
         try {
-            if (!shouldExclude(request)) {
-                val authToken: String = jwtTokenProvider.resolveToken(request)
-                if (jwtTokenProvider.validateToken(authToken)) {
-                    val authentication = jwtTokenProvider.getAuthentication(authToken)
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
+            val authToken: String = jwtTokenProvider.resolveToken(request)
+            if (jwtTokenProvider.validateToken(authToken)) {
+                val authentication = jwtTokenProvider.getAuthentication(authToken)
+                SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: Exception) {
             request.setAttribute("exception", e)
             throw e
         }
         filterChain.doFilter(request, response)
-    }
-
-    private fun shouldExclude(request: HttpServletRequest): Boolean {
-        return EXCLUDE_URLS.stream().anyMatch { url -> request.requestURI.contains(url) }
     }
 }
