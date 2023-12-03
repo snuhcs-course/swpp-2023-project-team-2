@@ -14,6 +14,8 @@ interface UserRepository {
     fun fetchUser(id: String)
     suspend fun registerUser(dto: RegisterUserDto): Response<LoginResponseDto>
     suspend fun login(dto: LoginUserDto): Response<LoginResponseDto>
+    suspend fun logout(): Response<Unit>
+    suspend fun signOut(authToken: String): Response<Unit>
 }
 
 @Singleton
@@ -34,5 +36,13 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun login(dto: LoginUserDto): Response<LoginResponseDto> {
         return userApi.login(dto)
+    }
+
+    override suspend fun logout(): Response<Unit> {
+        return userApi.logout()
+    }
+
+    override suspend fun signOut(authToken: String): Response<Unit> {
+        return userApi.signOut(authToken)
     }
 }

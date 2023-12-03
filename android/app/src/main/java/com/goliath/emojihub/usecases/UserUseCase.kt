@@ -1,5 +1,6 @@
 package com.goliath.emojihub.usecases
 
+import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
@@ -20,8 +21,8 @@ sealed interface UserUseCase {
     suspend fun fetchUser(id: String)
     suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
-    fun logout()
-    fun signOut()
+    suspend fun logout()
+    suspend fun signOut()
 }
 
 @Singleton
@@ -67,15 +68,30 @@ class UserUseCaseImpl @Inject constructor(
         }
     }
 
-    override fun logout() {
-        EmojiHubApplication.preferences.accessToken = null
-        _accessTokenState.update { null }
-        _userState.update { null }
+    override suspend fun logout() {
+        val response = repository.logout()
+        response.let {
+            if (it.isSuccessful) {
+                EmojiHubApplication.preferences.accessToken = null
+                _accessTokenState.update { null }
+                _userState.update { null }
+            } else {
+                errorController.setErrorState(it.code())
+            }
+        }
     }
 
-    override fun signOut() {
-        EmojiHubApplication.preferences.accessToken = null
-        _accessTokenState.update { null }
-        _userState.update { null }
+    override suspend fun signOut() {
+        val accessToken = EmojiHubApplication.preferences.accessToken ?: return
+        val response = repository.signOut(accessToken)
+        response.let {
+            if (it.isSuccessful) {
+                EmojiHubApplication.preferences.accessToken = null
+                _accessTokenState.update { null }
+                _userState.update { null }
+            } else {
+                errorController.setErrorState(it.code())
+            }
+        }
     }
 }
