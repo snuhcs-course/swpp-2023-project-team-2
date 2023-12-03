@@ -28,13 +28,14 @@ fun TopNavigationBar(
     title: String = "",
     largeTitle: Boolean = true,
     shouldNavigate: Boolean = true,
+    needsElevation: Boolean = true,
     navigate: () -> Unit = {},
     actions: @Composable () -> Unit = {},
 ) {
     Surface(
         color = Color.Transparent,
         shape = RectangleShape,
-        elevation = 1.dp,
+        elevation = if (needsElevation) 1.dp else 0.dp,
         modifier = Modifier.height(64.dp),
     ) {
         Box(Modifier.padding(horizontal = 4.dp)) {

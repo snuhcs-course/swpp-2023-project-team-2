@@ -29,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.ui.theme.Color.White
@@ -173,7 +174,10 @@ fun ProfilePage() {
                     needsCancelButton = true,
                     onDismissRequest = { showLogoutDialog = false },
                     dismiss = { showLogoutDialog = false },
-                    confirm = { userViewModel.logout() }
+                    confirm = {
+                        navController.navigateAsOrigin(NavigationDestination.Onboard)
+                        userViewModel.logout()
+                    }
                 )
             }
 
@@ -186,7 +190,10 @@ fun ProfilePage() {
                     needsCancelButton = true,
                     onDismissRequest = { showSignOutDialog = false },
                     dismiss = { showSignOutDialog = false },
-                    confirm = { userViewModel.signOut() }
+                    confirm = {
+                        navController.navigateAsOrigin(NavigationDestination.Onboard)
+                        userViewModel.signOut()
+                    }
                 )
             }
         }

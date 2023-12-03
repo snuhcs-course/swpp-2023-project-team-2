@@ -31,9 +31,7 @@ fun MainPage() {
             pageItemList.forEach { pageItem ->
                 BottomNavigationItem(
                     selected = currentRoute == pageItem.screenRoute,
-                    onClick = {
-                        bottomNavigationController.updateDestination(pageItem)
-                    },
+                    onClick = { bottomNavigationController.updateDestination(pageItem) },
                     icon = {
                         Icon(
                             painter = painterResource(id = pageItem.icon),

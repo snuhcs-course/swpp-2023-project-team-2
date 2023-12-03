@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -110,12 +111,18 @@ class RootActivity : ComponentActivity() {
                 }
 
                 composable(NavigationDestination.TransformVideo) {
-                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
                     TransformVideoPage(emojiViewModel)
                 }
 
                 composable(NavigationDestination.PlayEmojiVideo) {
-                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
                     PlayEmojiView(emojiViewModel)
                 }
 
@@ -125,5 +132,13 @@ class RootActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+fun NavController.navigateAsOrigin(route: String) {
+    navigate(route) {
+        while (popBackStack()) { }
+        launchSingleTop = true
+        restoreState = true
     }
 }
