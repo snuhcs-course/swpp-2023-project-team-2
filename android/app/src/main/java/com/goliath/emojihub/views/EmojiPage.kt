@@ -62,8 +62,7 @@ fun EmojiPage(
 
     val emojiList = viewModel.emojiList.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit)
-    {
+    LaunchedEffect(Unit) {
         viewModel.fetchEmojiList()
     }
 
@@ -79,9 +78,7 @@ fun EmojiPage(
                         ))
                     }
                     else -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            permissionLauncher.launch(Manifest.permission.READ_MEDIA_VIDEO)
-                        }
+                        permissionLauncher.launch(Manifest.permission.READ_MEDIA_VIDEO)
                     }
                 }
             }) {

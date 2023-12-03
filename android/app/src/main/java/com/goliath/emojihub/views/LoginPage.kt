@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.UnderlinedTextField
@@ -133,7 +134,7 @@ fun LoginPage() {
                 color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier.clickable {
-                    navController.navigate(NavigationDestination.MainPage)
+                    navController.navigateAsOrigin(NavigationDestination.MainPage)
                 }
             )
             Spacer(modifier = Modifier.height(24.dp))

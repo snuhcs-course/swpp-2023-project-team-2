@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -26,7 +27,7 @@ class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
     lateinit var videoUri: Uri
-    var currentEmoji: Emoji? = null
+    lateinit var currentEmoji: Emoji
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
     private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
@@ -38,6 +39,7 @@ class EmojiViewModel @Inject constructor(
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
     val mySavedEmojiList = emojiUseCase.mySavedEmojiList
+
     companion object {
         private const val _topK = 3
     }
@@ -93,8 +95,8 @@ class EmojiViewModel @Inject constructor(
 
     fun unSaveEmoji(id: String) {
         viewModelScope.launch {
-        val result = emojiUseCase.unSaveEmoji(id)
-        _unSaveEmojiState.value = result
+            val result = emojiUseCase.unSaveEmoji(id)
+            _unSaveEmojiState.value = result
         }
     }
 }
