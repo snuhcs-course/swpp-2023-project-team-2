@@ -1,7 +1,7 @@
 package com.goliath.emojihub.viewmodels
 
 import android.net.Uri
-import com.goliath.emojihub.createDeterministicDummyEmojiList
+import com.goliath.emojihub.createDeterministicTrendingEmojiList
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.usecases.EmojiUseCase
@@ -44,24 +44,41 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun fetchEmojiList_success_updateEmojiList() = runTest {
+    fun fetchEmojiList_success_updateTrendingEmojiList() = runTest {
         // given
-        val sampleFetchedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
-            emojiUseCase.fetchEmojiList(1)
+            emojiUseCase.fetchEmojiList(0)
         } returns sampleFetchedEmojiList
         // when
         emojiViewModel.fetchEmojiList()
         advanceUntilIdle()
         // then
+        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(0) }
+        coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
+    }
+
+    @Test
+    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
+        // given
+        // for simplicity of testing, we return the same list for both cases
+        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
+        coEvery {
+            emojiUseCase.fetchEmojiList(1)
+        } returns sampleFetchedEmojiList
+        // when
+        emojiViewModel.toggleSortingMode()
+        advanceUntilIdle()
+        // then
         coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
+        assertEquals(1, emojiViewModel.sortByDate)
     }
 
     @Test
     fun fetchMyCreatedEmojiList_success_updateMyCreatedEmojiList() = runTest {
         // given
-        val sampleFetchedMyCreatedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedMyCreatedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
             emojiUseCase.fetchMyCreatedEmojiList()
         } returns sampleFetchedMyCreatedEmojiList
@@ -76,7 +93,7 @@ class EmojiViewModelTest {
     @Test
     fun fetchMySavedEmojiList_success_updateMySavedEmojiList() = runTest {
         // given
-        val sampleFetchedMySavedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedMySavedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
             emojiUseCase.fetchMySavedEmojiList()
         } returns sampleFetchedMySavedEmojiList

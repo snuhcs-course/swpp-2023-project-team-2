@@ -3,7 +3,7 @@ package com.goliath.emojihub.usecases
 import androidx.paging.PagingData
 import androidx.paging.map
 import androidx.paging.testing.asSnapshot
-import com.goliath.emojihub.createDeterministicDummyEmojiDtoList
+import com.goliath.emojihub.createDeterministicTrendingEmojiDtoList
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
@@ -72,7 +72,7 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
             emojiRepository.fetchEmojiList(1)
@@ -96,7 +96,7 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchMyCreatedEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
             emojiRepository.fetchMyCreatedEmojiList()
@@ -120,7 +120,7 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchMySavedEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
             emojiRepository.fetchMySavedEmojiList()
