@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +35,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.LocalNavController
-import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
