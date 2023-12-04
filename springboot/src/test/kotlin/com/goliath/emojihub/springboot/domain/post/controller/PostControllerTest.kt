@@ -6,7 +6,7 @@ import com.goliath.emojihub.springboot.domain.WithCustomUser
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostRequest
 import com.goliath.emojihub.springboot.domain.post.service.PostService
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.DisplayName
@@ -87,7 +87,7 @@ internal class PostControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(postList.size)))
+            .andExpect(jsonPath("$.length()", equalTo(postList.size)))
             .andExpect(jsonPath("$[0].id").value(postList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(postList[0].created_by))
             .andExpect(jsonPath("$[0].content").value(postList[0].content))
@@ -123,7 +123,7 @@ internal class PostControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(posts.size)))
+            .andExpect(jsonPath("$.length()", equalTo(posts.size)))
             .andExpect(jsonPath("$[0].id").value(posts[0].id))
             .andExpect(jsonPath("$[0].created_by").value(posts[0].created_by))
             .andExpect(jsonPath("$[0].content").value(posts[0].content))

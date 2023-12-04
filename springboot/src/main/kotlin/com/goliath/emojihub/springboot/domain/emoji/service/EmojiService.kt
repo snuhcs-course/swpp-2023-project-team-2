@@ -60,12 +60,12 @@ class EmojiService(
             // sort
             if (emojiList.size != 0) {
                 emojiList.sortByDescending { it.created_at }
+                // pagination
+                emojiList =  emojiList.subList(
+                    min((index - 1) * count, emojiList.size - 1),
+                    min(index * count, emojiList.size)
+                )
             }
-            // pagination
-            emojiList =  emojiList.subList(
-                min((index - 1) * count, emojiList.size - 1),
-                min(index * count, emojiList.size)
-            )
         }
         return emojiList
     }
