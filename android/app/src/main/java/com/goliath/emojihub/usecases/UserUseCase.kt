@@ -1,6 +1,5 @@
 package com.goliath.emojihub.usecases
 
-import android.util.Log
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
@@ -62,6 +61,7 @@ class UserUseCaseImpl @Inject constructor(
                 _accessTokenState.update { accessToken }
                 _userState.update { User(UserDto(name)) }
                 EmojiHubApplication.preferences.accessToken = accessToken
+                EmojiHubApplication.preferences.currentUser = name
             } else {
                 errorController.setErrorState(it.code())
             }
@@ -73,6 +73,7 @@ class UserUseCaseImpl @Inject constructor(
         response.let {
             if (it.isSuccessful) {
                 EmojiHubApplication.preferences.accessToken = null
+                EmojiHubApplication.preferences.currentUser = null
                 _accessTokenState.update { null }
                 _userState.update { null }
             } else {
@@ -87,6 +88,7 @@ class UserUseCaseImpl @Inject constructor(
         response.let {
             if (it.isSuccessful) {
                 EmojiHubApplication.preferences.accessToken = null
+                EmojiHubApplication.preferences.currentUser = null
                 _accessTokenState.update { null }
                 _userState.update { null }
             } else {
