@@ -7,6 +7,12 @@ import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.POST_UPDATE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.POST_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INDEX_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.COUNT_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -81,8 +87,8 @@ internal class PostServiceTest {
         // then
         assertAll(
             { assertEquals(result, list) },
-            { assertEquals(assertThrows1.message, "Index should be positive integer.") },
-            { assertEquals(assertThrows2.message, "Count should be positive integer.") }
+            { assertEquals(assertThrows1.message, INDEX_OUT_OF_BOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, COUNT_OUT_OF_BOUND.getMessage()) }
         )
         verify(postDao, times(1)).getPosts(index, count)
     }
@@ -109,7 +115,7 @@ internal class PostServiceTest {
         // then
         assertAll(
             { assertEquals(result, list) },
-            { assertEquals(assertThrows.message, "User doesn't exist.") }
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
         )
         verify(userDao, times(1)).existUser(username)
         verify(userDao, times(1)).existUser(wrongUsername)
@@ -136,7 +142,7 @@ internal class PostServiceTest {
         // then
         assertAll(
             { assertEquals(result, post) },
-            { assertEquals(assertThrows.message, "Post doesn't exist.") }
+            { assertEquals(assertThrows.message, POST_NOT_FOUND.getMessage()) }
         )
         verify(postDao, times(1)).existPost(id)
         verify(postDao, times(1)).existPost(wrongId)
@@ -168,8 +174,8 @@ internal class PostServiceTest {
         // then
         assertAll(
             { assertEquals(result, Unit) },
-            { assertEquals(assertThrows1.message, "Post doesn't exist.") },
-            { assertEquals(assertThrows2.message, "You can't update this post.") }
+            { assertEquals(assertThrows1.message, POST_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, POST_UPDATE_FORBIDDEN.getMessage()) }
         )
         verify(postDao, times(2)).getPost(id)
         verify(postDao, times(1)).getPost(wrongId)
@@ -203,8 +209,8 @@ internal class PostServiceTest {
         // then
         assertAll(
             { assertEquals(result, Unit) },
-            { assertEquals(assertThrows1.message, "Post doesn't exist.") },
-            { assertEquals(assertThrows2.message, "You can't delete this post.") }
+            { assertEquals(assertThrows1.message, POST_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, POST_DELETE_FORBIDDEN.getMessage()) }
         )
         verify(postDao, times(2)).getPost(id)
         verify(postDao, times(1)).getPost(wrongId)

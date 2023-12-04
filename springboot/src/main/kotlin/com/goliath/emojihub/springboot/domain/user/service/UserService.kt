@@ -9,6 +9,10 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EXIST
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -32,7 +36,7 @@ class UserService(
 
     fun signUp(email: String, username: String, password: String): UserDto.AuthToken {
         if (userDao.existUser(username)) {
-            throw CustomHttp409("Id already exists.")
+            throw CustomHttp409(ID_EXIST)
         }
         val encodedPassword = passwordEncoder.encode(password)
         val user = UserDto(
@@ -46,9 +50,9 @@ class UserService(
     }
 
     fun login(username: String, password: String): UserDto.AuthToken {
-        val user = userDao.getUser(username) ?: throw CustomHttp404("Id doesn't exist.")
+        val user = userDao.getUser(username) ?: throw CustomHttp404(ID_NOT_FOUND)
         if (!passwordEncoder.matches(password, user.password)) {
-            throw CustomHttp401("Password is incorrect.")
+            throw CustomHttp401(PASSWORD_INCORRECT)
         }
         val authToken = jwtTokenProvider.createToken(user.username)
         return UserDto.AuthToken(authToken)
@@ -59,7 +63,7 @@ class UserService(
     }
 
     fun signOut(username: String) {
-        val user = userDao.getUser(username) ?: throw CustomHttp404("User doesn't exist.")
+        val user = userDao.getUser(username) ?: throw CustomHttp404(USER_NOT_FOUND)
         val createdEmojiIds = user.created_emojis
         val savedEmojiIds = user.saved_emojis
         val postIds = user.created_posts

@@ -9,6 +9,14 @@ import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INDEX_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.COUNT_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_CREATED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_SAVED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_UNSAVED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.EMOJI_DELETE_FORBIDDEN
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -73,8 +81,8 @@ internal class EmojiServiceTest {
         // then
         assertAll(
             { assertEquals(result, testDto.emojiList) },
-            { assertEquals(assertThrows1.message, "Index should be positive integer.") },
-            { assertEquals(assertThrows2.message, "Count should be positive integer.") }
+            { assertEquals(assertThrows1.message, INDEX_OUT_OF_BOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, COUNT_OUT_OF_BOUND.getMessage()) }
         )
         verify(emojiDao, times(1)).getEmojis(sortByDate, index, count)
     }
@@ -106,7 +114,7 @@ internal class EmojiServiceTest {
         assertAll(
             { assertEquals(createdEmojisResult.size, testDto.createdEmojiSize) },
             { assertEquals(savedEmojisResult.size, testDto.savedEmojiSize) },
-            { assertEquals(assertThrows.message, "User doesn't exist.") }
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
         )
         verify(userDao, times(2)).getUser(username)
         verify(userDao, times(1)).getUser(wrongUsername)
@@ -138,7 +146,7 @@ internal class EmojiServiceTest {
         // then
         assertAll(
             { assertEquals(result, emoji) },
-            { assertEquals(assertThrows.message, "Emoji doesn't exist.") }
+            { assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage()) }
         )
         verify(emojiDao, times(1)).existsEmoji(id)
         verify(emojiDao, times(1)).existsEmoji(wrongId)
@@ -200,7 +208,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Emoji doesn't exist.")
+        assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(wrongId)
     }
 
@@ -219,7 +227,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(wrongUsername)
     }
@@ -240,7 +248,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User created this emoji.")
+        assertEquals(assertThrows.message, USER_CREATED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -261,7 +269,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User already saved this emoji.")
+        assertEquals(assertThrows.message, USER_ALREADY_SAVED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -299,7 +307,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Emoji doesn't exist.")
+        assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(wrongId)
     }
 
@@ -318,7 +326,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(wrongUsername)
     }
@@ -339,7 +347,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User created this emoji.")
+        assertEquals(assertThrows.message, USER_CREATED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -360,7 +368,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User already unsaved this emoji.")
+        assertEquals(assertThrows.message, USER_ALREADY_UNSAVED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -397,8 +405,8 @@ internal class EmojiServiceTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "Emoji doesn't exist.") },
-            { assertEquals(assertThrows2.message, "You can't delete this emoji.") }
+            { assertEquals(assertThrows1.message, EMOJI_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, EMOJI_DELETE_FORBIDDEN.getMessage()) }
         )
         verify(emojiDao, times(2)).getEmoji(emojiId)
         verify(emojiDao, times(1)).getEmoji(wrongId)

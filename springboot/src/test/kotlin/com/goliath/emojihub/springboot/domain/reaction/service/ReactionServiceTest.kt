@@ -8,6 +8,12 @@ import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.REACTION_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_REACT
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.REACTION_DELETE_FORBIDDEN
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -70,7 +76,7 @@ internal class ReactionServiceTest {
         // then
         assertAll(
             { assertEquals(result, reactions) },
-            { assertEquals(assertThrows.message, "Post doesn't exist.") }
+            { assertEquals(assertThrows.message, POST_NOT_FOUND.getMessage()) }
         )
         verify(postDao, times(1)).existPost(postId)
         verify(postDao, times(1)).existPost(wrongId)
@@ -118,10 +124,10 @@ internal class ReactionServiceTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "User doesn't exist.") },
-            { assertEquals(assertThrows2.message, "Post doesn't exist.") },
-            { assertEquals(assertThrows3.message, "Emoji doesn't exist.") },
-            { assertEquals(assertThrows4.message, "User already react to this post with this emoji.") }
+            { assertEquals(assertThrows1.message, USER_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, POST_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows3.message, EMOJI_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows4.message, USER_ALREADY_REACT.getMessage()) }
         )
         verify(userDao, times(4)).existUser(username)
         verify(userDao, times(1)).existUser(wrongUsername)
@@ -159,8 +165,8 @@ internal class ReactionServiceTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "Reaction doesn't exist.") },
-            { assertEquals(assertThrows2.message, "You can't delete this reaction.") }
+            { assertEquals(assertThrows1.message, REACTION_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, REACTION_DELETE_FORBIDDEN.getMessage()) }
         )
         verify(reactionDao, times(2)).getReaction(reactionId)
         verify(reactionDao, times(1)).getReaction(wrongReactionId)
