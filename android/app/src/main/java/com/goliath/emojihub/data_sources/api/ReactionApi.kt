@@ -1,17 +1,17 @@
 package com.goliath.emojihub.data_sources.api
 
-import com.goliath.emojihub.models.UploadReactionDto
 import retrofit2.Response
-import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ReactionApi {
     @POST("reaction")
     suspend fun uploadReaction(
-        @Body body: UploadReactionDto
+        @Query("postId") postId: String,
+        @Query("emojiId") emojiId: String
     ): Response<Unit>
 
     @GET("reactions")

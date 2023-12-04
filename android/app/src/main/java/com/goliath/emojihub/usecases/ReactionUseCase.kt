@@ -4,7 +4,6 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.Reaction
-import com.goliath.emojihub.models.UploadReactionDto
 import com.goliath.emojihub.repositories.remote.ReactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,8 +41,7 @@ class ReactionUseCaseImpl @Inject constructor(
     }
 
     override suspend fun uploadReaction(postId: String, emojiId: String): Boolean {
-        val dto = UploadReactionDto(postId, emojiId)
-        val response = repository.uploadReaction(dto)
+        val response = repository.uploadReaction(postId, emojiId)
         return if (response.isSuccessful) {
             true
         } else {
