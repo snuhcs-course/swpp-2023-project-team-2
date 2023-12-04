@@ -72,7 +72,6 @@ fun CustomBottomSheet (
     val myCreatedEmojiList = viewModel.myCreatedEmojiList.collectAsLazyPagingItems()
     val mySavedEmojiList = viewModel.mySavedEmojiList.collectAsLazyPagingItems()
     var displayMyCreatedEmojis by remember { mutableStateOf(true) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchMyCreatedEmojiList()
@@ -192,12 +191,13 @@ fun CustomBottomSheet (
                             items(myCreatedEmojiList.itemCount) { index ->
                                 myCreatedEmojiList[index]?.let {
                                     EmojiCell(emoji = it, displayMode = EmojiCellDisplay.VERTICAL) {
-                                        //TODO: add reaction to post
                                         coroutineScope.launch {
                                             val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
                                             if (success) {
                                                 Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
-                                                showSuccessDialog = true
+                                                coroutineScope.launch {
+                                                    bottomSheetState.hide()
+                                                }
                                             }
                                         }
                                     }
@@ -207,12 +207,13 @@ fun CustomBottomSheet (
                             items(mySavedEmojiList.itemCount) { index ->
                                 mySavedEmojiList[index]?.let {
                                     EmojiCell(emoji = it, displayMode = EmojiCellDisplay.VERTICAL) {
-                                        //TODO: add emoji reaction to post
                                         coroutineScope.launch {
                                             val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
                                             if (success) {
                                                 Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
-                                                showSuccessDialog = true
+                                                coroutineScope.launch {
+                                                    bottomSheetState.hide()
+                                                }
                                             }
                                         }
                                     }
@@ -222,13 +223,6 @@ fun CustomBottomSheet (
                     }
                 }
             }
-        }
-        if (showSuccessDialog) {
-            CustomDialog(
-                title = "완료",
-                body = "반응이 추가 되었습니다.",
-                confirm = { navController.popBackStack() }
-            )
         }
     }
 }
