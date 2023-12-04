@@ -17,7 +17,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -113,11 +112,11 @@ fun EmojiPage(
                 Button(
                     onClick = { viewModel.toggleSortingMode() },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (viewModel.sortingMode == 0) Black else LightGray,
+                        backgroundColor = if (viewModel.sortByDate == 0) Black else LightGray,
                         contentColor = White
                     )
                 ) {
-                    Text(text = if (viewModel.sortingMode == 1) "Sort by Date" else "Sort by Save Count", fontSize = 12.sp)
+                    Text(text = if (viewModel.sortByDate == 1) "Sort by Date" else "Sort by Save Count", fontSize = 12.sp)
                 }
             }
 

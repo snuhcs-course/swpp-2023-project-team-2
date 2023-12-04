@@ -36,7 +36,7 @@ class EmojiViewModel @Inject constructor(
     private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
     val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
-    var sortingMode by mutableIntStateOf(0)
+    var sortByDate by mutableIntStateOf(0)
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
@@ -47,7 +47,7 @@ class EmojiViewModel @Inject constructor(
 
     fun fetchEmojiList() {
         viewModelScope.launch {
-            emojiUseCase.fetchEmojiList(sortingMode)
+            emojiUseCase.fetchEmojiList(sortByDate)
                 .cachedIn(viewModelScope)
                 .collect {
                     emojiUseCase.updateEmojiList(it)
@@ -56,7 +56,7 @@ class EmojiViewModel @Inject constructor(
     }
 
     fun toggleSortingMode() {
-        sortingMode = if (sortingMode == 1 ) 0 else 1
+        sortByDate = sortByDate xor 1
         fetchEmojiList()
     }
 
