@@ -13,6 +13,7 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.IND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.COUNT_OUT_OF_BOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_POSTS
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -43,7 +44,6 @@ internal class PostServiceTest {
     lateinit var reactionDao: ReactionDao
 
     companion object {
-        const val CREATED_POSTS = "created_posts"
         private val testDto = TestDto()
     }
 
@@ -61,7 +61,7 @@ internal class PostServiceTest {
 
         // then
         verify(postDao, times(1)).insertPost(username, content)
-        verify(userDao, times(1)).insertId(username, post.id, CREATED_POSTS)
+        verify(userDao, times(1)).insertId(username, post.id, CREATED_POSTS.string)
     }
 
     @Test
@@ -218,7 +218,7 @@ internal class PostServiceTest {
             verify(reactionDao, times(1)).getReaction(reactionWithEmojiUnicode.id)
             verify(reactionDao, times(1)).deleteReaction(reactionWithEmojiUnicode.id)
         }
-        verify(userDao, times(1)).deleteId(username, id, CREATED_POSTS)
+        verify(userDao, times(1)).deleteId(username, id, CREATED_POSTS.string)
         verify(postDao, times(1)).deletePost(id)
     }
 }

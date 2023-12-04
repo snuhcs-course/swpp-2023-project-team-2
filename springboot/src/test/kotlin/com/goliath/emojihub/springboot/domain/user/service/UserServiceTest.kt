@@ -14,6 +14,8 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EX
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_BY
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -54,8 +56,6 @@ internal class UserServiceTest {
     lateinit var reactionDao: ReactionDao
 
     companion object {
-        const val CREATED_BY = "created_by"
-        const val EMOJI_ID = "emoji_id"
         val testDto = TestDto()
     }
 
@@ -71,6 +71,30 @@ internal class UserServiceTest {
         // then
         assertEquals(result, testDto.userList)
         verify(userDao, times(1)).getUsers()
+    }
+
+    @Test
+    @DisplayName("자신의 유저 데이터 가져오기")
+    fun getMe() {
+        // given
+        val user = testDto.userList[0]
+        val wrongUsername = "wrong_username"
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(userDao.getUser(wrongUsername)).thenReturn(null)
+
+        // when
+        val result = userService.getMe(user.username)
+        val assertThrows = assertThrows(CustomHttp404::class.java) {
+            userService.getMe(wrongUsername)
+        }
+
+        // then
+        assertAll(
+            { assertEquals(result, user) },
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
+        )
+        verify(userDao, times(1)).getUser(user.username)
+        verify(userDao, times(1)).getUser(wrongUsername)
     }
 
     @Test
@@ -211,7 +235,7 @@ internal class UserServiceTest {
         }
 
         Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
-        Mockito.`when`(reactionDao.getReactionsWithField(user.username, CREATED_BY)).thenReturn(myReactions)
+        Mockito.`when`(reactionDao.getReactionsWithField(user.username, CREATED_BY.string)).thenReturn(myReactions)
         for (post in testDto.postList) {
             Mockito.`when`(postDao.getPost(post.id)).thenReturn(post)
         }
@@ -230,7 +254,7 @@ internal class UserServiceTest {
                     reactions.add(reaction)
                 }
             }
-            Mockito.`when`(reactionDao.getReactionsWithField(firstEmojiId, EMOJI_ID)).thenReturn(reactions)
+            Mockito.`when`(reactionDao.getReactionsWithField(firstEmojiId, EMOJI_ID.string)).thenReturn(reactions)
         }
 
         // when

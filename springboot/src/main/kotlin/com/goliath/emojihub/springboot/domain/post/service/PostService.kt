@@ -13,6 +13,7 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.POST_UPDATE_FORBIDDEN
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.POST_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_POSTS
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,13 +23,9 @@ class PostService(
     private val reactionDao: ReactionDao
 ) {
 
-    companion object {
-        const val CREATED_POSTS = "created_posts"
-    }
-
     fun postPost(username: String, content: String) {
         val post = postDao.insertPost(username, content)
-        userDao.insertId(username, post.id, CREATED_POSTS)
+        userDao.insertId(username, post.id, CREATED_POSTS.string)
     }
 
     fun getPosts(index: Int, count: Int): List<PostDto> {
@@ -69,7 +66,7 @@ class PostService(
             reactionDao.deleteReaction(reactionWithEmojiUnicode.id)
         }
         // delete created_post id in user
-        userDao.deleteId(username, postId, CREATED_POSTS)
+        userDao.deleteId(username, postId, CREATED_POSTS.string)
         // delete post
         postDao.deletePost(postId)
     }

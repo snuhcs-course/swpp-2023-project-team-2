@@ -5,6 +5,8 @@ import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.WithCustomUser
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.Test
 
@@ -37,8 +39,6 @@ internal class EmojiControllerTest @Autowired constructor(
     lateinit var emojiService: EmojiService
 
     companion object {
-        const val CREATED_EMOJIS = "created_emojis"
-        const val SAVED_EMOJIS = "saved_emojis"
         private val testDto = TestDto()
         val emojiList = testDto.emojiList
     }
@@ -83,7 +83,7 @@ internal class EmojiControllerTest @Autowired constructor(
         val username = "custom_username"
         val index = 1
         val count = testDto.createdEmojiSize
-        Mockito.`when`(emojiService.getMyEmojis(username, CREATED_EMOJIS, index, count)).thenReturn(emojiList)
+        Mockito.`when`(emojiService.getMyEmojis(username, CREATED_EMOJIS.string, index, count)).thenReturn(emojiList)
 
         // when
         val result = this.mockMvc.perform(
@@ -103,7 +103,7 @@ internal class EmojiControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
             .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
             .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
-        verify(emojiService, times(1)).getMyEmojis(username, CREATED_EMOJIS, index, count)
+        verify(emojiService, times(1)).getMyEmojis(username, CREATED_EMOJIS.string, index, count)
     }
 
     @Test
@@ -114,7 +114,7 @@ internal class EmojiControllerTest @Autowired constructor(
         val username = "custom_username"
         val index = 1
         val count = testDto.savedEmojiSize
-        Mockito.`when`(emojiService.getMyEmojis(username, SAVED_EMOJIS, index, count)).thenReturn(emojiList)
+        Mockito.`when`(emojiService.getMyEmojis(username, SAVED_EMOJIS.string, index, count)).thenReturn(emojiList)
 
         // when
         val result = this.mockMvc.perform(
@@ -134,7 +134,7 @@ internal class EmojiControllerTest @Autowired constructor(
             .andExpect(jsonPath("$[0].emoji_label").value(emojiList[0].emoji_label))
             .andExpect(jsonPath("$[0].created_at").value(emojiList[0].created_at))
             .andExpect(jsonPath("$[0].num_saved").value(emojiList[0].num_saved))
-        verify(emojiService, times(1)).getMyEmojis(username, SAVED_EMOJIS, index, count)
+        verify(emojiService, times(1)).getMyEmojis(username, SAVED_EMOJIS.string, index, count)
     }
 
     @Test

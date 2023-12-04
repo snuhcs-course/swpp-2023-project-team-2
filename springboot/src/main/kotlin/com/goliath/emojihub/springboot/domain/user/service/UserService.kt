@@ -13,6 +13,8 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.P
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EXIST
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_BY
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -25,13 +27,13 @@ class UserService(
     private val postDao: PostDao,
     private val reactionDao: ReactionDao,
 ) {
-    companion object {
-        const val CREATED_BY = "created_by"
-        const val EMOJI_ID = "emoji_id"
-    }
 
     fun getUsers(): List<UserDto> {
         return userDao.getUsers()
+    }
+
+    fun getMe(username: String): UserDto {
+        return userDao.getUser(username) ?: throw CustomHttp404(USER_NOT_FOUND)
     }
 
     fun signUp(email: String, username: String, password: String): UserDto.AuthToken {
@@ -68,7 +70,7 @@ class UserService(
         val savedEmojiIds = user.saved_emojis
         val postIds = user.created_posts
         // delete all reactions(and reaction id in posts) created by user
-        val myReactions = reactionDao.getReactionsWithField(username, CREATED_BY)
+        val myReactions = reactionDao.getReactionsWithField(username, CREATED_BY.string)
         for (reaction in myReactions) {
             postDao.deleteReaction(reaction.post_id, reaction.id)
             reactionDao.deleteReaction(reaction.id)
@@ -96,7 +98,7 @@ class UserService(
                 val thumbnailBlobName = username + "_" + emoji.created_at + ".jpeg"
                 emojiDao.deleteFileInStorage(fileBlobName)
                 emojiDao.deleteFileInStorage(thumbnailBlobName)
-                val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID)
+                val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)
                 for (reaction in reactions) {
                     postDao.deleteReaction(reaction.post_id, reaction.id)
                     reactionDao.deleteReaction(reaction.id)

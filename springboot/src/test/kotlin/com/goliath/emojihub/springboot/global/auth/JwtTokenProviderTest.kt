@@ -7,6 +7,7 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INVALID_TOKEN
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.EXPIRED_TOKEN
+import com.goliath.emojihub.springboot.global.util.StringValue.JWT.JWT_TOKEN_PREFIX
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -35,8 +36,8 @@ internal class JwtTokenProviderTest {
     lateinit var userDetailService: UserDetailService
 
     companion object {
-        private val username = "test_username"
-        private val tokenPrefix = "Bearer "
+        private const val username = "test_username"
+        private val tokenPrefix = JWT_TOKEN_PREFIX.string
         private val expiredToken = tokenPrefix + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InRlc3RfdXNlcm5hbWUiLCJpc3MiOiJURVNUX0lTU1VFUiIsImV4cCI6MTcwMDg2NTc0NX0.k_CyolIiRKApQEtgPlwZZ-G4rgHmoZwL49civpbZRo0"
         private val invalidToken = tokenPrefix + "invalid_token"
         private val validToken = tokenPrefix + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InRlc3RfdXNlcm5hbWUiLCJpc3MiOiJURVNUX0lTU1VFUiIsImV4cCI6MTczNjg2NzM2MX0.WUbHH_RLHih9uLk9JqpVY8gwcNZmK3uSbS4yCMe-lNg"

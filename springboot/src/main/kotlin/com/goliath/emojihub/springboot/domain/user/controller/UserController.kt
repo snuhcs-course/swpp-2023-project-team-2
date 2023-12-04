@@ -18,6 +18,13 @@ class UserController(private val userService: UserService) {
         return ResponseEntity.ok(userService.getUsers())
     }
 
+    @GetMapping("/me")
+    fun getMe(
+        @CurrentUser username: String,
+    ): ResponseEntity<UserDto> {
+        return ResponseEntity.ok(userService.getMe(username))
+    }
+
     @PostMapping("/signup")
     fun signUp(
         @RequestBody signUpRequest: SignUpRequest

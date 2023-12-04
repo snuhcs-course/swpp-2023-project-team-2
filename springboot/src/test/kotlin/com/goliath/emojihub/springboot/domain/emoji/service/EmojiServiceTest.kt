@@ -17,6 +17,9 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_SAVED
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_UNSAVED
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.EMOJI_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -52,9 +55,6 @@ internal class EmojiServiceTest {
     lateinit var postDao: PostDao
 
     companion object {
-        const val CREATED_EMOJIS = "created_emojis"
-        const val SAVED_EMOJIS = "saved_emojis"
-        const val EMOJI_ID = "emoji_id"
         private val testDto = TestDto()
     }
 
@@ -104,10 +104,10 @@ internal class EmojiServiceTest {
         }
 
         // when
-        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS, index, countCreated)
-        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS, index, countSaved)
+        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS.string, index, countCreated)
+        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS.string, index, countSaved)
         val assertThrows = assertThrows(CustomHttp404::class.java) {
-            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS, index, countCreated)
+            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS.string, index, countCreated)
         }
 
         // then
@@ -172,7 +172,7 @@ internal class EmojiServiceTest {
 
         // then
         verify(emojiDao, times(1)).insertEmoji(any(), any(), any(), any(), any(), any())
-        verify(userDao, times(1)).insertId(username, emoji.id, CREATED_EMOJIS)
+        verify(userDao, times(1)).insertId(username, emoji.id, CREATED_EMOJIS.string)
     }
 
     @Test
@@ -392,7 +392,7 @@ internal class EmojiServiceTest {
                 reactions.add(reaction)
             }
         }
-        Mockito.`when`(reactionDao.getReactionsWithField(emojiId, EMOJI_ID)).thenReturn(reactions)
+        Mockito.`when`(reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)).thenReturn(reactions)
 
         // when
         emojiService.deleteEmoji(username, emojiId)
@@ -412,13 +412,13 @@ internal class EmojiServiceTest {
         verify(emojiDao, times(1)).getEmoji(wrongId)
         verify(emojiDao, times(1)).deleteFileInStorage(fileBlobName)
         verify(emojiDao, times(1)).deleteFileInStorage(thumbnailBlobName)
-        verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID)
+        verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID.string)
         for (reaction in reactions) {
             verify(postDao, times(1)).deleteReaction(reaction.post_id, reaction.id)
             verify(reactionDao, times(1)).deleteReaction(reaction.id)
         }
         verify(userDao, times(1)).deleteAllSavedEmojiId(emojiId)
-        verify(userDao, times(1)).deleteId(username, emojiId, CREATED_EMOJIS)
+        verify(userDao, times(1)).deleteId(username, emojiId, CREATED_EMOJIS.string)
         verify(emojiDao, times(1)).deleteEmoji(emojiId)
     }
 }
