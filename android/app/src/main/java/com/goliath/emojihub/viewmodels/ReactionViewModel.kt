@@ -33,7 +33,7 @@ class ReactionViewModel @Inject constructor(
         reactionUseCase.getReactionWithId(id)
     }
 
-    suspend fun deleteReaction(id: String) {
-        reactionUseCase.deleteReaction(id)
+    suspend fun deleteReaction(reactionId: String) {
+        reactionUseCase.deleteReaction(reactionId)
     }
 }

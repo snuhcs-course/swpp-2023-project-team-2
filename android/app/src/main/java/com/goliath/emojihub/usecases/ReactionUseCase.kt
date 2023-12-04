@@ -19,7 +19,7 @@ interface ReactionUseCase {
     suspend fun updateReactionList(data: PagingData<Reaction>)
     suspend fun uploadReaction(postId: String, emojiId: String): Boolean
     suspend fun getReactionWithId(id: String)
-    suspend fun deleteReaction(id: String)
+    suspend fun deleteReaction(reactionId: String)
 }
 
 @Singleton
@@ -54,7 +54,7 @@ class ReactionUseCaseImpl @Inject constructor(
         repository.getReactionWithId(id)
     }
 
-    override suspend fun deleteReaction(id: String) {
-        repository.deleteReaction(id)
+    override suspend fun deleteReaction(reactionId: String) {
+        repository.deleteReaction(reactionId)
     }
 }

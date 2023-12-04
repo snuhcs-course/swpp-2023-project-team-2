@@ -25,6 +25,6 @@ interface ReactionApi {
 
     @DELETE("reaction")
     suspend fun deleteReaction(
-        @Path("id") id: String
+        @Query("reactionId") reactionId: String
     ): Response<Unit>
 }
