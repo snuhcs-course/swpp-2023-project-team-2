@@ -1,5 +1,8 @@
 package com.goliath.emojihub.viewmodels
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -15,6 +18,7 @@ class PostViewModel @Inject constructor(
 
     val postList = postUseCase.postList
     val myPostList = postUseCase.myPostList
+    var currentPostId by mutableStateOf("")
 
     suspend fun fetchPostList() {
         viewModelScope.launch {

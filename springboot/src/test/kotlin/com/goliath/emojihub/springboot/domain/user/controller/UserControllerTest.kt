@@ -61,6 +61,32 @@ internal class UserControllerTest @Autowired constructor(
 
     @Test
     @WithCustomUser
+    @DisplayName("자신의 유저 데이터 가져오기 테스트")
+    fun getMe() {
+        // given
+        val username = "custom_username"
+        val user = userList[0]
+        given(userService.getMe(username)).willReturn(user)
+
+        // when
+        val result = this.mockMvc.perform(
+            get("/api/user/me")
+        )
+
+        // then
+        result.andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.email").value(user.email))
+            .andExpect(jsonPath("$.username").value(user.username))
+            .andExpect(jsonPath("$.password").value(user.password))
+            .andExpect(jsonPath("$.created_emojis.length()", equalTo(user.created_emojis!!.size)))
+            .andExpect(jsonPath("$.saved_emojis.length()", equalTo(user.saved_emojis!!.size)))
+            .andExpect(jsonPath("$.created_posts.length()", equalTo(user.created_posts!!.size)))
+        verify(userService, times(1)).getMe(username)
+    }
+
+    @Test
+    @WithCustomUser
     @DisplayName("회원가입 테스트")
     fun signUp() {
         // given

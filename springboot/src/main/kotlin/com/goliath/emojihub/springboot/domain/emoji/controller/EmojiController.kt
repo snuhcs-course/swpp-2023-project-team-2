@@ -4,6 +4,8 @@ import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import com.goliath.emojihub.springboot.domain.user.model.CurrentUser
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,11 +14,6 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/emoji")
 class EmojiController(private val emojiService: EmojiService) {
-
-    companion object {
-        const val CREATED_EMOJIS = "created_emojis"
-        const val SAVED_EMOJIS = "saved_emojis"
-    }
 
     @PostMapping
     fun postEmoji(
@@ -43,7 +40,7 @@ class EmojiController(private val emojiService: EmojiService) {
         @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
         @RequestParam(value = "count", defaultValue = 10.toString()) count: Int,
     ): ResponseEntity<List<EmojiDto>> {
-        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS, index, count))
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, CREATED_EMOJIS.string, index, count))
     }
 
     @GetMapping("/me/saved")
@@ -52,7 +49,7 @@ class EmojiController(private val emojiService: EmojiService) {
         @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
         @RequestParam(value = "count", defaultValue = 10.toString()) count: Int,
     ): ResponseEntity<List<EmojiDto>> {
-        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS, index, count))
+        return ResponseEntity.ok(emojiService.getMyEmojis(username, SAVED_EMOJIS.string, index, count))
     }
 
     @GetMapping("/{id}")

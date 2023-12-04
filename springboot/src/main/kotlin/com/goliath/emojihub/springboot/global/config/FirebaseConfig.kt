@@ -1,5 +1,7 @@
 package com.goliath.emojihub.springboot.global.config
 
+import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.SERVICE_ACCOUNT_KEY
+import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.EMOJI_STORAGE_BUCKET_NAME
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.storage.Storage
@@ -18,10 +20,10 @@ class FirebaseConfig {
     @PostConstruct
     fun init() {
         try {
-            val serviceAccount = FileInputStream("springboot/src/main/resources/serviceAccountKey.json")
+            val serviceAccount = FileInputStream(SERVICE_ACCOUNT_KEY.string)
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setStorageBucket("emojihub-e2023.appspot.com")
+                .setStorageBucket(EMOJI_STORAGE_BUCKET_NAME.string)
                 .build()
             if (FirebaseApp.getApps().isEmpty() ){
                 FirebaseApp.initializeApp(options)

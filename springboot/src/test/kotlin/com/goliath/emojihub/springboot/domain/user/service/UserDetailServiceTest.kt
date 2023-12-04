@@ -3,6 +3,7 @@ package com.goliath.emojihub.springboot.domain.user.service
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_FROM_TOKEN_NOT_FOUND
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -39,7 +40,7 @@ internal class UserDetailServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Username from the token doesn't exist.")
+        assertEquals(assertThrows.message, USER_FROM_TOKEN_NOT_FOUND.getMessage())
         verify(userDao, times(1)).getUser(username)
     }
 

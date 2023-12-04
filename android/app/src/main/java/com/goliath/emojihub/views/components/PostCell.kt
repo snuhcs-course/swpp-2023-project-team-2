@@ -34,6 +34,7 @@ import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -45,6 +46,7 @@ fun PostCell(
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
+    val postViewModel = hiltViewModel<PostViewModel>()
 
     var showNonUserDialog by remember { mutableStateOf(false) }
 
@@ -115,6 +117,7 @@ fun PostCell(
                     } else {
                         coroutineScope.launch {
                             emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
+                            postViewModel.currentPostId = post.id
                             bottomSheetState.show()
                         }
                     }

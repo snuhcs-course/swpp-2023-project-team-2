@@ -6,14 +6,18 @@ import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
+import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INDEX_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.COUNT_OUT_OF_BOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.REACTION_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_REACT
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.REACTION_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.POST_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -47,7 +51,6 @@ internal class ReactionServiceTest {
     lateinit var emojiDao: EmojiDao
 
     companion object {
-        const val POST_ID = "post_id"
         private val testDto = TestDto()
     }
 
@@ -55,32 +58,70 @@ internal class ReactionServiceTest {
     @DisplayName("게시글의 리액션 가져오기")
     fun getReactionsOfPost() {
         // given
-        val postId = testDto.postList[0].id
+        val post = testDto.postList[0]
+        val postId = post.id
+        val index = 1
+        val wrongIndex = 0
+        val count = 10
+        val wrongCount = 0
+        val emojiUnicodeAll = ""
+        val emojiUnicodeSpecific = if (post.reactions.size != 0) post.reactions[0].emoji_unicode else ""
         val wrongId = "wrong_post_id"
-        val reactions = mutableListOf<ReactionDto>()
-        Mockito.`when`(postDao.existPost(postId)).thenReturn(true)
-        Mockito.`when`(postDao.existPost(wrongId)).thenReturn(false)
-        for (reaction in testDto.reactionList) {
-            if (reaction.post_id == postId) {
-                reactions.add(reaction)
+        val reactionsAll = mutableListOf<ReactionDto>()
+        var reactionsSpecific = mutableListOf<ReactionDto>()
+        Mockito.`when`(postDao.getPost(postId)).thenReturn(post)
+        Mockito.`when`(postDao.getPost(wrongId)).thenReturn(null)
+        for (reactionWithEmojiUnicode in post.reactions) {
+            if (reactionWithEmojiUnicode.emoji_unicode != emojiUnicodeSpecific) continue
+            for (reaction in testDto.reactionList) {
+                if (reaction.id != reactionWithEmojiUnicode.id) continue
+                reactionsSpecific.add(reaction)
             }
         }
-        Mockito.`when`(reactionDao.getReactionsWithField(postId, POST_ID)).thenReturn(reactions)
+        for (reaction in testDto.reactionList) {
+            if (reaction.post_id == postId) {
+                reactionsAll.add(reaction)
+            }
+        }
+        if (reactionsSpecific.size != 0) {
+            reactionsSpecific.sortByDescending { it.created_at }
+            reactionsSpecific = reactionsSpecific.subList(
+                Integer.min((index - 1) * count, reactionsSpecific.size - 1),
+                Integer.min(index * count, reactionsSpecific.size)
+            )
+        }
+        Mockito.`when`(reactionDao.getReactionsWithField(postId, POST_ID.string)).thenReturn(reactionsAll)
+        for (reaction in reactionsSpecific) {
+            Mockito.`when`(reactionDao.getReaction(reaction.id)).thenReturn(reaction)
+        }
 
         // when
-        val result = reactionService.getReactionsOfPost(postId)
-        val assertThrows = assertThrows(CustomHttp404::class.java) {
-            reactionService.getReactionsOfPost(wrongId)
+        val result1 = reactionService.getReactionsOfPost(postId, emojiUnicodeAll, index, count)
+        val result2 = reactionService.getReactionsOfPost(postId, emojiUnicodeSpecific, index, count)
+        val assertThrows1 = assertThrows(CustomHttp400::class.java) {
+            reactionService.getReactionsOfPost(postId, emojiUnicodeAll, wrongIndex, count)
+        }
+        val assertThrows2 = assertThrows(CustomHttp400::class.java) {
+            reactionService.getReactionsOfPost(postId, emojiUnicodeAll, index, wrongCount)
+        }
+        val assertThrows3 = assertThrows(CustomHttp404::class.java) {
+            reactionService.getReactionsOfPost(wrongId, emojiUnicodeAll, index, count)
         }
 
         // then
         assertAll(
-            { assertEquals(result, reactions) },
-            { assertEquals(assertThrows.message, POST_NOT_FOUND.getMessage()) }
+            { assertEquals(result1, reactionsAll) },
+            { assertEquals(result2, reactionsSpecific) },
+            { assertEquals(assertThrows1.message, INDEX_OUT_OF_BOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, COUNT_OUT_OF_BOUND.getMessage()) },
+            { assertEquals(assertThrows3.message, POST_NOT_FOUND.getMessage()) },
         )
-        verify(postDao, times(1)).existPost(postId)
-        verify(postDao, times(1)).existPost(wrongId)
-        verify(reactionDao, times(1)).getReactionsWithField(postId, POST_ID)
+        verify(postDao, times(2)).getPost(postId)
+        verify(postDao, times(1)).getPost(wrongId)
+        verify(reactionDao, times(1)).getReactionsWithField(postId, POST_ID.string)
+        for (reaction in reactionsSpecific) {
+            verify(reactionDao, times(1)).getReaction(reaction.id)
+        }
     }
 
     @Test
