@@ -3,6 +3,7 @@ package com.goliath.emojihub.data_sources
 import com.goliath.emojihub.EmojiHubApplication
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.data_sources.api.PostApi
+import com.goliath.emojihub.data_sources.api.ReactionApi
 import com.goliath.emojihub.data_sources.api.UserApi
 import dagger.Module
 import dagger.Provides
@@ -58,6 +59,11 @@ object NetworkModule {
     @Singleton
     fun providesPostRestApi(retrofit: Retrofit): PostApi =
         retrofit.create(PostApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providesReactionRestApi(retrofit: Retrofit): ReactionApi =
+        retrofit.create(ReactionApi::class.java)
 
     // TODO: Use somewhere
     fun <T : Any> handleResponse(

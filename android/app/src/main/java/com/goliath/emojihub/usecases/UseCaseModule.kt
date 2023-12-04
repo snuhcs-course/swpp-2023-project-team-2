@@ -16,4 +16,7 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindsPostUseCase(impl: PostUseCaseImpl): PostUseCase
+
+    @Binds
+    abstract fun bindsReactionUseCase(impl: ReactionUseCaseImpl): ReactionUseCase
 }
