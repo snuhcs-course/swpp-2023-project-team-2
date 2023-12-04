@@ -32,6 +32,10 @@ class UserService(
         return userDao.getUsers()
     }
 
+    fun getMe(username: String): UserDto {
+        return userDao.getUser(username) ?: throw CustomHttp404(USER_NOT_FOUND)
+    }
+
     fun signUp(email: String, username: String, password: String): UserDto.AuthToken {
         if (userDao.existUser(username)) {
             throw CustomHttp409(ID_EXIST)

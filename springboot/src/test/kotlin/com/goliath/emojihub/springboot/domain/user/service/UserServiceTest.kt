@@ -74,6 +74,30 @@ internal class UserServiceTest {
     }
 
     @Test
+    @DisplayName("자신의 유저 데이터 가져오기")
+    fun getMe() {
+        // given
+        val user = testDto.userList[0]
+        val wrongUsername = "wrong_username"
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(userDao.getUser(wrongUsername)).thenReturn(null)
+
+        // when
+        val result = userService.getMe(user.username)
+        val assertThrows = assertThrows(CustomHttp404::class.java) {
+            userService.getMe(wrongUsername)
+        }
+
+        // then
+        assertAll(
+            { assertEquals(result, user) },
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
+        )
+        verify(userDao, times(1)).getUser(user.username)
+        verify(userDao, times(1)).getUser(wrongUsername)
+    }
+
+    @Test
     @DisplayName("회원가입 실패: 아이디 중복")
     fun signUpFail() {
         // given
