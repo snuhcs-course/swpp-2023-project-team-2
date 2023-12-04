@@ -14,6 +14,7 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.REACTION_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_REACT
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.REACTION_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.POST_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -47,7 +48,6 @@ internal class ReactionServiceTest {
     lateinit var emojiDao: EmojiDao
 
     companion object {
-        const val POST_ID = "post_id"
         private val testDto = TestDto()
     }
 
@@ -65,7 +65,7 @@ internal class ReactionServiceTest {
                 reactions.add(reaction)
             }
         }
-        Mockito.`when`(reactionDao.getReactionsWithField(postId, POST_ID)).thenReturn(reactions)
+        Mockito.`when`(reactionDao.getReactionsWithField(postId, POST_ID.string)).thenReturn(reactions)
 
         // when
         val result = reactionService.getReactionsOfPost(postId)
@@ -80,7 +80,7 @@ internal class ReactionServiceTest {
         )
         verify(postDao, times(1)).existPost(postId)
         verify(postDao, times(1)).existPost(wrongId)
-        verify(reactionDao, times(1)).getReactionsWithField(postId, POST_ID)
+        verify(reactionDao, times(1)).getReactionsWithField(postId, POST_ID.string)
     }
 
     @Test

@@ -2,6 +2,11 @@ package com.goliath.emojihub.springboot.domain.user.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.TEST_SERVICE_ACCOUNT_KEY
+import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.TEST_EMOJI_STORAGE_BUCKET_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.Collection.USER_COLLECTION_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_POSTS
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.*
 import com.google.firebase.FirebaseApp
@@ -33,9 +38,6 @@ internal class UserDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        const val USER_COLLECTION_NAME = "Users"
-        const val CREATED_POSTS = "created_posts"
-        const val SAVED_EMOJIS = "saved_emojis"
         private val testDto = TestDto()
         val userList = testDto.userList
 
@@ -43,10 +45,10 @@ internal class UserDaoTest {
         @JvmStatic
         fun beforeAll() {
             val serviceAccount =
-                FileInputStream("src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json")
+                FileInputStream(TEST_SERVICE_ACCOUNT_KEY.string)
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setStorageBucket("emojihub-e2023.appspot.com")
+                .setStorageBucket(TEST_EMOJI_STORAGE_BUCKET_NAME.string)
                 .build()
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options)
@@ -58,8 +60,8 @@ internal class UserDaoTest {
     @Test
     fun getUsers() {
         // given
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
         val result = userDao.getUsers()
@@ -74,8 +76,8 @@ internal class UserDaoTest {
     fun getUser() {
         // given
         val username = userList[0].username
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
         val result = userDao.getUser(username)
@@ -89,8 +91,8 @@ internal class UserDaoTest {
     @Test
     fun existUser() {
         // given
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
         val resultYes = userDao.existUser(userList[0].username)
@@ -106,8 +108,8 @@ internal class UserDaoTest {
     @Test
     fun insertUser() {
         // given
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
         val user = UserDto(
             email = "new_test_email",
             username = "new_test_username",
@@ -144,8 +146,8 @@ internal class UserDaoTest {
     fun deleteUser() {
         // given
         val username = userList[1].username
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
         userDao.deleteUser(username)
@@ -175,11 +177,11 @@ internal class UserDaoTest {
         // given
         val username = userList[1].username
         val postId = "test_postId"
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
-        userDao.insertId(username, postId, CREATED_POSTS)
+        userDao.insertId(username, postId, CREATED_POSTS.string)
 
         // then
         var result = userDao.getUser(username)
@@ -191,7 +193,7 @@ internal class UserDaoTest {
         assertThat(result.created_posts).contains(postId)
 
         // after work
-        userDao.deleteId(username, postId, CREATED_POSTS)
+        userDao.deleteId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
         while (result!!.created_posts!!.contains(postId) && b <= 5) {
@@ -206,11 +208,11 @@ internal class UserDaoTest {
         // given
         val username = userList[1].username
         val postId = userList[1].created_posts!![1]
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
-        userDao.deleteId(username, postId, CREATED_POSTS)
+        userDao.deleteId(username, postId, CREATED_POSTS.string)
 
         // then
         var result = userDao.getUser(username)
@@ -222,7 +224,7 @@ internal class UserDaoTest {
         assertThat(result.created_posts).doesNotContain(username)
 
         // after work
-        userDao.insertId(username, postId, CREATED_POSTS)
+        userDao.insertId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
         while (!result!!.created_posts!!.contains(postId) && b <= 5) {
@@ -237,8 +239,8 @@ internal class UserDaoTest {
         // given
         val username = userList[0].username
         val emojiId = userList[0].saved_emojis!![0]
-        Mockito.`when`(db.collection(USER_COLLECTION_NAME))
-            .thenReturn(testDB.collection(USER_COLLECTION_NAME))
+        Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
         // when
         userDao.deleteAllSavedEmojiId(emojiId)
@@ -253,11 +255,11 @@ internal class UserDaoTest {
         assertEquals(result.saved_emojis!!.contains(emojiId), false)
 
         // after work
-        userDao.insertId(username, emojiId, SAVED_EMOJIS)
+        userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
         result = userDao.getUser(username)
         var b = 1
         while (!result!!.saved_emojis!!.contains(emojiId) && b <= 5) {
-            userDao.insertId(username, emojiId, SAVED_EMOJIS)
+            userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
             result = userDao.getUser(username)
             b++
         }

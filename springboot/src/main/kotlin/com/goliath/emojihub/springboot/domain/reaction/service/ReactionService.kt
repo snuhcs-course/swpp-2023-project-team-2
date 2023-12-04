@@ -13,6 +13,7 @@ import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.REACTION_NOT_FOUND
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.POST_ID
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,14 +23,10 @@ class ReactionService(
     private val postDao: PostDao,
     private val emojiDao: EmojiDao
 ) {
-    companion object {
-        const val POST_ID = "post_id"
-    }
-
 
     fun getReactionsOfPost(postId: String): List<ReactionDto> {
         if (!postDao.existPost(postId)) throw CustomHttp404(POST_NOT_FOUND)
-        return reactionDao.getReactionsWithField(postId, POST_ID)
+        return reactionDao.getReactionsWithField(postId, POST_ID.string)
     }
 
     fun postReaction(username: String, postId: String, emojiId: String) {
