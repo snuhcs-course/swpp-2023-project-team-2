@@ -26,14 +26,14 @@ fun mockLogClass() {
 val dummyUsernames = listOf("channn", "doggydog", "meow_0w0", "mpunchmm", "kick_back")
 val dummyUnicodes = listOf("U+1F44D", "U+1F600", "U+1F970", "U+1F60E", "U+1F621", "U+1F63A", "U+1F496", "U+1F415")
 const val dummyMaxSavedCounts = 2000
-fun createDeterministicDummyEmojiDtoList(listSize : Int): Flow<PagingData<EmojiDto>> {
+fun createDeterministicTrendingEmojiDtoList(listSize : Int): Flow<PagingData<EmojiDto>> {
     val dummyEmojiList = mutableListOf<EmojiDto>()
     for (i in 0 until listSize) {
         dummyEmojiList.add(
             EmojiDto(
                 createdBy = dummyUsernames[i % dummyUsernames.size],
-                createdAt = "2023.09.16",
-                savedCount = dummyMaxSavedCounts % (i + 1),
+                createdAt = "2023."+i%12+".16",
+                savedCount = dummyMaxSavedCounts - i*10,
                 videoLink = "",
                 thumbnailLink = "",
                 unicode = dummyUnicodes[i % dummyUnicodes.size],
@@ -44,8 +44,8 @@ fun createDeterministicDummyEmojiDtoList(listSize : Int): Flow<PagingData<EmojiD
     }
     return flowOf(PagingData.from(dummyEmojiList))
 }
-fun createDeterministicDummyEmojiList(listSize: Int): Flow<PagingData<Emoji>> {
-    return createDeterministicDummyEmojiDtoList(listSize).map { it.map { dto -> Emoji(dto) } }
+fun createDeterministicTrendingEmojiList(listSize: Int): Flow<PagingData<Emoji>> {
+    return createDeterministicTrendingEmojiDtoList(listSize).map { it.map { dto -> Emoji(dto) } }
 }
 
 // POST TESTING UTILS

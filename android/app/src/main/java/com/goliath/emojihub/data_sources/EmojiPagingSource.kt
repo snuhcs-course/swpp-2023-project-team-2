@@ -12,6 +12,7 @@ enum class EmojiFetchType {
 
 class EmojiPagingSource @Inject constructor(
     private val api: EmojiApi,
+    private val sortByDate : Int,
     private val type: EmojiFetchType
 ): PagingSource<Int, EmojiDto>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EmojiDto> {
@@ -20,13 +21,13 @@ class EmojiPagingSource @Inject constructor(
         return try {
             val response: List<EmojiDto>? = when (type) {
                 EmojiFetchType.GENERAL -> {
-                    api.fetchEmojiList(1, cursor, count).body()
+                    api.fetchEmojiList(sortByDate, cursor, count).body()
                 }
                 EmojiFetchType.MY_CREATED -> {
-                    api.fetchMyCreatedEmojiList(1, cursor, count).body()
+                    api.fetchMyCreatedEmojiList(sortByDate, cursor, count).body()
                 }
                 EmojiFetchType.MY_SAVED -> {
-                    api.fetchMySavedEmojiList(1, cursor, count).body()
+                    api.fetchMySavedEmojiList(sortByDate, cursor, count).body()
                 }
             }
             val data = response ?: listOf()

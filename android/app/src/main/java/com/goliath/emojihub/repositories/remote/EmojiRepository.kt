@@ -28,7 +28,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EmojiRepository {
-    suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<EmojiDto>>
     suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
@@ -43,24 +43,24 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi,
     @ApplicationContext private val context: Context
 ): EmojiRepository {
-    override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
+    override suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.GENERAL) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, sortByDate, EmojiFetchType.GENERAL) }
         ).flow
     }
 
     override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_CREATED) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, 1, EmojiFetchType.MY_CREATED) }
         ).flow
     }
 
     override suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_SAVED) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, 1, EmojiFetchType.MY_SAVED) }
         ).flow
     }
 
