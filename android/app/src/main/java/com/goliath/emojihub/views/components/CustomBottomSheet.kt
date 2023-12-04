@@ -43,6 +43,8 @@ import com.goliath.emojihub.ui.theme.Color.LightGray
 import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
+import com.goliath.emojihub.viewmodels.ReactionViewModel
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -58,6 +60,8 @@ fun CustomBottomSheet (
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
     val viewModel = hiltViewModel<EmojiViewModel>()
+    val reactionViewModel = hiltViewModel<ReactionViewModel>()
+    val postViewModel = hiltViewModel<PostViewModel>()
     val navController = LocalNavController.current
 
     var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
@@ -68,6 +72,7 @@ fun CustomBottomSheet (
     val myCreatedEmojiList = viewModel.myCreatedEmojiList.collectAsLazyPagingItems()
     val mySavedEmojiList = viewModel.mySavedEmojiList.collectAsLazyPagingItems()
     var displayMyCreatedEmojis by remember { mutableStateOf(true) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchMyCreatedEmojiList()
@@ -188,6 +193,13 @@ fun CustomBottomSheet (
                                 myCreatedEmojiList[index]?.let {
                                     EmojiCell(emoji = it, displayMode = EmojiCellDisplay.VERTICAL) {
                                         //TODO: add reaction to post
+                                        coroutineScope.launch {
+                                            val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
+                                            if (success) {
+                                                Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
+                                                showSuccessDialog = true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -196,6 +208,13 @@ fun CustomBottomSheet (
                                 mySavedEmojiList[index]?.let {
                                     EmojiCell(emoji = it, displayMode = EmojiCellDisplay.VERTICAL) {
                                         //TODO: add emoji reaction to post
+                                        coroutineScope.launch {
+                                            val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
+                                            if (success) {
+                                                Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
+                                                showSuccessDialog = true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -203,6 +222,13 @@ fun CustomBottomSheet (
                     }
                 }
             }
+        }
+        if (showSuccessDialog) {
+            CustomDialog(
+                title = "완료",
+                body = "반응이 추가 되었습니다.",
+                confirm = { navController.popBackStack() }
+            )
         }
     }
 }
