@@ -7,7 +7,7 @@ import com.goliath.emojihub.springboot.domain.emoji.dto.PostEmojiRequest
 import com.goliath.emojihub.springboot.domain.emoji.service.EmojiService
 import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_EMOJIS
 import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.DisplayName
@@ -64,7 +64,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
+            .andExpect(jsonPath("$.length()", equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
@@ -95,7 +95,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
+            .andExpect(jsonPath("$.length()", equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
@@ -126,7 +126,7 @@ internal class EmojiControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", Matchers.equalTo(emojiList.size)))
+            .andExpect(jsonPath("$.length()", equalTo(emojiList.size)))
             .andExpect(jsonPath("$[0].id").value(emojiList[0].id))
             .andExpect(jsonPath("$[0].created_by").value(emojiList[0].created_by))
             .andExpect(jsonPath("$[0].video_url").value(emojiList[0].video_url))
