@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views.components
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,9 +19,9 @@ import androidx.compose.material.icons.filled.FileDownloadOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,24 +35,26 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.AspectRatioFrameLayout.ResizeMode
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.EmojiViewModel
-import kotlinx.coroutines.launch
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun PlayEmojiView(
     viewModel: EmojiViewModel
 ) {
-    // Play video
     val context = LocalContext.current
     val navController = LocalNavController.current
-    val coroutineScope = rememberCoroutineScope()
 
-    val currentEmoji = viewModel.currentEmoji!!
+    val currentEmoji = viewModel.currentEmoji
 
+    var savedCount by remember { mutableIntStateOf(currentEmoji.savedCount) }
+    var isSaved by remember { mutableStateOf(currentEmoji.isSaved) }
     var showUnSaveDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
@@ -69,9 +72,7 @@ fun PlayEmojiView(
         }
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
+    Box(Modifier.fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(listOf(Color.Transparent, Color.Black)),
                 shape = RectangleShape,
@@ -79,11 +80,10 @@ fun PlayEmojiView(
             )
     ) {
         AndroidView(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.EmojiHubRed),
+            modifier = Modifier.fillMaxSize(),
             factory = {
                 PlayerView(it).apply {
+                    this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
                     player = exoPlayer
                 }
             }
@@ -92,6 +92,7 @@ fun PlayEmojiView(
         TopNavigationBar(
             title = "@" + currentEmoji.createdBy,
             largeTitle = false,
+            needsElevation = false,
             navigate = { navController.popBackStack() }
         ) {}
 
@@ -105,18 +106,20 @@ fun PlayEmojiView(
                     IconButton(
                         modifier = Modifier.size(40.dp),
                         onClick = {
-                            if (currentEmoji.isSaved) {
+                            if (isSaved) {
                                 showUnSaveDialog = true
+                                Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show()
                             } else {
-                                coroutineScope.launch {
-                                    viewModel.saveEmoji(currentEmoji.id)
-                                }
+                                viewModel.saveEmoji(currentEmoji.id)
+                                isSaved = true
+                                savedCount ++
+                                Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
                         Icon(
                             imageVector =
-                            if (currentEmoji.isSaved) {
+                            if (isSaved) {
                                 Icons.Default.FileDownloadOff
                             } else {
                                 Icons.Default.FileDownload
@@ -129,7 +132,7 @@ fun PlayEmojiView(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = currentEmoji.savedCount.toString(),
+                        text = savedCount.toString(),
                         fontSize = 14.sp,
                         color = Color.White
                     )
@@ -146,7 +149,6 @@ fun PlayEmojiView(
                         fontSize = 28.sp,
                     )
                 }
-
                 Spacer(modifier = Modifier.padding(bottom = 32.dp))
             }
         }
@@ -160,9 +162,10 @@ fun PlayEmojiView(
                 needsCancelButton = true,
                 onDismissRequest = { showUnSaveDialog = false },
                 confirm = {
-                    coroutineScope.launch {
-                        viewModel.unSaveEmoji(currentEmoji.id)
-                    } },
+                    viewModel.unSaveEmoji(currentEmoji.id)
+                    isSaved = false
+                    savedCount --
+                    showUnSaveDialog = false },
                 dismiss = { showUnSaveDialog = false }
             )
         }

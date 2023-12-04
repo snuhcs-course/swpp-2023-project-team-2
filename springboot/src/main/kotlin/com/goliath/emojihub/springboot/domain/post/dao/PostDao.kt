@@ -1,6 +1,7 @@
 package com.goliath.emojihub.springboot.domain.post.dao
 
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.post.dto.ReactionWithEmojiUnicode
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.*
 import lombok.extern.slf4j.Slf4j
@@ -33,7 +34,8 @@ class PostDao(
         // 정렬
         val postQuery = db.collection(POST_COLLECTION_NAME).orderBy(CREATED_AT, Query.Direction.DESCENDING)
         // 페이지네이션
-        val documents: List<QueryDocumentSnapshot> = postQuery.offset((index - 1) * count).limit(count).get().get().documents
+        val documents: List<QueryDocumentSnapshot> =
+            postQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(PostDto::class.java))
         }
@@ -45,7 +47,8 @@ class PostDao(
         val postsRef = db.collection(POST_COLLECTION_NAME)
         val postQuery = postsRef.whereEqualTo("created_by", username)
             .orderBy(CREATED_AT, Query.Direction.DESCENDING)
-        val documents: List<QueryDocumentSnapshot> = postQuery.offset((index - 1) * count).limit(count).get().get().documents
+        val documents: List<QueryDocumentSnapshot> =
+            postQuery.offset((index - 1) * count).limit(count).get().get().documents
         for (document in documents) {
             list.add(document.toObject(PostDto::class.java))
         }
@@ -75,13 +78,23 @@ class PostDao(
         db.collection(POST_COLLECTION_NAME).document(postId).delete()
     }
 
-    fun insertReactionId(postId: String, reactionId: String) {
+    fun insertReaction(postId: String, reactionId: String, emojiUnicode: String) {
         val postRef = db.collection(POST_COLLECTION_NAME).document(postId)
-        postRef.update(REACTIONS, FieldValue.arrayUnion(reactionId))
+        val reactionWithEmojiUnicode = ReactionWithEmojiUnicode(
+            id = reactionId,
+            emoji_unicode = emojiUnicode
+        )
+        postRef.update(REACTIONS, FieldValue.arrayUnion(reactionWithEmojiUnicode))
     }
 
-    fun deleteReactionId(postId: String, reactionId: String) {
+    fun deleteReaction(postId: String, reactionId: String) {
         val postRef = db.collection(POST_COLLECTION_NAME).document(postId)
-        postRef.update(REACTIONS, FieldValue.arrayRemove(reactionId))
+        val post = postRef.get().get().toObject(PostDto::class.java)
+        for (reaction in post!!.reactions) {
+            if (reaction.id == reactionId) {
+                postRef.update(REACTIONS, FieldValue.arrayRemove(reaction))
+                return
+            }
+        }
     }
 }

@@ -10,6 +10,10 @@ import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EXIST
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -82,7 +86,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Id already exists.")
+        assertEquals(assertThrows.message, ID_EXIST.getMessage())
         verify(userDao, times(1)).existUser(user.username)
     }
 
@@ -120,7 +124,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Id doesn't exist.")
+        assertEquals(assertThrows.message, ID_NOT_FOUND.getMessage())
         verify(userDao, times(1)).getUser(user.username)
     }
 
@@ -139,7 +143,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Password is incorrect.")
+        assertEquals(assertThrows.message, PASSWORD_INCORRECT.getMessage())
         verify(userDao, times(1)).getUser(user.username)
         verify(passwordEncoder, times(1)).matches(wrongPassword, user.password)
     }
@@ -187,7 +191,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(userDao, times(1)).getUser(username)
     }
 

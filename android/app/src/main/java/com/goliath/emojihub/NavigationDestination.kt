@@ -1,6 +1,13 @@
 package com.goliath.emojihub
 
 object NavigationDestination {
+    const val Onboard = "onboard"
+    const val Login = "login"
+    const val SignUp = "sign_up"
+
+    const val OnLogin = "on_login"
+
+    const val MainPage = "main_page"
     const val TransformVideo = "transform_video"
     const val CreatePost = "create_post"
     const val PlayEmojiVideo = "play_emoji_video"

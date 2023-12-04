@@ -25,13 +25,13 @@ interface EmojiUseCase {
     suspend fun updateEmojiList(data: PagingData<Emoji>)
     suspend fun updateMyCreatedEmojiList(data: PagingData<Emoji>)
     suspend fun updateMySavedEmojiList(data: PagingData<Emoji>)
-    suspend fun fetchEmojiList(): Flow<PagingData<Emoji>>
+    suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<Emoji>>
     suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
-    suspend fun saveEmoji(id: String): Boolean
-    suspend fun unSaveEmoji(id: String): Boolean
+    suspend fun saveEmoji(id: String): Result<Unit>
+    suspend fun unSaveEmoji(id: String): Result<Unit>
 }
 
 @Singleton
@@ -65,8 +65,8 @@ class EmojiUseCaseImpl @Inject constructor(
         _mySavedEmojiList.emit(data)
     }
 
-    override suspend fun fetchEmojiList(): Flow<PagingData<Emoji>> {
-        return emojiRepository.fetchEmojiList().map { it.map { dto -> Emoji(dto) } }
+    override suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<Emoji>> {
+        return emojiRepository.fetchEmojiList(sortByDate).map { it.map { dto -> Emoji(dto) } }
     }
 
     override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>> {
@@ -86,29 +86,11 @@ class EmojiUseCaseImpl @Inject constructor(
         return emojiRepository.uploadEmoji(videoFile, dto)
     }
 
-    override suspend fun saveEmoji(id: String): Boolean {
-        val response = emojiRepository.saveEmoji(id)
-        response.let {
-            if (it.isSuccessful) {
-                Log.d("Emoji Saved", "Emoji Id: $id")
-                return true
-            } else {
-                errorController.setErrorState(it.code())
-                return false
-            }
-        }
+    override suspend fun saveEmoji(id: String): Result<Unit> {
+        return emojiRepository.saveEmoji(id)
     }
 
-    override suspend fun unSaveEmoji(id: String): Boolean {
-        val response = emojiRepository.unSaveEmoji(id)
-        response.let {
-            if (it.isSuccessful) {
-                Log.d("Emoji Saved", "Emoji Id: $id")
-                return true
-            } else {
-                errorController.setErrorState(it.code())
-                return false
-            }
-        }
+    override suspend fun unSaveEmoji(id: String): Result<Unit> {
+        return emojiRepository.unSaveEmoji(id)
     }
 }

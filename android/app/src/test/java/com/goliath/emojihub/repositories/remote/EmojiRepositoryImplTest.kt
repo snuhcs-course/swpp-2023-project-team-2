@@ -1,6 +1,7 @@
 package com.goliath.emojihub.repositories.remote
 
 import androidx.paging.testing.asSnapshot
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.EmojiDto
@@ -55,7 +56,7 @@ class EmojiRepositoryImplTest {
             emojiApi.fetchEmojiList(any(), any(), any())
         } returns Response.success(sampleEmojiDtoList)
         // when
-        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchEmojiList() }
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiRepositoryImpl.fetchEmojiList(1) }
         val fetchedEmojiDtoList = runBlocking { fetchedEmojiPagingDataFlow.asSnapshot() }
         // then
         coVerify(exactly = 2) { emojiApi.fetchEmojiList(any(), any(), any()) }
@@ -209,45 +210,67 @@ class EmojiRepositoryImplTest {
     }
 
     @Test
-    fun saveEmoji_success_returnsSuccessResponseUnit() {
+    fun saveEmoji_success_returnsSuccessResultUnit() {
         // given
         val sampleEmojiId = "1234"
         coEvery {
             emojiApi.saveEmoji(any())
         } returns Response.success(Unit)
         // when
-        val response = runBlocking { emojiRepositoryImpl.saveEmoji(sampleEmojiId) }
+        val result = runBlocking { emojiRepositoryImpl.saveEmoji(sampleEmojiId) }
         // then
         coVerify(exactly = 1) { emojiApi.saveEmoji(sampleEmojiId) }
-        assert(response.isSuccessful)
+        assert(result.isSuccess)
     }
 
     @Test
-    fun saveEmoji_failure_returnsFailureResponseUnit() {
+    fun saveEmoji_failure_returnsFailureResultUnit() {
         // given
         val sampleEmojiId = "1234"
         coEvery {
             emojiApi.saveEmoji(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.BAD_REQUEST.statusCode, mockk(relaxed=true))
         // when
-        val response = runBlocking { emojiRepositoryImpl.saveEmoji(sampleEmojiId) }
+        val result = runBlocking { emojiRepositoryImpl.saveEmoji(sampleEmojiId) }
         // then
         coVerify(exactly = 1) { emojiApi.saveEmoji(sampleEmojiId) }
-        assertFalse(response.isSuccessful)
+        assertTrue(result.isFailure)
+        assertEquals(
+            "Failed to save Emoji (Id: $sampleEmojiId), 400",
+            result.exceptionOrNull()?.message
+        )
     }
 
     @Test
-    fun unSaveEmoji_success_returnsSuccessResponseUnit() {
+    fun saveEmoji_exception_returnsFailureResultUnit() {
+        // given
+        val sampleEmojiId = "1234"
+        coEvery {
+            emojiApi.saveEmoji(any())
+        } throws HttpException(mockk(relaxed=true))
+        // when
+        val result = runBlocking { emojiRepositoryImpl.saveEmoji(sampleEmojiId) }
+        // then
+        coVerify(exactly = 1) { emojiApi.saveEmoji(sampleEmojiId) }
+        assertTrue(result.isFailure)
+        assertEquals(
+            HttpException::class.java,
+            result.exceptionOrNull()?.javaClass
+        )
+    }
+
+    @Test
+    fun unSaveEmoji_success_returnsSuccessResultUnit() {
         // given
         val sampleEmojiId = "1234"
         coEvery {
             emojiApi.unSaveEmoji(any())
         } returns Response.success(Unit)
         // when
-        val response = runBlocking { emojiRepositoryImpl.unSaveEmoji(sampleEmojiId) }
+        val result = runBlocking { emojiRepositoryImpl.unSaveEmoji(sampleEmojiId) }
         // then
         coVerify(exactly = 1) { emojiApi.unSaveEmoji(sampleEmojiId) }
-        assert(response.isSuccessful)
+        assert(result.isSuccess)
     }
 
     @Test
@@ -256,12 +279,34 @@ class EmojiRepositoryImplTest {
         val sampleEmojiId = "1234"
         coEvery {
             emojiApi.unSaveEmoji(any())
-        } returns Response.error(400, mockk(relaxed=true))
+        } returns Response.error(CustomError.BAD_REQUEST.statusCode, mockk(relaxed=true))
         // when
-        val response = runBlocking { emojiRepositoryImpl.unSaveEmoji(sampleEmojiId) }
+        val result = runBlocking { emojiRepositoryImpl.unSaveEmoji(sampleEmojiId) }
         // then
         coVerify(exactly = 1) { emojiApi.unSaveEmoji(sampleEmojiId) }
-        assertFalse(response.isSuccessful)
+        assertTrue(result.isFailure)
+        assertEquals(
+            "Failed to unsave Emoji (Id: $sampleEmojiId), 400",
+            result.exceptionOrNull()?.message
+        )
+    }
+
+    @Test
+    fun unSaveEmoji_exception_returnsFailureResponseUnit() {
+        // given
+        val sampleEmojiId = "1234"
+        coEvery {
+            emojiApi.unSaveEmoji(any())
+        } throws HttpException(mockk(relaxed=true))
+        // when
+        val result = runBlocking { emojiRepositoryImpl.unSaveEmoji(sampleEmojiId) }
+        // then
+        coVerify(exactly = 1) { emojiApi.unSaveEmoji(sampleEmojiId) }
+        assertTrue(result.isFailure)
+        assertEquals(
+            HttpException::class.java,
+            result.exceptionOrNull()?.javaClass
+        )
     }
 
 //    @Test

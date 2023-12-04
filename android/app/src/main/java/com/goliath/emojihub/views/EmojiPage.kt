@@ -17,11 +17,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.goliath.emojihub.views.components.EmojiCell
@@ -33,6 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.ui.theme.Color.Black
+import com.goliath.emojihub.ui.theme.Color.LightGray
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.views.components.EmojiCellDisplay
@@ -62,8 +69,7 @@ fun EmojiPage(
 
     val emojiList = viewModel.emojiList.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit)
-    {
+    LaunchedEffect(Unit) {
         viewModel.fetchEmojiList()
     }
 
@@ -79,9 +85,7 @@ fun EmojiPage(
                         ))
                     }
                     else -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            permissionLauncher.launch(Manifest.permission.READ_MEDIA_VIDEO)
-                        }
+                        permissionLauncher.launch(Manifest.permission.READ_MEDIA_VIDEO)
                     }
                 }
             }) {
@@ -95,7 +99,23 @@ fun EmojiPage(
         Column(Modifier.padding(horizontal = 16.dp)) {
             Spacer(Modifier.height(28.dp))
 
-            Text("Trending 🔥", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Trending 🔥", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                Button(
+                    onClick = { viewModel.toggleSortingMode() },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (viewModel.sortByDate == 0) Black else LightGray,
+                        contentColor = White
+                    )
+                ) {
+                    Text(text = if (viewModel.sortByDate == 1) "Sort by Date" else "Sort by Save Count", fontSize = 12.sp)
+                }
+            }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),

@@ -1,7 +1,7 @@
 package com.goliath.emojihub.viewmodels
 
 import android.net.Uri
-import com.goliath.emojihub.createDeterministicDummyEmojiList
+import com.goliath.emojihub.createDeterministicTrendingEmojiList
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.usecases.EmojiUseCase
@@ -44,24 +44,41 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun fetchEmojiList_success_updateEmojiList() = runTest {
+    fun fetchEmojiList_success_updateTrendingEmojiList() = runTest {
         // given
-        val sampleFetchedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
-            emojiUseCase.fetchEmojiList()
+            emojiUseCase.fetchEmojiList(0)
         } returns sampleFetchedEmojiList
         // when
         emojiViewModel.fetchEmojiList()
         advanceUntilIdle()
         // then
-        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList() }
+        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(0) }
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
+    }
+
+    @Test
+    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
+        // given
+        // for simplicity of testing, we return the same list for both cases
+        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
+        coEvery {
+            emojiUseCase.fetchEmojiList(1)
+        } returns sampleFetchedEmojiList
+        // when
+        emojiViewModel.toggleSortingMode()
+        advanceUntilIdle()
+        // then
+        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
+        coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
+        assertEquals(1, emojiViewModel.sortByDate)
     }
 
     @Test
     fun fetchMyCreatedEmojiList_success_updateMyCreatedEmojiList() = runTest {
         // given
-        val sampleFetchedMyCreatedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedMyCreatedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
             emojiUseCase.fetchMyCreatedEmojiList()
         } returns sampleFetchedMyCreatedEmojiList
@@ -76,7 +93,7 @@ class EmojiViewModelTest {
     @Test
     fun fetchMySavedEmojiList_success_updateMySavedEmojiList() = runTest {
         // given
-        val sampleFetchedMySavedEmojiList = createDeterministicDummyEmojiList(10)
+        val sampleFetchedMySavedEmojiList = createDeterministicTrendingEmojiList(10)
         coEvery {
             emojiUseCase.fetchMySavedEmojiList()
         } returns sampleFetchedMySavedEmojiList
@@ -162,28 +179,62 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun saveEmoji_success_returnsUnit() {
+    fun saveEmoji_success_setSaveEmojiStateSuccess() = runTest {
         // given
-        val id = "sampleId"
+        val sampleId = "sampleId"
         coEvery {
             emojiUseCase.saveEmoji(any())
-        } returns true
+        } returns Result.success(Unit)
         // when
-        runBlocking { emojiViewModel.saveEmoji(id) }
+        emojiViewModel.saveEmoji(sampleId)
+        advanceUntilIdle()
         // then
-        coVerify { emojiUseCase.saveEmoji(id) }
+        coVerify { emojiUseCase.saveEmoji(sampleId) }
+        assertTrue(emojiViewModel.saveEmojiState.value?.isSuccess == true)
     }
 
     @Test
-    fun unSaveEmoji_success_returnsUnit() {
+    fun saveEmoji_failure_setSaveEmojiStateFailure() = runTest {
         // given
-        val id = "sampleId"
+        val sampleId = "sampleId"
+        coEvery {
+            emojiUseCase.saveEmoji(any())
+        } returns Result.failure(Exception("Failed to save Emoji (sampleId: $sampleId), 404"))
+        // when
+        emojiViewModel.saveEmoji(sampleId)
+        advanceUntilIdle()
+        // then
+        coVerify { emojiUseCase.saveEmoji(sampleId) }
+        assertTrue(emojiViewModel.saveEmojiState.value?.isFailure == true)
+    }
+
+    @Test
+    fun unSaveEmoji_success_setUnSaveEmojiStateFailure() = runTest {
+        // given
+        val sampleId = "sampleId"
         coEvery {
             emojiUseCase.unSaveEmoji(any())
-        } returns true
+        } returns Result.success(Unit)
         // when
-        runBlocking { emojiViewModel.unSaveEmoji(id) }
+        emojiViewModel.unSaveEmoji(sampleId)
+        advanceUntilIdle()
         // then
-        coVerify { emojiUseCase.unSaveEmoji(id) }
+        coVerify { emojiUseCase.unSaveEmoji(sampleId) }
+        assertTrue(emojiViewModel.unSaveEmojiState.value?.isSuccess == true)
+    }
+
+    @Test
+    fun unSaveEmoji_failure_setUnSaveEmojiStateFailure() = runTest {
+        // given
+        val sampleId = "sampleId"
+        coEvery {
+            emojiUseCase.unSaveEmoji(any())
+        } returns Result.failure(Exception("Failed to unsave Emoji (sampleId: $sampleId), 404"))
+        // when
+        emojiViewModel.unSaveEmoji(sampleId)
+        advanceUntilIdle()
+        // then
+        coVerify { emojiUseCase.unSaveEmoji(sampleId) }
+        assertTrue(emojiViewModel.unSaveEmojiState.value?.isFailure == true)
     }
 }

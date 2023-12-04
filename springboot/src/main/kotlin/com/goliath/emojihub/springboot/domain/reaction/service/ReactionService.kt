@@ -7,6 +7,12 @@ import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_REACT
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.REACTION_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.POST_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.REACTION_NOT_FOUND
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,25 +28,25 @@ class ReactionService(
 
 
     fun getReactionsOfPost(postId: String): List<ReactionDto> {
-        if (!postDao.existPost(postId)) throw CustomHttp404("Post doesn't exist.")
+        if (!postDao.existPost(postId)) throw CustomHttp404(POST_NOT_FOUND)
         return reactionDao.getReactionsWithField(postId, POST_ID)
     }
 
     fun postReaction(username: String, postId: String, emojiId: String) {
-        if (!userDao.existUser(username)) throw CustomHttp404("User doesn't exist.")
-        if (!postDao.existPost(postId)) throw CustomHttp404("Post doesn't exist.")
-        if (!emojiDao.existsEmoji(emojiId)) throw CustomHttp404("Emoji doesn't exist.")
-        if (reactionDao.existSameReaction(username, postId, emojiId)) throw CustomHttp403("User already react to this post with this emoji.")
+        if (!userDao.existUser(username)) throw CustomHttp404(USER_NOT_FOUND)
+        if (!postDao.existPost(postId)) throw CustomHttp404(POST_NOT_FOUND)
+        val emoji = emojiDao.getEmoji(emojiId) ?: throw CustomHttp404(EMOJI_NOT_FOUND)
+        if (reactionDao.existSameReaction(username, postId, emojiId)) throw CustomHttp403(USER_ALREADY_REACT)
         val reaction = reactionDao.insertReaction(username, postId, emojiId)
-        postDao.insertReactionId(postId, reaction.id)
+        postDao.insertReaction(postId, reaction.id, emoji.emoji_unicode)
     }
 
     fun deleteReaction(username: String, reactionId: String) {
-        val reaction = reactionDao.getReaction(reactionId) ?: throw CustomHttp404("Reaction doesn't exist.")
+        val reaction = reactionDao.getReaction(reactionId) ?: throw CustomHttp404(REACTION_NOT_FOUND)
         if (username != reaction.created_by)
-            throw CustomHttp403("You can't delete this reaction.")
+            throw CustomHttp403(REACTION_DELETE_FORBIDDEN)
         // delete reaction id in post
-        postDao.deleteReactionId(reaction.post_id, reactionId)
+        postDao.deleteReaction(reaction.post_id, reactionId)
         // delete reaction
         reactionDao.deleteReaction(reactionId)
     }

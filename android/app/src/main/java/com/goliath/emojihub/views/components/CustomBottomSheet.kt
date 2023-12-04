@@ -1,6 +1,5 @@
 package com.goliath.emojihub.views.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,6 +59,7 @@ fun CustomBottomSheet (
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
     val viewModel = hiltViewModel<EmojiViewModel>()
+
     val reactionViewModel = hiltViewModel<ReactionViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
     val navController = LocalNavController.current
@@ -178,10 +178,11 @@ fun CustomBottomSheet (
                     BottomSheetContent.EMPTY -> {}
 
                     BottomSheetContent.VIEW_REACTION -> {
-                        items(if (selectedEmojiClass == "전체") emojiList else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
+                        items(
+                            if (selectedEmojiClass == "전체") emojiList
+                            else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
                             EmojiCell(emoji = emoji, displayMode = EmojiCellDisplay.VERTICAL) {selectedEmoji ->
-                                viewModel.currentEmoji = selectedEmoji
-                                navController.navigate(NavigationDestination.PlayEmojiVideo) //FIXME: make a new destination or fix PlayEmojiVideo's back stack to include BottomSheet
+                                emojiCellClicked(selectedEmoji)
                             }
                         }
                     }

@@ -9,8 +9,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -28,6 +26,7 @@ object NetworkModule {
     private const val baseURL = API_BASE_URL
 
     @Provides
+    @Singleton
     fun provideRetrofit(
 
     ): Retrofit {
@@ -40,9 +39,10 @@ object NetworkModule {
     }
 
     @Provides
+    @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(EmojiHubApplication.preferences.accessToken))
+            .addInterceptor(AuthInterceptor())
             .build()
 
     @Provides
@@ -65,17 +65,6 @@ object NetworkModule {
     fun providesReactionRestApi(retrofit: Retrofit): ReactionApi =
         retrofit.create(ReactionApi::class.java)
 
-    // TODO: Use somewhere
-    fun <T : Any> handleResponse(
-        execute: suspend () -> T?
-    ): Flow<retrofit2.Response<T>> = flow {
-        try {
-            emit(retrofit2.Response.success(execute()))
-        } catch (e: Error) {
-            print(e)
-        }
-    }
-
     // empty responses should be handled `success`
     private val nullOnEmptyConverterFactory = object : Converter.Factory() {
         fun converterFactory() = this
@@ -91,12 +80,13 @@ object NetworkModule {
     }
 }
 
-class AuthInterceptor @Inject constructor(
-    private val accessToken: String?
-): Interceptor {
+class AuthInterceptor @Inject constructor(): Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
-        if (accessToken?.isNotEmpty() == true) {
+        val accessToken = EmojiHubApplication.preferences.accessToken
+        if (accessToken.isNullOrEmpty()) {
+            request.removeHeader("Authorization")
+        } else {
             request.header("Authorization", "Bearer $accessToken")
         }
         return chain.proceed(request.build())

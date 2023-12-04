@@ -1,20 +1,18 @@
 package com.goliath.emojihub.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.goliath.emojihub.usecases.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userUseCase: UserUseCase
 ): ViewModel() {
-
+    val accessTokenState = userUseCase.accessTokenState
     val userState = userUseCase.userState
-
-    suspend fun fetchUserList() {
-        userUseCase.fetchUserList()
-    }
 
     suspend fun fetchUser(id: String) {
         userUseCase.fetchUser(id)
@@ -29,10 +27,14 @@ class UserViewModel @Inject constructor(
     }
 
     fun logout() {
-        userUseCase.logout()
+        viewModelScope.launch {
+            userUseCase.logout()
+        }
     }
 
     fun signOut() {
-        userUseCase.signOut()
+        viewModelScope.launch {
+            userUseCase.signOut()
+        }
     }
 }

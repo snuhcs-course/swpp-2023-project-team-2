@@ -28,13 +28,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EmojiRepository {
-    suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>>
+    suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<EmojiDto>>
     suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
-    suspend fun saveEmoji(id: String): Response<Unit>
-    suspend fun unSaveEmoji(id: String): Response<Unit>
+    suspend fun saveEmoji(id: String): Result<Unit>
+    suspend fun unSaveEmoji(id: String): Result<Unit>
     suspend fun deleteEmoji(id: String): Response<Unit>
 }
 
@@ -43,24 +43,24 @@ class EmojiRepositoryImpl @Inject constructor(
     private val emojiApi: EmojiApi,
     @ApplicationContext private val context: Context
 ): EmojiRepository {
-    override suspend fun fetchEmojiList(): Flow<PagingData<EmojiDto>> {
+    override suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.GENERAL) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, sortByDate, EmojiFetchType.GENERAL) }
         ).flow
     }
 
     override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_CREATED) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, 1, EmojiFetchType.MY_CREATED) }
         ).flow
     }
 
     override suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { EmojiPagingSource(emojiApi, EmojiFetchType.MY_SAVED) }
+            pagingSourceFactory = { EmojiPagingSource(emojiApi, 1, EmojiFetchType.MY_SAVED) }
         ).flow
     }
 
@@ -99,12 +99,37 @@ class EmojiRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveEmoji(id: String): Response<Unit> {
-        return emojiApi.saveEmoji(id)
+    override suspend fun saveEmoji(id: String): Result<Unit> {
+        return try {
+            val response = emojiApi.saveEmoji(id)
+            Log.d("EmojiRepository", "SaveEmoji Api response : ${response.code()}")
+
+            if (response.isSuccessful) {
+                Log.d("EmojiRepository", "Successfully saved Emoji (Id: $id)")
+                Result.success(Unit)
+            } else {
+                Log.d("EmojiRepository", "Failed to save Emoji (Id: $id), ${response.code()}")
+                Result.failure(Exception("Failed to save Emoji (Id: $id), ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
-    override suspend fun unSaveEmoji(id: String): Response<Unit> {
-        return emojiApi.unSaveEmoji(id)
+    override suspend fun unSaveEmoji(id: String): Result<Unit> {
+        return try {
+            val response = emojiApi.unSaveEmoji(id)
+            Log.d("EmojiRepository", "UnSaveEmoji Api response : ${response.code()}")
+            if (response.isSuccessful) {
+                Log.d("EmojiRepository", "Successfully unsaved Emoji (Id: $id)")
+                Result.success(Unit)
+            } else {
+                Log.d("EmojiRepository", "Failed to unsave Emoji (Id: $id), ${response.code()}")
+                Result.failure(Exception("Failed to unsave Emoji (Id: $id), ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun deleteEmoji(id: String): Response<Unit> {
