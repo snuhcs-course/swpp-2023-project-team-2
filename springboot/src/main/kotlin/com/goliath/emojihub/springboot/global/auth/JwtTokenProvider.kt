@@ -2,6 +2,9 @@ package com.goliath.emojihub.springboot.global.auth
 
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INVALID_TOKEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.NO_TOKEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.EXPIRED_TOKEN
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -49,9 +52,9 @@ class JwtTokenProvider (
         return try {
             getAllClaims(authToken)["username"] as String
         } catch (e: ExpiredJwtException) {
-            throw CustomHttp401("Token is expired.")
+            throw CustomHttp401(EXPIRED_TOKEN)
         } catch (e: Exception) {
-            throw CustomHttp400("Token is invalid.")
+            throw CustomHttp400(INVALID_TOKEN)
         }
     }
 
@@ -66,16 +69,16 @@ class JwtTokenProvider (
     }
 
     fun resolveToken(request: HttpServletRequest): String {
-        return request.getHeader("Authorization") ?: throw CustomHttp400("There is no token.")
+        return request.getHeader("Authorization") ?: throw CustomHttp400(NO_TOKEN)
     }
 
     fun validateToken(authToken: String): Boolean {
         try {
             return getAllClaims(authToken).expiration.after(Date())
         } catch (e: ExpiredJwtException) {
-            throw CustomHttp401("Token is expired.")
+            throw CustomHttp401(EXPIRED_TOKEN)
         } catch (e: Exception) {
-            throw CustomHttp400("Token is invalid.")
+            throw CustomHttp400(INVALID_TOKEN)
         }
     }
 

@@ -5,6 +5,8 @@ import com.goliath.emojihub.springboot.domain.user.model.UserAdapter
 import com.goliath.emojihub.springboot.domain.user.service.UserDetailService
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INVALID_TOKEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.EXPIRED_TOKEN
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -65,8 +67,8 @@ internal class JwtTokenProviderTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "Token is expired.") },
-            { assertEquals(assertThrows2.message, "Token is invalid.") },
+            { assertEquals(assertThrows1.message, EXPIRED_TOKEN.getMessage()) },
+            { assertEquals(assertThrows2.message, INVALID_TOKEN.getMessage()) },
         )
     }
 
@@ -82,8 +84,8 @@ internal class JwtTokenProviderTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "Token is expired.") },
-            { assertEquals(assertThrows2.message, "Token is invalid.") },
+            { assertEquals(assertThrows1.message, EXPIRED_TOKEN.getMessage()) },
+            { assertEquals(assertThrows2.message, INVALID_TOKEN.getMessage()) },
         )
     }
 

@@ -8,7 +8,7 @@ data class PostDto(
     var content: String = "",
     var created_at: String = "",
     var modified_at: String = "",
-    var reactions: MutableList<String>? = mutableListOf()
+    var reactions: MutableList<ReactionWithEmojiUnicode> = mutableListOf(),
 ) {
     constructor(username: String, content: String, dateTime: String) : this() {
         val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -23,3 +23,8 @@ data class PostDto(
         modified_at = dateTime
     }
 }
+
+data class ReactionWithEmojiUnicode(
+    var id: String = "",
+    var emoji_unicode: String = ""
+)

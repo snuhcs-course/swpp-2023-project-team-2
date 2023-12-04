@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain
 
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.post.dto.ReactionWithEmojiUnicode
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 
@@ -89,7 +90,21 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
         for (i in 0 until userSize) {
             for (j in 0 until userSize) {
                 val reactionIdWithCreatedEmoji = "test_reaction${i}_${j}_c"
+                val createdEmojiUnicode = emojiList[createdEmojiSize * i].emoji_unicode
                 val reactionIdWithSavedEmoji = "test_reaction${i}_${j}_s"
+                val savedEmojiUnicode =
+                    if (i != userSize - 1)
+                        emojiList[createdEmojiSize * (i + 1)].emoji_unicode
+                    else
+                        emojiList[0].emoji_unicode
+                val createdReactionWithEmojiUnicode = ReactionWithEmojiUnicode(
+                    id = reactionIdWithCreatedEmoji,
+                    emoji_unicode = createdEmojiUnicode
+                )
+                val savedReactionWithEmojiUnicode = ReactionWithEmojiUnicode(
+                    id = reactionIdWithSavedEmoji,
+                    emoji_unicode = savedEmojiUnicode
+                )
                 reactionList.add(
                     ReactionDto(
                         id = reactionIdWithCreatedEmoji,
@@ -108,8 +123,8 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
                         created_at = "test_created_at${i}_${j}_s"
                     )
                 )
-                postList[postSize * j].reactions!!.add(reactionIdWithCreatedEmoji)
-                postList[postSize * j].reactions!!.add(reactionIdWithSavedEmoji)
+                postList[postSize * j].reactions.add(createdReactionWithEmojiUnicode)
+                postList[postSize * j].reactions.add(savedReactionWithEmojiUnicode)
             }
         }
     }

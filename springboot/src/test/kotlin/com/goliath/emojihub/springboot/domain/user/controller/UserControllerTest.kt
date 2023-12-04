@@ -8,6 +8,7 @@ import com.goliath.emojihub.springboot.domain.user.dto.SignUpRequest
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
 import com.goliath.emojihub.springboot.domain.user.service.UserService
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EXIST
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
 
@@ -153,7 +154,7 @@ internal class UserControllerTest @Autowired constructor(
     @DisplayName("에러 핸들링 테스트1: 커스텀 에러")
     fun errorHandling1() {
         // given
-        val exception = CustomHttp409("Id already exists.")
+        val exception = CustomHttp409(ID_EXIST)
         val request = SignUpRequest(
             email = "test_email",
             username = "test_username",

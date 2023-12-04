@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain.post.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.post.dto.ReactionWithEmojiUnicode
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
@@ -221,33 +222,38 @@ internal class PostDaoTest {
     }
 
     @Test
-    fun insertAndDeleteReactionId() {
+    fun insertAndDeleteReactionIdWithEmojiUnicode() {
         // given
         val postId = postList[0].id
         val reactionId = "new_test_reaction_id"
+        val emojiUnicode = "new_test_emoji_unicode"
+        val reactionWithEmojiUnicode = ReactionWithEmojiUnicode(
+            id = reactionId,
+            emoji_unicode = emojiUnicode,
+        )
         Mockito.`when`(db.collection(POST_COLLECTION_NAME))
             .thenReturn(testDB.collection(POST_COLLECTION_NAME))
 
         // when
-        postDao.insertReactionId(postId, reactionId)
+        postDao.insertReaction(postId, reactionId, emojiUnicode)
 
         // then
         var post = postDao.getPost(postId)
         var a = 1
-        while (!post!!.reactions!!.contains(reactionId) && a <= 5) {
+        while (!post!!.reactions.contains(reactionWithEmojiUnicode) && a <= 5) {
             post = postDao.getPost(postId)
             a++
         }
-        assertThat(post.reactions).contains(reactionId)
+        assertThat(post.reactions).contains(reactionWithEmojiUnicode)
 
         // after work
-        postDao.deleteReactionId(postId, reactionId)
+        postDao.deleteReaction(postId, reactionId)
         post = postDao.getPost(postId)
         var b = 1
-        while(post!!.reactions!!.contains(reactionId) && b <= 5) {
+        while(post!!.reactions.contains(reactionWithEmojiUnicode) && b <= 5) {
             post = postDao.getPost(postId)
             b++
         }
-        assertThat(post.reactions).doesNotContain(reactionId)
+        assertThat(post.reactions).doesNotContain(reactionWithEmojiUnicode)
     }
 }
