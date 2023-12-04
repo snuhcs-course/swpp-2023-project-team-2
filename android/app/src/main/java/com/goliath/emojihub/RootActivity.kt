@@ -123,11 +123,15 @@ class RootActivity : ComponentActivity() {
                         navController.getBackStackEntry(NavigationDestination.MainPage)
                     }
                     val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
-                    PlayEmojiView(emojiViewModel)
+                    val userViewModel = hiltViewModel<UserViewModel>(parentEntry)
+                    PlayEmojiView(emojiViewModel, userViewModel)
                 }
 
                 composable(NavigationDestination.CreatePost) {
-                    val postViewModel = hiltViewModel<PostViewModel>()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
                     CreatePostPage(postViewModel)
                 }
             }

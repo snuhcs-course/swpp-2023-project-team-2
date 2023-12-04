@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CreatePostPage(
-    viewModel: PostViewModel
+    postViewModel: PostViewModel
 ) {
     val navController = LocalNavController.current
 
@@ -42,7 +42,7 @@ fun CreatePostPage(
             ) {
                 TextButton(onClick = {
                     coroutineScope.launch {
-                        val success = viewModel.uploadPost(content.text)
+                        val success = postViewModel.uploadPost(content.text)
                         if (success) {
                             showSuccessDialog = true
                         }
