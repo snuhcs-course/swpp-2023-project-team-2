@@ -66,7 +66,7 @@ class UserService(
         // delete all reactions(and reaction id in posts) created by user
         val myReactions = reactionDao.getReactionsWithField(username, CREATED_BY)
         for (reaction in myReactions) {
-            postDao.deleteReactionId(reaction.post_id, reaction.id)
+            postDao.deleteReaction(reaction.post_id, reaction.id)
             reactionDao.deleteReaction(reaction.id)
         }
         // delete all posts(and posts' reactions) created by user
@@ -74,13 +74,11 @@ class UserService(
             for (postId in postIds) {
                 val post = postDao.getPost(postId) ?: continue
                 if (username != post.created_by) continue
-                val reactionIds = post.reactions
-                if (reactionIds != null) {
-                    for (reactionId in reactionIds) {
-                        val reaction = reactionDao.getReaction(reactionId) ?: continue
-                        if (postId != reaction.post_id) continue
-                        reactionDao.deleteReaction(reactionId)
-                    }
+                val reactionWithEmojiUnicodes = post.reactions
+                for (reactionWithEmojiUnicode in reactionWithEmojiUnicodes) {
+                    val reaction = reactionDao.getReaction(reactionWithEmojiUnicode.id) ?: continue
+                    if (postId != reaction.post_id) continue
+                    reactionDao.deleteReaction(reactionWithEmojiUnicode.id)
                 }
                 postDao.deletePost(postId)
             }
@@ -96,7 +94,7 @@ class UserService(
                 emojiDao.deleteFileInStorage(thumbnailBlobName)
                 val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID)
                 for (reaction in reactions) {
-                    postDao.deleteReactionId(reaction.post_id, reaction.id)
+                    postDao.deleteReaction(reaction.post_id, reaction.id)
                     reactionDao.deleteReaction(reaction.id)
                 }
                 userDao.deleteAllSavedEmojiId(emojiId)

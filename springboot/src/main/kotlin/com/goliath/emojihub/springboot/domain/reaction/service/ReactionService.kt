@@ -29,10 +29,10 @@ class ReactionService(
     fun postReaction(username: String, postId: String, emojiId: String) {
         if (!userDao.existUser(username)) throw CustomHttp404("User doesn't exist.")
         if (!postDao.existPost(postId)) throw CustomHttp404("Post doesn't exist.")
-        if (!emojiDao.existsEmoji(emojiId)) throw CustomHttp404("Emoji doesn't exist.")
+        val emoji = emojiDao.getEmoji(emojiId) ?: throw CustomHttp404("Emoji doesn't exist.")
         if (reactionDao.existSameReaction(username, postId, emojiId)) throw CustomHttp403("User already react to this post with this emoji.")
         val reaction = reactionDao.insertReaction(username, postId, emojiId)
-        postDao.insertReactionId(postId, reaction.id)
+        postDao.insertReaction(postId, reaction.id, emoji.emoji_unicode)
     }
 
     fun deleteReaction(username: String, reactionId: String) {
@@ -40,7 +40,7 @@ class ReactionService(
         if (username != reaction.created_by)
             throw CustomHttp403("You can't delete this reaction.")
         // delete reaction id in post
-        postDao.deleteReactionId(reaction.post_id, reactionId)
+        postDao.deleteReaction(reaction.post_id, reactionId)
         // delete reaction
         reactionDao.deleteReaction(reactionId)
     }

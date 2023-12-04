@@ -208,9 +208,9 @@ internal class PostServiceTest {
         )
         verify(postDao, times(2)).getPost(id)
         verify(postDao, times(1)).getPost(wrongId)
-        for (reactionId in post.reactions!!) {
-            verify(reactionDao, times(1)).getReaction(reactionId)
-            verify(reactionDao, times(1)).deleteReaction(reactionId)
+        for (reactionWithEmojiUnicode in post.reactions) {
+            verify(reactionDao, times(1)).getReaction(reactionWithEmojiUnicode.id)
+            verify(reactionDao, times(1)).deleteReaction(reactionWithEmojiUnicode.id)
         }
         verify(userDao, times(1)).deleteId(username, id, CREATED_POSTS)
         verify(postDao, times(1)).deletePost(id)

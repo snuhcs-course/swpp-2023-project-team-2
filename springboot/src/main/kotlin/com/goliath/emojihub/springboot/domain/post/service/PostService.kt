@@ -17,7 +17,7 @@ class PostService(
 ) {
 
     companion object {
-        const val CREATED_POSTS= "created_posts"
+        const val CREATED_POSTS = "created_posts"
     }
 
     fun postPost(username: String, content: String) {
@@ -56,13 +56,11 @@ class PostService(
         if (username != post.created_by)
             throw CustomHttp403("You can't delete this post.")
         // delete post(and post's reactions)
-        val reactionIds = post.reactions
-        if (reactionIds != null) {
-            for (reactionId in reactionIds) {
-                val reaction = reactionDao.getReaction(reactionId) ?: continue
-                if (postId != reaction.post_id) continue
-                reactionDao.deleteReaction(reactionId)
-            }
+        val reactionWithEmojiUnicodes = post.reactions
+        for (reactionWithEmojiUnicode in reactionWithEmojiUnicodes) {
+            val reaction = reactionDao.getReaction(reactionWithEmojiUnicode.id) ?: continue
+            if (postId != reaction.post_id) continue
+            reactionDao.deleteReaction(reactionWithEmojiUnicode.id)
         }
         // delete created_post id in user
         userDao.deleteId(username, postId, CREATED_POSTS)

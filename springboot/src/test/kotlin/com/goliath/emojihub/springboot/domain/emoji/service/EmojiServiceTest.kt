@@ -406,7 +406,7 @@ internal class EmojiServiceTest {
         verify(emojiDao, times(1)).deleteFileInStorage(thumbnailBlobName)
         verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID)
         for (reaction in reactions) {
-            verify(postDao, times(1)).deleteReactionId(reaction.post_id, reaction.id)
+            verify(postDao, times(1)).deleteReaction(reaction.post_id, reaction.id)
             verify(reactionDao, times(1)).deleteReaction(reaction.id)
         }
         verify(userDao, times(1)).deleteAllSavedEmojiId(emojiId)

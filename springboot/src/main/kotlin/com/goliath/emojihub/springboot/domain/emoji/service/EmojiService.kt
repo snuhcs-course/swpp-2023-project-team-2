@@ -117,7 +117,7 @@ class EmojiService(
         // delete all reactions(and reaction id in posts) using this emoji
         val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID)
         for (reaction in reactions) {
-            postDao.deleteReactionId(reaction.post_id, reaction.id)
+            postDao.deleteReaction(reaction.post_id, reaction.id)
             reactionDao.deleteReaction(reaction.id)
         }
         // delete all saved_emoji ids in users

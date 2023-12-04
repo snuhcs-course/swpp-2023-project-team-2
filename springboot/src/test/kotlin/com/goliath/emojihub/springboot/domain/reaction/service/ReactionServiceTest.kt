@@ -85,6 +85,7 @@ internal class ReactionServiceTest {
         val username = reaction.created_by
         val postId = reaction.post_id
         val emojiId = reaction.emoji_id
+        val emoji = testDto.emojiList[0]
         val wrongUsername = "wrong_username"
         val wrongPostId = "wrong_post_id"
         val wrongEmojiId = "wrong_emoji_id"
@@ -93,9 +94,9 @@ internal class ReactionServiceTest {
         Mockito.`when`(userDao.existUser(wrongUsername)).thenReturn(false)
         Mockito.`when`(postDao.existPost(postId)).thenReturn(true)
         Mockito.`when`(postDao.existPost(wrongPostId)).thenReturn(false)
-        Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
-        Mockito.`when`(emojiDao.existsEmoji(sameEmojiId)).thenReturn(true)
-        Mockito.`when`(emojiDao.existsEmoji(wrongEmojiId)).thenReturn(false)
+        Mockito.`when`(emojiDao.getEmoji(emojiId)).thenReturn(emoji)
+        Mockito.`when`(emojiDao.getEmoji(sameEmojiId)).thenReturn(emoji)
+        Mockito.`when`(emojiDao.getEmoji(wrongEmojiId)).thenReturn(null)
         Mockito.`when`(reactionDao.existSameReaction(username, postId, emojiId)).thenReturn(false)
         Mockito.`when`(reactionDao.existSameReaction(username, postId, sameEmojiId)).thenReturn(true)
         Mockito.`when`(reactionDao.insertReaction(username, postId, emojiId)).thenReturn(reaction)
@@ -126,12 +127,13 @@ internal class ReactionServiceTest {
         verify(userDao, times(1)).existUser(wrongUsername)
         verify(postDao, times(3)).existPost(postId)
         verify(postDao, times(1)).existPost(wrongPostId)
-        verify(emojiDao, times(1)).existsEmoji(emojiId)
-        verify(emojiDao, times(1)).existsEmoji(wrongEmojiId)
+        verify(emojiDao, times(1)).getEmoji(emojiId)
+        verify(emojiDao, times(1)).getEmoji(wrongEmojiId)
+        verify(emojiDao, times(1)).getEmoji(sameEmojiId)
         verify(reactionDao, times(1)).existSameReaction(username, postId, emojiId)
         verify(reactionDao, times(1)).existSameReaction(username, postId, sameEmojiId)
         verify(reactionDao, times(1)).insertReaction(username, postId, emojiId)
-        verify(postDao, times(1)).insertReactionId(postId, reaction.id)
+        verify(postDao, times(1)).insertReaction(postId, reaction.id, emoji.emoji_unicode)
     }
 
     @Test
@@ -162,7 +164,7 @@ internal class ReactionServiceTest {
         )
         verify(reactionDao, times(2)).getReaction(reactionId)
         verify(reactionDao, times(1)).getReaction(wrongReactionId)
-        verify(postDao, times(1)).deleteReactionId(reaction.post_id, reactionId)
+        verify(postDao, times(1)).deleteReaction(reaction.post_id, reactionId)
         verify(reactionDao, times(1)).deleteReaction(reactionId)
     }
 }
