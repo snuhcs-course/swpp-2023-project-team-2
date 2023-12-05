@@ -5,6 +5,7 @@ import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionWithEmoji
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -90,9 +91,30 @@ internal class ReactionServiceTest {
                 Integer.min(index * count, reactionsSpecific.size)
             )
         }
+        val reactionWithEmojiAllList = mutableListOf<ReactionWithEmoji>()
+        val reactionWithEmojiSpecificList = mutableListOf<ReactionWithEmoji>()
+        for (reaction in reactionsAll) {
+            for (emoji in testDto.emojiList) {
+                if (emoji.id != reaction.emoji_id) continue
+                reactionWithEmojiAllList.add(
+                    ReactionWithEmoji(reaction, emoji)
+                )
+            }
+        }
+        for (reaction in reactionsSpecific) {
+            for (emoji in testDto.emojiList) {
+                if (emoji.id != reaction.emoji_id) continue
+                reactionWithEmojiSpecificList.add(
+                    ReactionWithEmoji(reaction, emoji)
+                )
+            }
+        }
         Mockito.`when`(reactionDao.getReactionsWithField(postId, POST_ID.string)).thenReturn(reactionsAll)
         for (reaction in reactionsSpecific) {
             Mockito.`when`(reactionDao.getReaction(reaction.id)).thenReturn(reaction)
+        }
+        for (emoji in testDto.emojiList) {
+            Mockito.`when`(emojiDao.getEmoji(emoji.id)).thenReturn(emoji)
         }
 
         // when
@@ -110,8 +132,8 @@ internal class ReactionServiceTest {
 
         // then
         assertAll(
-            { assertEquals(result1, reactionsAll) },
-            { assertEquals(result2, reactionsSpecific) },
+            { assertEquals(result1, reactionWithEmojiAllList) },
+            { assertEquals(result2, reactionWithEmojiSpecificList) },
             { assertEquals(assertThrows1.message, INDEX_OUT_OF_BOUND.getMessage()) },
             { assertEquals(assertThrows2.message, COUNT_OUT_OF_BOUND.getMessage()) },
             { assertEquals(assertThrows3.message, POST_NOT_FOUND.getMessage()) },

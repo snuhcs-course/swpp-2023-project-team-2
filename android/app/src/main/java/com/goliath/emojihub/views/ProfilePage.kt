@@ -126,11 +126,14 @@ fun ProfilePage() {
                         navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) }
                     ) {
                         items(myCreatedEmojiList.itemCount) { index ->
-                            myCreatedEmojiList[index]?.let {
+                            myCreatedEmojiList[index]?.let { emoji ->
                                 EmojiCell(
-                                    emoji = it,
+                                    emoji = emoji,
                                     displayMode = EmojiCellDisplay.HORIZONTAL,
-                                    onSelected = {})
+                                    onSelected = {
+                                        emojiViewModel.currentEmoji = emoji
+                                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                                    })
                             }
                         }
                     }
@@ -143,11 +146,14 @@ fun ProfilePage() {
                         navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
                     ) {
                         items(mySavedEmojiList.itemCount) { index ->
-                            mySavedEmojiList[index]?.let {
+                            mySavedEmojiList[index]?.let { emoji ->
                                 EmojiCell(
-                                    emoji = it,
+                                    emoji = emoji,
                                     displayMode = EmojiCellDisplay.HORIZONTAL,
-                                    onSelected = {})
+                                    onSelected = {
+                                        emojiViewModel.currentEmoji = emoji
+                                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                                    })
                             }
                         }
                     }

@@ -4,6 +4,7 @@ import com.goliath.emojihub.springboot.domain.emoji.dao.EmojiDao
 import com.goliath.emojihub.springboot.domain.post.dao.PostDao
 import com.goliath.emojihub.springboot.domain.reaction.dao.ReactionDao
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionWithEmoji
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
@@ -28,14 +29,16 @@ class ReactionService(
     private val emojiDao: EmojiDao
 ) {
 
-    fun getReactionsOfPost(postId: String, emojiUnicode: String, index: Int, count: Int): List<ReactionDto> {
+    fun getReactionsOfPost(postId: String, emojiUnicode: String, index: Int, count: Int): List<ReactionWithEmoji> {
         if (index <= 0) throw CustomHttp400(INDEX_OUT_OF_BOUND)
         if (count <= 0) throw CustomHttp400(COUNT_OUT_OF_BOUND)
         val post = postDao.getPost(postId) ?: throw CustomHttp404(POST_NOT_FOUND)
+        var reactionList = mutableListOf<ReactionDto>()
+
+        // emojiUnicode에 따라 reactionList 가져오기
         if (emojiUnicode == "") {
-            return reactionDao.getReactionsWithField(postId, POST_ID.string)
+            reactionList = reactionDao.getReactionsWithField(postId, POST_ID.string) as MutableList<ReactionDto>
         } else {
-            var reactionList = mutableListOf<ReactionDto>()
             for (reactionWithEmojiUnicode in post.reactions) {
                 if (reactionWithEmojiUnicode.emoji_unicode != emojiUnicode)
                     continue
@@ -51,8 +54,16 @@ class ReactionService(
                     min(index * count, reactionList.size)
                 )
             }
-            return reactionList
         }
+
+        // 각 reaction의 emoji를 붙여서 return
+        val reactionWithEmojiList = mutableListOf<ReactionWithEmoji>()
+        for (reaction in reactionList) {
+            val emoji = emojiDao.getEmoji(reaction.emoji_id)
+            val reactionWithEmoji = ReactionWithEmoji(reaction, emoji)
+            reactionWithEmojiList.add(reactionWithEmoji)
+        }
+        return reactionWithEmojiList
     }
 
     fun postReaction(username: String, postId: String, emojiId: String) {
