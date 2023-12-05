@@ -7,7 +7,6 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -18,10 +17,6 @@ import com.goliath.emojihub.R
 fun MainPage() {
     val bottomNavigationController = LocalBottomNavigationController.current
     val currentRoute = bottomNavigationController.currentDestination.value
-
-    LaunchedEffect(Unit) {
-        bottomNavigationController.updateDestination(PageItem.Feed)
-    }
 
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
