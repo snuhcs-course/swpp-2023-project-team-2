@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,8 @@ import kotlinx.coroutines.launch
 fun LoginPage() {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
+
+    val isLoginButtonDisabled by remember { derivedStateOf { username.text.isEmpty() || password.text.isEmpty() }}
 
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -97,6 +100,7 @@ fun LoginPage() {
                     }
                 },
                 modifier = Modifier.padding(top = 24.dp).fillMaxWidth().height(44.dp),
+                enabled = !isLoginButtonDisabled,
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
