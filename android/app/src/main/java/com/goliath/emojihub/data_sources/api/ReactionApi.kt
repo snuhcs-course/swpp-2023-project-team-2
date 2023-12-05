@@ -1,5 +1,6 @@
 package com.goliath.emojihub.data_sources.api
 
+import com.goliath.emojihub.models.ReactionWithEmojiDto
 import retrofit2.Response
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -16,7 +17,11 @@ interface ReactionApi {
 
     @GET("reactions")
     suspend fun fetchReactionList(
-    ): Response<Unit>
+        @Query("postId") postId: String,
+        @Query("emojiUnicode") emojiUnicode: String,
+        @Query("index") index: Int,
+        @Query("count") count: Int
+    ): Response<List<ReactionWithEmojiDto>>
 
     @GET("reaction")
     suspend fun getReactionWithId(

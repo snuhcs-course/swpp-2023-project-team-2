@@ -15,9 +15,9 @@ class ReactionViewModel @Inject constructor(
 
     val reactionList = reactionUseCase.reactionList
 
-    suspend fun fetchReactionList() {
+    suspend fun fetchReactionList(postId: String, emojiUnicode: String, index: Int) {
         viewModelScope.launch {
-            reactionUseCase.fetchReactionList()
+            reactionUseCase.fetchReactionList(postId, emojiUnicode, index)
                 .cachedIn(viewModelScope)
                 .collect {
                     reactionUseCase.updateReactionList(it)

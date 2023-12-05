@@ -64,6 +64,7 @@ fun CustomBottomSheet (
     val reactionViewModel = hiltViewModel<ReactionViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
     val navController = LocalNavController.current
+    val reactionList = reactionViewModel.reactionList.collectAsLazyPagingItems()
 
     var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
     val emojisByClass = emojiList.groupBy { it.unicode }
@@ -77,6 +78,7 @@ fun CustomBottomSheet (
     LaunchedEffect(Unit) {
         viewModel.fetchMyCreatedEmojiList()
         viewModel.fetchMySavedEmojiList()
+        reactionViewModel.fetchReactionList(postId = postViewModel.currentPostId, emojiUnicode = "", index = 0)
     }
 
     ModalBottomSheet(
