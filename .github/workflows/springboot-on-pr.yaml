@@ -1,8 +1,6 @@
-name: Springboot CI
+name: Springboot CI on PR
 
 on:
-  push:
-    branches: [ "develop", "main" ]
   pull_request:
     branches: [ "develop", "main" ]
 
@@ -30,9 +28,8 @@ jobs:
         src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json
         ls -al src/test/kotlin/com/goliath/emojihub/springboot/
 
+    # Build & Test
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew clean build
-    - name: Test with Gradle
-      run: ./gradlew test

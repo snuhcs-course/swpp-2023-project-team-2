@@ -11,9 +11,9 @@ group = "com.goliath.emojihub"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-//java {
-//	sourceCompatibility = JavaVersion.VERSION_17
-//}
+tasks.getByName("jar") {
+	enabled = false
+}
 
 repositories {
 	mavenCentral()

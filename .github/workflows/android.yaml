@@ -30,5 +30,3 @@ jobs:
       run: echo "API_BASE_URL= \"${{ secrets.API_BASE_URL }}\"" >> local.properties
     - name: Build with Gradle
       run: ./gradlew clean build
-    - name: Test with Gradle
-      run: ./gradlew test
