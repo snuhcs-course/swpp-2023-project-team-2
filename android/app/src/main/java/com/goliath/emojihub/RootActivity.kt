@@ -33,8 +33,11 @@ import com.goliath.emojihub.views.LoginPage
 import com.goliath.emojihub.views.MainPage
 import com.goliath.emojihub.views.SignUpPage
 import com.goliath.emojihub.views.TransformVideoPage
+import com.goliath.emojihub.views.components.CreatedEmojiListView
+import com.goliath.emojihub.views.components.CreatedPostListView
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.PlayEmojiView
+import com.goliath.emojihub.views.components.SavedEmojiListView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -51,7 +54,10 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                Box(Modifier.fillMaxSize().background(Color.White)) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.White)) {
                     val accessToken = userViewModel.accessTokenState.collectAsState().value
                     val error by apiErrorController.apiErrorState.collectAsState()
 
@@ -133,6 +139,18 @@ class RootActivity : ComponentActivity() {
                     }
                     val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
                     CreatePostPage(postViewModel)
+                }
+
+                composable(NavigationDestination.MyPostList) {
+                    CreatedPostListView()
+                }
+
+                composable(NavigationDestination.MyEmojiList) {
+                    CreatedEmojiListView()
+                }
+
+                composable(NavigationDestination.MySavedEmojiList) {
+                    SavedEmojiListView()
                 }
             }
         }

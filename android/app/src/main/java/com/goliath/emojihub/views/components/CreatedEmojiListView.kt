@@ -16,6 +16,9 @@ fun CreatedEmojiListView(
     Column (
         Modifier.background(Color.White)
     ) {
-        TopNavigationBar(navigate = { navController.popBackStack() })
+        TopNavigationBar(
+            title = "내가 만든 이모지",
+            navigate = { navController.popBackStack() }
+        )
     }
 }
