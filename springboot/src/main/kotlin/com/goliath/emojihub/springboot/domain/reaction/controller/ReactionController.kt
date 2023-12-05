@@ -1,6 +1,6 @@
 package com.goliath.emojihub.springboot.domain.reaction.controller
 
-import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionWithEmoji
 import com.goliath.emojihub.springboot.domain.reaction.service.ReactionService
 import com.goliath.emojihub.springboot.domain.user.model.CurrentUser
 import org.springframework.http.HttpStatus
@@ -17,7 +17,7 @@ class ReactionController(private val reactionService: ReactionService) {
         @RequestParam(value = "emojiUnicode", defaultValue = "") emojiUnicode: String,
         @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
         @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
-    ): ResponseEntity<List<ReactionDto>> {
+    ): ResponseEntity<List<ReactionWithEmoji>> {
         return ResponseEntity.ok(reactionService.getReactionsOfPost(postId, emojiUnicode, index, count))
     }
 
