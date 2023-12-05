@@ -120,7 +120,6 @@ fun PlayEmojiView(
                             } else {
                                 if (isSaved) {
                                     showUnSaveDialog = true
-                                    Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     emojiViewModel.saveEmoji(currentEmoji.id)
                                     isSaved = true
@@ -178,7 +177,8 @@ fun PlayEmojiView(
                     emojiViewModel.unSaveEmoji(currentEmoji.id)
                     isSaved = false
                     savedCount--
-                    showUnSaveDialog = false },
+                    showUnSaveDialog = false
+                    Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show() },
                 dismiss = { showUnSaveDialog = false }
             )
         }
