@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
@@ -182,7 +183,8 @@ fun CustomBottomSheet (
                             if (selectedEmojiClass == "전체") emojiList
                             else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
                             EmojiCell(emoji = emoji, displayMode = EmojiCellDisplay.VERTICAL) {selectedEmoji ->
-                                emojiCellClicked(selectedEmoji)
+                                viewModel.currentEmoji = selectedEmoji
+                                navController.navigate(NavigationDestination.PlayEmojiVideo)
                             }
                         }
                     }
