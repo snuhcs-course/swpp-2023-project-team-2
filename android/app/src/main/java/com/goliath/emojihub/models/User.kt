@@ -12,8 +12,17 @@ data class UserDto(
     val name: String
 )
 
-// user list: will be deprecated
-data class UserDtoList(
+class UserDetails(
+    dto: UserDetailsDto
+) {
+    val name: String = dto.name
+    val email: String = dto.email
+    val savedEmojiList: List<String>? = dto.savedEmojiList
+    val createdEmojiList: List<String>? = dto.createdEmojiList
+    val createdPostList: List<String>? = dto.createdPostList
+}
+
+data class UserDetailsDto(
     @SerializedName("email")
     val email: String,
 
@@ -24,10 +33,13 @@ data class UserDtoList(
     val password: String,
 
     @SerializedName("liked_emojis")
-    val likedEmojiList: String?,
+    val savedEmojiList: List<String>?,
 
     @SerializedName("created_emojis")
-    val createdEmojiList: String?
+    val createdEmojiList: List<String>?,
+
+    @SerializedName("created_posts")
+    val createdPostList: List<String>?
 )
 
 class RegisterUserDto(
