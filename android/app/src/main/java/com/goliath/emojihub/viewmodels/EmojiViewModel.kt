@@ -31,11 +31,11 @@ class EmojiViewModel @Inject constructor(
     lateinit var currentEmoji: Emoji
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
-    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
-    val saveEmojiState = _saveEmojiState.asStateFlow()
-
-    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
-    val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
+//    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+//    val saveEmojiState = _saveEmojiState.asStateFlow()
+//
+//    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+//    val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
     var sortByDate by mutableIntStateOf(0)
 
@@ -94,17 +94,21 @@ class EmojiViewModel @Inject constructor(
         return emojiUseCase.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
     }
 
-    fun saveEmoji(id: String) {
+    fun saveEmoji(id: String): Boolean {
+        var result = false
         viewModelScope.launch {
-            val result = emojiUseCase.saveEmoji(id)
-            _saveEmojiState.value = result
+            result = emojiUseCase.saveEmoji(id)
+//            _saveEmojiState.value = result
         }
+        return result
     }
 
-    fun unSaveEmoji(id: String) {
+    fun unSaveEmoji(id: String): Boolean {
+        var result = false
         viewModelScope.launch {
-            val result = emojiUseCase.unSaveEmoji(id)
-            _unSaveEmojiState.value = result
+            result = emojiUseCase.unSaveEmoji(id)
+//            _unSaveEmojiState.value = result
         }
+        return result
     }
 }
