@@ -2,7 +2,7 @@ package com.goliath.emojihub.springboot.domain.reaction.controller
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.WithCustomUser
-import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionWithEmoji
 import com.goliath.emojihub.springboot.domain.reaction.service.ReactionService
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
@@ -43,13 +43,18 @@ internal class ReactionControllerTest @Autowired constructor(
         val emojiUnicode = ""
         val index = 1
         val count = 10
-        val reactions = mutableListOf<ReactionDto>()
+        val reactionWithEmojiList = mutableListOf<ReactionWithEmoji>()
         for (reaction in reactionList) {
-            if (reaction.post_id == postId) {
-                reactions.add(reaction)
+            if (reaction.post_id != postId) continue
+            for (emoji in testDto.emojiList) {
+                if (emoji.id != reaction.emoji_id) continue
+                reactionWithEmojiList.add(
+                    ReactionWithEmoji(reaction, emoji)
+                )
             }
         }
-        Mockito.`when`(reactionService.getReactionsOfPost(postId, emojiUnicode, index, count)).thenReturn(reactions)
+
+        Mockito.`when`(reactionService.getReactionsOfPost(postId, emojiUnicode, index, count)).thenReturn(reactionWithEmojiList)
 
         // when
         val result = this.mockMvc.perform(
@@ -63,12 +68,8 @@ internal class ReactionControllerTest @Autowired constructor(
         // then
         result.andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()", equalTo(reactions.size)))
-            .andExpect(jsonPath("$[0].id").value(reactions[0].id))
-            .andExpect(jsonPath("$[0].created_by").value(reactions[0].created_by))
-            .andExpect(jsonPath("$[0].post_id").value(reactions[0].post_id))
-            .andExpect(jsonPath("$[0].emoji_id").value(reactions[0].emoji_id))
-            .andExpect(jsonPath("$[0].created_at").value(reactions[0].created_at))
+            .andExpect(jsonPath("$.length()", equalTo(reactionWithEmojiList.size)))
+            .andExpect(jsonPath("$[0]").value(reactionWithEmojiList[0]))
         verify(reactionService, times(1)).getReactionsOfPost(postId, emojiUnicode, index, count)
     }
 
