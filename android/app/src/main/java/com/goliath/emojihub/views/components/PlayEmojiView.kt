@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,8 @@ import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.extensions.toEmoji
+import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.models.UserDetails
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.EmojiViewModel
@@ -57,9 +60,10 @@ fun PlayEmojiView(
 
     val currentEmoji = emojiViewModel.currentEmoji
     val currentUser = userViewModel.userState.collectAsState().value
+    val currentUserDetails = userViewModel.userDetailsState.collectAsState().value
 
     var savedCount by remember { mutableIntStateOf(currentEmoji.savedCount) }
-    var isSaved by remember { mutableStateOf(currentEmoji.isSaved) }
+    var isSavedEmoji by remember { mutableStateOf(checkEmojiHasSaved(currentUserDetails, currentEmoji)) }
 
     var showNonUserDialog by remember { mutableStateOf(false) }
     var showUnSaveDialog by remember { mutableStateOf(false) }
@@ -76,6 +80,7 @@ fun PlayEmojiView(
         onDispose {
             exoPlayer.stop()
             exoPlayer.release()
+            userViewModel.fetchMyInfo()
         }
     }
 
@@ -117,21 +122,20 @@ fun PlayEmojiView(
                         onClick = {
                             if (currentUser == null) {
                                 showNonUserDialog = true
-                            } else {
-                                if (isSaved) {
+                            } else if (isSavedEmoji) {
                                     showUnSaveDialog = true
-                                } else {
-                                    emojiViewModel.saveEmoji(currentEmoji.id)
-                                    isSaved = true
-                                    savedCount ++
-                                    Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
-                                }
+                            } else {
+                                // FIXME: when Save emoji Fails?
+                                emojiViewModel.saveEmoji(currentEmoji.id)
+                                isSavedEmoji = true
+                                savedCount ++
+                                Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
                         Icon(
                             imageVector =
-                            if (isSaved) {
+                            if (isSavedEmoji) {
                                 Icons.Default.FileDownloadOff
                             } else {
                                 Icons.Default.FileDownload
@@ -174,8 +178,9 @@ fun PlayEmojiView(
                 needsCancelButton = true,
                 onDismissRequest = { showUnSaveDialog = false },
                 confirm = {
+                    // FIXME: When unSave emoji fails?
                     emojiViewModel.unSaveEmoji(currentEmoji.id)
-                    isSaved = false
+                    isSavedEmoji = false
                     savedCount--
                     showUnSaveDialog = false
                     Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show() },
@@ -197,4 +202,17 @@ fun PlayEmojiView(
             )
         }
     }
+}
+
+fun checkEmojiHasSaved(currentUserDetails: UserDetails?, currentEmoji: Emoji): Boolean {
+    if (currentUserDetails == null) return false
+
+    Log.d("checkEmojiHasSaved", "currentUserDetails.savedEmojiList: ${currentUserDetails.savedEmojiList}")
+    Log.d("checkEmojiHasSaved", "currentUserDetails.createdEmojiList: ${currentUserDetails.createdEmojiList}")
+    Log.d("checkEmojiHasSaved", "currentEmoji.id: ${currentEmoji.id}")
+    if (currentUserDetails.savedEmojiList?.contains(currentEmoji.id) == true)
+        return true
+    else if (currentUserDetails.createdEmojiList?.contains(currentEmoji.id) == true)
+        return true
+    return false
 }
