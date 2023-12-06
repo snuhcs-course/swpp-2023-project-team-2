@@ -32,7 +32,7 @@ data class UserDetailsDto(
     @SerializedName("password")
     val password: String,
 
-    @SerializedName("liked_emojis")
+    @SerializedName("saved_emojis")
     val savedEmojiList: List<String>?,
 
     @SerializedName("created_emojis")
