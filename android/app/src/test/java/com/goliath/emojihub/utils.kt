@@ -7,6 +7,7 @@ import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
+import com.goliath.emojihub.models.UserDetailsDto
 import com.goliath.emojihub.models.X3dInferenceResult
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -21,6 +22,16 @@ fun mockLogClass() {
     every { Log.i(any(), any()) } returns 0
     every { Log.e(any(), any()) } returns 0
 }
+
+// USER TESTING UTILS
+val sampleUserDetailsDto = UserDetailsDto(
+    email = "sampleEmail",
+    name = "sampleName",
+    password = "samplePassword",
+    savedEmojiList = listOf("a", "b", "c"),
+    createdEmojiList = listOf("d", "e", "f"),
+    createdPostList = listOf("g", "h", "i"),
+)
 
 // EMOJI TESTING UTILS
 val dummyUsernames = listOf("channn", "doggydog", "meow_0w0", "mpunchmm", "kick_back")

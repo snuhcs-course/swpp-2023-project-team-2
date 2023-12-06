@@ -2,6 +2,8 @@ package com.goliath.emojihub.views
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
+import android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -36,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -47,7 +48,6 @@ import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color.Black
-import com.goliath.emojihub.ui.theme.Color.LightGray
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.UserViewModel
@@ -68,6 +68,7 @@ fun EmojiPage() {
     val emojiList = emojiViewModel.emojiList.collectAsLazyPagingItems()
 
     var showNonUserDialog by remember { mutableStateOf(false) }
+    var showVideoTooLongDialog by remember { mutableStateOf(false) }
     var dropDownMenuExpanded by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -79,9 +80,22 @@ fun EmojiPage() {
     ) { uri ->
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
-            emojiViewModel.videoUri = uri
-            navController.navigate(NavigationDestination.TransformVideo)
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+            val duration = retriever.extractMetadata(METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
+            retriever.release()
+            if (duration >= 6000) {
+                showVideoTooLongDialog = true
+            } else {
+                emojiViewModel.videoUri = uri
+                navController.navigate(NavigationDestination.TransformVideo)
+            }
         }
+    }
+
+    // 앱이 처음 실행될 때, 유저 정보를 가져오기 위함
+    LaunchedEffect(userViewModel) {
+        userViewModel.fetchMyInfo()
     }
 
     LaunchedEffect(Unit) {
@@ -173,6 +187,15 @@ fun EmojiPage() {
                     }
                 }
             }
+        }
+
+        if (showVideoTooLongDialog) {
+            CustomDialog(
+                title = "안내",
+                body = "최대 5초 길이의 영상만 업로드할 수 있습니다.",
+                onDismissRequest = { showVideoTooLongDialog = false },
+                confirm = { showVideoTooLongDialog = false }
+            )
         }
 
         if (showNonUserDialog) {

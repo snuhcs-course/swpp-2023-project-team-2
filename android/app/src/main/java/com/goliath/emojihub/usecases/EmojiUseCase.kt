@@ -34,8 +34,8 @@ interface EmojiUseCase {
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
-    suspend fun saveEmoji(id: String): Result<Unit>
-    suspend fun unSaveEmoji(id: String): Result<Unit>
+    suspend fun saveEmoji(id: String): Boolean
+    suspend fun unSaveEmoji(id: String): Boolean
 }
 
 @Singleton
@@ -125,27 +125,27 @@ class EmojiUseCaseImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveEmoji(id: String): Result<Unit> {
+    override suspend fun saveEmoji(id: String): Boolean {
         return try {
-            emojiRepository.saveEmoji(id)
+            emojiRepository.saveEmoji(id).isSuccessful
         } catch (e: HttpException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
-            Result.failure(e)
+            false
         } catch (e: Exception) {
             Log.e("EmojiUseCase", "Unknown Exception on saveEmoji: ${e.message}")
-            Result.failure(e)
+            false
         }
     }
 
-    override suspend fun unSaveEmoji(id: String): Result<Unit> {
+    override suspend fun unSaveEmoji(id: String): Boolean {
         return try {
-            emojiRepository.unSaveEmoji(id)
+            emojiRepository.unSaveEmoji(id).isSuccessful
         } catch (e: HttpException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
-            Result.failure(e)
+            false
         } catch (e: Exception) {
             Log.e("EmojiUseCase", "Unknown Exception on unSaveEmoji: ${e.message}")
-            Result.failure(e)
+            false
         }
     }
 }
