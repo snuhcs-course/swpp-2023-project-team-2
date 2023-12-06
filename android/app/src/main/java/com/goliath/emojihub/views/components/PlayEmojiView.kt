@@ -34,6 +34,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -67,6 +69,8 @@ fun PlayEmojiView(
     var isSavedEmoji by remember { mutableStateOf(checkEmojiHasSaved(currentUserDetails, currentEmoji)) }
     val isCreatedEmoji by remember { mutableStateOf(checkEmojiHasCreated(currentUser, currentEmoji)) }
 
+    val isSaveSuccess = emojiViewModel.saveEmojiState.asLiveData()
+    val isUnSaveSuccess = emojiViewModel.unSaveEmojiState.asLiveData()
     var showNonUserDialog by remember { mutableStateOf(false) }
     var showUnSaveDialog by remember { mutableStateOf(false) }
     var showCreatedEmojiDialog by remember { mutableStateOf(false) }
@@ -123,18 +127,11 @@ fun PlayEmojiView(
                     IconButton(
                         modifier = Modifier.size(40.dp),
                         onClick = {
-                            if (currentUser == null) {
-                                showNonUserDialog = true
-                            } else if (isSavedEmoji) {
-                                showUnSaveDialog = true
-                            } else if (isCreatedEmoji) {
-                                showCreatedEmojiDialog = true
-                            } else {
-                                // FIXME: when Save emoji Fails?
-                                emojiViewModel.saveEmoji(currentEmoji.id)
-                                isSavedEmoji = true
-                                savedCount ++
-                                Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
+                            when {
+                                currentUser == null -> showNonUserDialog = true
+                                isSavedEmoji -> showUnSaveDialog = true
+                                isCreatedEmoji -> showCreatedEmojiDialog = true
+                                else -> emojiViewModel.saveEmoji(currentEmoji.id)
                             }
                         }
                     ) {
@@ -173,25 +170,33 @@ fun PlayEmojiView(
                 Spacer(modifier = Modifier.padding(bottom = 32.dp))
             }
         }
-        
-        if (showUnSaveDialog) {
-            CustomDialog(
-                title = "삭제",
-                body = "저장된 이모지에서 삭제하시겠습니까?",
-                confirmText = "삭제",
-                isDestructive = true,
-                needsCancelButton = true,
-                onDismissRequest = { showUnSaveDialog = false },
-                confirm = {
-                    // FIXME: When unSave emoji fails?
-                    emojiViewModel.unSaveEmoji(currentEmoji.id)
-                    isSavedEmoji = false
-                    savedCount--
-                    showUnSaveDialog = false
-                    Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show() },
-                dismiss = { showUnSaveDialog = false }
-            )
+
+        val saveEmojiStateObserver = Observer<Int> {
+            if (it == 1) {
+                isSavedEmoji = true
+                savedCount++
+                Toast.makeText(context, "Emoji saved!", Toast.LENGTH_SHORT).show()
+            } else if (it == 0) {
+                Toast.makeText(context, "Emoji save failed!", Toast.LENGTH_SHORT).show()
+            }
+            emojiViewModel.resetSaveEmojiState()
         }
+
+        val unSaveEmojiStateObserver = Observer<Int> {
+            if (it == 1) {
+                isSavedEmoji = false
+                savedCount--
+                showUnSaveDialog = false
+                Toast.makeText(context, "Emoji unsaved!", Toast.LENGTH_SHORT).show()
+            } else if (it == 0) {
+                showUnSaveDialog = false
+                Toast.makeText(context, "Emoji unsave failed!", Toast.LENGTH_SHORT).show()
+            }
+            emojiViewModel.resetUnSaveEmojiState()
+        }
+
+        isSaveSuccess.observe(navController.currentBackStackEntry!!, saveEmojiStateObserver)
+        isUnSaveSuccess.observe(navController.currentBackStackEntry!!, unSaveEmojiStateObserver)
 
         if (showNonUserDialog) {
             CustomDialog(
@@ -204,6 +209,19 @@ fun PlayEmojiView(
                 confirm = {
                     navController.navigateAsOrigin(NavigationDestination.Onboard)
                 }
+            )
+        }
+        
+        if (showUnSaveDialog) {
+            CustomDialog(
+                title = "삭제",
+                body = "저장된 이모지에서 삭제하시겠습니까?",
+                confirmText = "삭제",
+                isDestructive = true,
+                needsCancelButton = true,
+                onDismissRequest = { showUnSaveDialog = false },
+                confirm = { emojiViewModel.unSaveEmoji(currentEmoji.id) },
+                dismiss = { showUnSaveDialog = false }
             )
         }
 
