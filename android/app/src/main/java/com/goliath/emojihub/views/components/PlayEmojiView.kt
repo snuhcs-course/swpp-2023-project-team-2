@@ -43,6 +43,7 @@ import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.models.User
 import com.goliath.emojihub.models.UserDetails
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
@@ -64,9 +65,11 @@ fun PlayEmojiView(
 
     var savedCount by remember { mutableIntStateOf(currentEmoji.savedCount) }
     var isSavedEmoji by remember { mutableStateOf(checkEmojiHasSaved(currentUserDetails, currentEmoji)) }
+    val isCreatedEmoji by remember { mutableStateOf(checkEmojiHasCreated(currentUser, currentEmoji)) }
 
     var showNonUserDialog by remember { mutableStateOf(false) }
     var showUnSaveDialog by remember { mutableStateOf(false) }
+    var showCreatedEmojiDialog by remember { mutableStateOf(false) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -123,7 +126,9 @@ fun PlayEmojiView(
                             if (currentUser == null) {
                                 showNonUserDialog = true
                             } else if (isSavedEmoji) {
-                                    showUnSaveDialog = true
+                                showUnSaveDialog = true
+                            } else if (isCreatedEmoji) {
+                                showCreatedEmojiDialog = true
                             } else {
                                 // FIXME: when Save emoji Fails?
                                 emojiViewModel.saveEmoji(currentEmoji.id)
@@ -201,18 +206,31 @@ fun PlayEmojiView(
                 }
             )
         }
+
+        if (showCreatedEmojiDialog) {
+            CustomDialog(
+                title = "내가 만든 이모지",
+                body = "내가 만든 이모지는 저장할 수 없습니다.",
+                confirmText = "확인",
+                needsCancelButton = false,
+                onDismissRequest = { showCreatedEmojiDialog = false },
+                confirm = { showCreatedEmojiDialog = false }
+            )
+        }
     }
 }
 
 fun checkEmojiHasSaved(currentUserDetails: UserDetails?, currentEmoji: Emoji): Boolean {
     if (currentUserDetails == null) return false
-
     Log.d("checkEmojiHasSaved", "currentUserDetails.savedEmojiList: ${currentUserDetails.savedEmojiList}")
-    Log.d("checkEmojiHasSaved", "currentUserDetails.createdEmojiList: ${currentUserDetails.createdEmojiList}")
     Log.d("checkEmojiHasSaved", "currentEmoji.id: ${currentEmoji.id}")
     if (currentUserDetails.savedEmojiList?.contains(currentEmoji.id) == true)
         return true
-    else if (currentUserDetails.createdEmojiList?.contains(currentEmoji.id) == true)
-        return true
+    return false
+}
+
+fun checkEmojiHasCreated(currentUser: User?, currentEmoji: Emoji): Boolean {
+    if (currentUser == null) return false
+    if (currentUser.name == currentEmoji.createdBy) return true
     return false
 }
