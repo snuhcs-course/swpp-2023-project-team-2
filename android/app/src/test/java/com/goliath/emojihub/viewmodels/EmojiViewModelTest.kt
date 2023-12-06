@@ -59,7 +59,7 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
+    fun toggleSortingMode_success_updateLatestEmojiList() = runTest {
         // given
         // for simplicity of testing, we return the same list for both cases
         val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
@@ -67,12 +67,13 @@ class EmojiViewModelTest {
             emojiUseCase.fetchEmojiList(1)
         } returns sampleFetchedEmojiList
         // when
-        emojiViewModel.toggleSortingMode()
+        emojiViewModel.sortByDate = 1
+        emojiViewModel.fetchEmojiList()
         advanceUntilIdle()
         // then
+        assertEquals(1, emojiViewModel.sortByDate)
         coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
-        assertEquals(1, emojiViewModel.sortByDate)
     }
 
     @Test
@@ -184,13 +185,13 @@ class EmojiViewModelTest {
         val sampleId = "sampleId"
         coEvery {
             emojiUseCase.saveEmoji(any())
-        } returns Result.success(Unit)
+        } returns true
         // when
         emojiViewModel.saveEmoji(sampleId)
         advanceUntilIdle()
         // then
         coVerify { emojiUseCase.saveEmoji(sampleId) }
-        assertTrue(emojiViewModel.saveEmojiState.value?.isSuccess == true)
+        assertEquals(1, emojiViewModel.saveEmojiState.value)
     }
 
     @Test
@@ -199,13 +200,13 @@ class EmojiViewModelTest {
         val sampleId = "sampleId"
         coEvery {
             emojiUseCase.saveEmoji(any())
-        } returns Result.failure(Exception("Failed to save Emoji (sampleId: $sampleId), 404"))
+        } returns false
         // when
         emojiViewModel.saveEmoji(sampleId)
         advanceUntilIdle()
         // then
         coVerify { emojiUseCase.saveEmoji(sampleId) }
-        assertTrue(emojiViewModel.saveEmojiState.value?.isFailure == true)
+        assertEquals(0, emojiViewModel.saveEmojiState.value)
     }
 
     @Test
@@ -214,13 +215,13 @@ class EmojiViewModelTest {
         val sampleId = "sampleId"
         coEvery {
             emojiUseCase.unSaveEmoji(any())
-        } returns Result.success(Unit)
+        } returns true
         // when
         emojiViewModel.unSaveEmoji(sampleId)
         advanceUntilIdle()
         // then
         coVerify { emojiUseCase.unSaveEmoji(sampleId) }
-        assertTrue(emojiViewModel.unSaveEmojiState.value?.isSuccess == true)
+        assertEquals(1, emojiViewModel.unSaveEmojiState.value)
     }
 
     @Test
@@ -229,12 +230,44 @@ class EmojiViewModelTest {
         val sampleId = "sampleId"
         coEvery {
             emojiUseCase.unSaveEmoji(any())
-        } returns Result.failure(Exception("Failed to unsave Emoji (sampleId: $sampleId), 404"))
+        } returns false
         // when
         emojiViewModel.unSaveEmoji(sampleId)
         advanceUntilIdle()
         // then
         coVerify { emojiUseCase.unSaveEmoji(sampleId) }
-        assertTrue(emojiViewModel.unSaveEmojiState.value?.isFailure == true)
+        assertEquals(0, emojiViewModel.unSaveEmojiState.value)
+    }
+
+    @Test
+    fun resetSaveEmojiState_success_setSaveEmojiStateIdle() = runTest {
+        // given
+        coEvery {
+            emojiUseCase.saveEmoji(any())
+        } returns true
+        emojiViewModel.saveEmoji("sampleId")
+        advanceUntilIdle()
+        assertEquals(1, emojiViewModel.saveEmojiState.value)
+        // when
+        emojiViewModel.resetSaveEmojiState()
+        advanceUntilIdle()
+        // then
+        assertEquals(-1, emojiViewModel.saveEmojiState.value)
+    }
+
+    @Test
+    fun resetUnSaveEmojiState_success_setUnSaveEmojiStateIdle() = runTest {
+        // given
+        coEvery {
+            emojiUseCase.unSaveEmoji(any())
+        } returns true
+        emojiViewModel.unSaveEmoji("sampleId")
+        advanceUntilIdle()
+        assertEquals(1, emojiViewModel.unSaveEmojiState.value)
+        // when
+        emojiViewModel.resetUnSaveEmojiState()
+        advanceUntilIdle()
+        // then
+        assertEquals(-1, emojiViewModel.unSaveEmojiState.value)
     }
 }

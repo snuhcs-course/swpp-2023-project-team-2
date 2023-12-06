@@ -17,7 +17,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,10 +30,11 @@ class EmojiViewModel @Inject constructor(
     lateinit var currentEmoji: Emoji
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
-    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    // 0: not saved, 1: saved, -1: not changed
+    private val _saveEmojiState = MutableStateFlow(-1)
     val saveEmojiState = _saveEmojiState.asStateFlow()
 
-    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    private val _unSaveEmojiState = MutableStateFlow(-1)
     val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
 
     var sortByDate by mutableIntStateOf(0)
@@ -55,11 +55,6 @@ class EmojiViewModel @Inject constructor(
                     emojiUseCase.updateEmojiList(it)
                 }
         }
-    }
-
-    fun toggleSortingMode() {
-        sortByDate = sortByDate xor 1
-        fetchEmojiList()
     }
 
     fun fetchMyCreatedEmojiList() {
@@ -96,15 +91,23 @@ class EmojiViewModel @Inject constructor(
 
     fun saveEmoji(id: String) {
         viewModelScope.launch {
-            val result = emojiUseCase.saveEmoji(id)
-            _saveEmojiState.value = result
+            val isSuccess = emojiUseCase.saveEmoji(id)
+            _saveEmojiState.value = if (isSuccess) 1 else 0
         }
     }
 
     fun unSaveEmoji(id: String) {
         viewModelScope.launch {
-            val result = emojiUseCase.unSaveEmoji(id)
-            _unSaveEmojiState.value = result
+            val isSuccess = emojiUseCase.unSaveEmoji(id)
+            _unSaveEmojiState.value = if (isSuccess) 1 else 0
         }
+    }
+
+    fun resetSaveEmojiState() {
+        _saveEmojiState.value = -1
+    }
+
+    fun resetUnSaveEmojiState() {
+        _unSaveEmojiState.value = -1
     }
 }

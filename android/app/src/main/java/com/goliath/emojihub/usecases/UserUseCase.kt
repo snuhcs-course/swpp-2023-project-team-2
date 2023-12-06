@@ -5,6 +5,7 @@ import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.User
+import com.goliath.emojihub.models.UserDetails
 import com.goliath.emojihub.models.UserDto
 import com.goliath.emojihub.repositories.remote.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +17,10 @@ import javax.inject.Singleton
 sealed interface UserUseCase {
     val accessTokenState: StateFlow<String?>
     val userState: StateFlow<User?>
+    val userDetailsState: StateFlow<UserDetails?>
 
     suspend fun fetchUser(id: String)
+    suspend fun fetchMyInfo()
     suspend fun registerUser(email: String, name: String, password: String): Boolean
     suspend fun login(name: String, password: String)
     suspend fun logout()
@@ -38,8 +41,26 @@ class UserUseCaseImpl @Inject constructor(
     override val userState: StateFlow<User?>
         get() = _userState
 
+    private val _userDetailsState: MutableStateFlow<UserDetails?> = MutableStateFlow(null)
+    override val userDetailsState: StateFlow<UserDetails?>
+        get() = _userDetailsState
+
     override suspend fun fetchUser(id: String) {
         repository.fetchUser(id)
+    }
+
+    override suspend fun fetchMyInfo() {
+        val accessToken = EmojiHubApplication.preferences.accessToken ?: return
+        if (accessToken.isEmpty()) return
+
+        val response = repository.fetchMyInfo(accessToken)
+        response.let {
+            if(it.isSuccessful) {
+                val userDetailsDto = it.body() ?: return // FIXME: may be considered as an error
+                _userDetailsState.update { UserDetails(userDetailsDto) }
+            }
+            else errorController.setErrorState(it.code())
+        }
     }
 
     override suspend fun registerUser(email: String, name: String, password: String): Boolean {

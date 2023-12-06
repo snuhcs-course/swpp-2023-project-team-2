@@ -33,8 +33,8 @@ interface EmojiRepository {
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
     suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
-    suspend fun saveEmoji(id: String): Result<Unit>
-    suspend fun unSaveEmoji(id: String): Result<Unit>
+    suspend fun saveEmoji(id: String): Response<Unit>
+    suspend fun unSaveEmoji(id: String): Response<Unit>
     suspend fun deleteEmoji(id: String): Response<Unit>
 }
 
@@ -99,37 +99,12 @@ class EmojiRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveEmoji(id: String): Result<Unit> {
-        return try {
-            val response = emojiApi.saveEmoji(id)
-            Log.d("EmojiRepository", "SaveEmoji Api response : ${response.code()}")
-
-            if (response.isSuccessful) {
-                Log.d("EmojiRepository", "Successfully saved Emoji (Id: $id)")
-                Result.success(Unit)
-            } else {
-                Log.d("EmojiRepository", "Failed to save Emoji (Id: $id), ${response.code()}")
-                Result.failure(Exception("Failed to save Emoji (Id: $id), ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    override suspend fun saveEmoji(id: String): Response<Unit> {
+        return emojiApi.saveEmoji(id)
     }
 
-    override suspend fun unSaveEmoji(id: String): Result<Unit> {
-        return try {
-            val response = emojiApi.unSaveEmoji(id)
-            Log.d("EmojiRepository", "UnSaveEmoji Api response : ${response.code()}")
-            if (response.isSuccessful) {
-                Log.d("EmojiRepository", "Successfully unsaved Emoji (Id: $id)")
-                Result.success(Unit)
-            } else {
-                Log.d("EmojiRepository", "Failed to unsave Emoji (Id: $id), ${response.code()}")
-                Result.failure(Exception("Failed to unsave Emoji (Id: $id), ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    override suspend fun unSaveEmoji(id: String): Response<Unit> {
+        return emojiApi.unSaveEmoji(id)
     }
 
     override suspend fun deleteEmoji(id: String): Response<Unit> {

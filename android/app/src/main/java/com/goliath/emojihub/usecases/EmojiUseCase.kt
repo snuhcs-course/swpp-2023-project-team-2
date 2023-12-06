@@ -30,8 +30,8 @@ interface EmojiUseCase {
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>>
     suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji>
     suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean
-    suspend fun saveEmoji(id: String): Result<Unit>
-    suspend fun unSaveEmoji(id: String): Result<Unit>
+    suspend fun saveEmoji(id: String): Boolean
+    suspend fun unSaveEmoji(id: String): Boolean
 }
 
 @Singleton
@@ -86,11 +86,38 @@ class EmojiUseCaseImpl @Inject constructor(
         return emojiRepository.uploadEmoji(videoFile, dto)
     }
 
-    override suspend fun saveEmoji(id: String): Result<Unit> {
-        return emojiRepository.saveEmoji(id)
+    override suspend fun saveEmoji(id: String): Boolean {
+        return try {
+            val response = emojiRepository.saveEmoji(id)
+            Log.d("EmojiUseCase", "SaveEmoji Api response : ${response.code()}")
+
+            if (response.isSuccessful) {
+                Log.d("EmojiUseCase", "Successfully saved Emoji (Id: $id)")
+                true
+            } else {
+                Log.e("EmojiUseCase", "Failed to save Emoji (Id: $id), ${response.code()}")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("EmojiUseCase", "Unknown Exception at Save emoji: ${e.message}")
+            false
+        }
     }
 
-    override suspend fun unSaveEmoji(id: String): Result<Unit> {
-        return emojiRepository.unSaveEmoji(id)
+    override suspend fun unSaveEmoji(id: String): Boolean {
+        return try {
+            val response = emojiRepository.unSaveEmoji(id)
+            Log.d("EmojiUseCase", "UnSaveEmoji Api response : ${response.code()}")
+            if (response.isSuccessful) {
+                Log.d("EmojiUseCase", "Successfully unsaved Emoji (Id: $id)")
+                true
+            } else {
+                Log.e("EmojiUseCase", "Failed to unsave Emoji (Id: $id), ${response.code()}")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("EmojiUseCase", "Unknown Exception at UnSave emoji: ${e.message}")
+            false
+        }
     }
 }
