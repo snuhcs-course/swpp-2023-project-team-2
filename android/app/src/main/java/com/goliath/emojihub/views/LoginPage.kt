@@ -106,6 +106,7 @@ fun LoginPage() {
                     coroutineScope.launch {
                         userViewModel.login(username.text, password.text)
                     }
+                    userViewModel.fetchMyInfo()
                 },
                 modifier = Modifier
                     .padding(top = 24.dp)
