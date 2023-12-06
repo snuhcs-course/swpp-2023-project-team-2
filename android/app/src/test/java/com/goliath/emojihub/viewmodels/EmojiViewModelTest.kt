@@ -59,7 +59,7 @@ class EmojiViewModelTest {
     }
 
     @Test
-    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
+    fun toggleSortingMode_success_updateLatestEmojiList() = runTest {
         // given
         // for simplicity of testing, we return the same list for both cases
         val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
@@ -67,12 +67,13 @@ class EmojiViewModelTest {
             emojiUseCase.fetchEmojiList(1)
         } returns sampleFetchedEmojiList
         // when
-        emojiViewModel.toggleSortingMode()
+        emojiViewModel.sortByDate = 1
+        emojiViewModel.fetchEmojiList()
         advanceUntilIdle()
         // then
+        assertEquals(1, emojiViewModel.sortByDate)
         coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
-        assertEquals(1, emojiViewModel.sortByDate)
     }
 
     @Test
