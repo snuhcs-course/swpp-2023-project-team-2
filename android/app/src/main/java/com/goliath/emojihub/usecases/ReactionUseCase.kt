@@ -3,7 +3,7 @@ package com.goliath.emojihub.usecases
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.goliath.emojihub.data_sources.ApiErrorController
-import com.goliath.emojihub.models.Reaction
+import com.goliath.emojihub.models.ReactionWithEmoji
 import com.goliath.emojihub.repositories.remote.ReactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +14,9 @@ import javax.inject.Singleton
 
 interface ReactionUseCase {
 
-    val reactionList: StateFlow<PagingData<Reaction>>
-    suspend fun fetchReactionList(): Flow<PagingData<Reaction>>
-    suspend fun updateReactionList(data: PagingData<Reaction>)
+    val reactionList: StateFlow<PagingData<ReactionWithEmoji>>
+    suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmoji>>
+    suspend fun updateReactionList(data: PagingData<ReactionWithEmoji>)
     suspend fun uploadReaction(postId: String, emojiId: String): Boolean
     suspend fun getReactionWithId(id: String)
     suspend fun deleteReaction(reactionId: String)
@@ -28,16 +28,16 @@ class ReactionUseCaseImpl @Inject constructor(
     private val errorController: ApiErrorController
 ): ReactionUseCase {
 
-    private val _reactionList = MutableStateFlow<PagingData<Reaction>>(PagingData.empty())
-    override val reactionList: StateFlow<PagingData<Reaction>>
+    private val _reactionList = MutableStateFlow<PagingData<ReactionWithEmoji>>(PagingData.empty())
+    override val reactionList: StateFlow<PagingData<ReactionWithEmoji>>
         get() = _reactionList
 
-    override suspend fun updateReactionList(data: PagingData<Reaction>) {
+    override suspend fun updateReactionList(data: PagingData<ReactionWithEmoji>) {
         _reactionList.emit(data)
     }
 
-    override suspend fun fetchReactionList(): Flow<PagingData<Reaction>> {
-        return repository.fetchReactionList().map { it.map { dto -> Reaction(dto) } }
+    override suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmoji>> {
+        return repository.fetchReactionList(postId, emojiUnicode).map { it.map { dto -> ReactionWithEmoji(dto) } }
     }
 
     override suspend fun uploadReaction(postId: String, emojiId: String): Boolean {
