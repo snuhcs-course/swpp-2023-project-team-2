@@ -2,6 +2,8 @@ package com.goliath.emojihub.views
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
+import android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -68,6 +70,7 @@ fun EmojiPage() {
     val emojiList = emojiViewModel.emojiList.collectAsLazyPagingItems()
 
     var showNonUserDialog by remember { mutableStateOf(false) }
+    var showVideoTooLongDialog by remember { mutableStateOf(false) }
     var dropDownMenuExpanded by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -79,8 +82,16 @@ fun EmojiPage() {
     ) { uri ->
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
-            emojiViewModel.videoUri = uri
-            navController.navigate(NavigationDestination.TransformVideo)
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+            val duration = retriever.extractMetadata(METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
+            retriever.release()
+            if (duration >= 6000) {
+                showVideoTooLongDialog = true
+            } else {
+                emojiViewModel.videoUri = uri
+                navController.navigate(NavigationDestination.TransformVideo)
+            }
         }
     }
 
@@ -173,6 +184,15 @@ fun EmojiPage() {
                     }
                 }
             }
+        }
+
+        if (showVideoTooLongDialog) {
+            CustomDialog(
+                title = "안내",
+                body = "최대 5초 길이의 영상만 업로드할 수 있습니다.",
+                onDismissRequest = { showVideoTooLongDialog = false },
+                confirm = { showVideoTooLongDialog = false }
+            )
         }
 
         if (showNonUserDialog) {
