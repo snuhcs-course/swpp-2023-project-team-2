@@ -53,6 +53,11 @@ fun FeedPage() {
 
     var showNonUserDialog by remember { mutableStateOf(false) }
 
+    // 앱이 처음 실행될 때, 유저 정보를 가져오기 위함
+    LaunchedEffect(userViewModel) {
+        userViewModel.fetchMyInfo()
+    }
+
     LaunchedEffect(Unit) {
         postViewModel.fetchPostList()
     }
