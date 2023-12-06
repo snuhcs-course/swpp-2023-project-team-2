@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -34,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -41,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color.Black
 import com.goliath.emojihub.ui.theme.Color.LightGray
@@ -64,6 +68,7 @@ fun EmojiPage() {
     val emojiList = emojiViewModel.emojiList.collectAsLazyPagingItems()
 
     var showNonUserDialog by remember { mutableStateOf(false) }
+    var dropDownMenuExpanded by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -118,16 +123,38 @@ fun EmojiPage() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Trending 🔥", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = if (emojiViewModel.sortByDate == 0) "Trending 🔥" else "Recently added " + "U+D83D U+DD52".toEmoji(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-                Button(
-                    onClick = { emojiViewModel.toggleSortingMode() },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (emojiViewModel.sortByDate == 0) Black else LightGray,
-                        contentColor = White
-                    )
-                ) {
-                    Text(text = if (emojiViewModel.sortByDate == 1) "Sort by Date" else "Sort by Save Count", fontSize = 12.sp)
+                Column {
+                    Button(
+                        onClick = { dropDownMenuExpanded = true },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Black,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(text = "Sort by", fontSize = 12.sp)
+                    }
+
+                    DropdownMenu(
+                        expanded = dropDownMenuExpanded,
+                        onDismissRequest = { dropDownMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(onClick = {
+                            emojiViewModel.sortByDate = 1
+                            emojiViewModel.fetchEmojiList()
+                            dropDownMenuExpanded = false
+                        }) {
+                            Text(text = "created date")
+                        }
+                        DropdownMenuItem(onClick = {
+                            emojiViewModel.sortByDate = 0
+                            emojiViewModel.fetchEmojiList()
+                            dropDownMenuExpanded = false
+                        }) {
+                            Text(text = "save count")
+                        }
+                    }
                 }
             }
 

@@ -57,11 +57,6 @@ class EmojiViewModel @Inject constructor(
         }
     }
 
-    fun toggleSortingMode() {
-        sortByDate = sortByDate xor 1
-        fetchEmojiList()
-    }
-
     fun fetchMyCreatedEmojiList() {
         viewModelScope.launch {
             emojiUseCase.fetchMyCreatedEmojiList()
