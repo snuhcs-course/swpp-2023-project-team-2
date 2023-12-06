@@ -1,6 +1,5 @@
 package com.goliath.emojihub.views.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.OutlinedButton
@@ -71,16 +69,12 @@ fun CustomBottomSheet (
     var displayMyCreatedEmojis by remember { mutableStateOf(true) }
 
     var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
-    //val emojisByClass = emojiList.groupBy { it.unicode }
-    //val emojiClassFilters = listOf("전체") + emojisByClass.keys.toList()
-    //val emojiCounts = emojisByClass.mapValues { it.value.size }
-    var selectedEmojiUnicode by remember { mutableStateOf("") }
-
     val emojisByUnicode = postViewModel.currentPost.reaction.groupBy { it.emoji_unicode }
     val emojiUnicodeFilters = listOf("전체") + emojisByUnicode.keys.toList()
     val emojiCounts = emojisByUnicode.mapValues { it.value.size }
+    var selectedEmojiUnicode by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedEmojiUnicode) {
         viewModel.fetchMyCreatedEmojiList()
         viewModel.fetchMySavedEmojiList()
         reactionViewModel.fetchReactionList(postViewModel.currentPostId, selectedEmojiUnicode)
@@ -115,8 +109,7 @@ fun CustomBottomSheet (
                                     isSelected = emojiUnicodeFilters[unicode] == selectedEmojiClass,
                                     onSelected = {
                                         selectedEmojiClass = emojiUnicodeFilters[unicode]
-                                        selectedEmojiUnicode = if (emojiUnicodeFilters[unicode] == "전체") "" else emojiUnicodeFilters[unicode].replace("+", "%2B")
-                                        Log.d("selectedEmojiUnicode", selectedEmojiUnicode)
+                                        selectedEmojiUnicode = if (emojiUnicodeFilters[unicode] == "전체") "" else emojiUnicodeFilters[unicode]
                                     }
                                 )
                             }
@@ -188,13 +181,10 @@ fun CustomBottomSheet (
                     BottomSheetContent.EMPTY -> {}
 
                     BottomSheetContent.VIEW_REACTION -> {
-                        //Log.d("viewReaction", "itemCount= ${reactionList.itemCount}")
                         items(reactionList.itemCount) { index ->
                             reactionList[index]?.let {
-                                Log.d("viewReaction", "emojiDto= ${it.emojiDto}")
                                 val emojiDto = it.emojiDto
                                 if (emojiDto != null){
-                                    Log.d("viewReaction", "emojiUnicode= ${emojiDto.unicode}")
                                     EmojiCell(emoji = Emoji(emojiDto), displayMode = EmojiCellDisplay.VERTICAL) { selectedEmoji ->
                                         viewModel.currentEmoji = selectedEmoji
                                         navController.navigate(NavigationDestination.PlayEmojiVideo)
@@ -212,7 +202,6 @@ fun CustomBottomSheet (
                                         coroutineScope.launch {
                                             val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
                                             if (success) {
-                                                Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
@@ -228,7 +217,6 @@ fun CustomBottomSheet (
                                         coroutineScope.launch {
                                             val success = reactionViewModel.uploadReaction(postId = postViewModel.currentPostId, emojiId = it.id)
                                             if (success) {
-                                                Log.d("addReaction", "postId = ${postViewModel.currentPostId}, emojiId = ${it.id}")
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
