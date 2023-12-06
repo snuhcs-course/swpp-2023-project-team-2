@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
+import java.net.ConnectException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -72,7 +72,7 @@ class EmojiUseCaseImpl @Inject constructor(
     override suspend fun fetchEmojiList(sortByDate: Int): Flow<PagingData<Emoji>> {
         return try {
             emojiRepository.fetchEmojiList(sortByDate).map { it.map { dto -> Emoji(dto) } }
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             flowOf(PagingData.empty())
         } catch (e: Exception) {
@@ -84,7 +84,7 @@ class EmojiUseCaseImpl @Inject constructor(
     override suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<Emoji>> {
         return try {
             emojiRepository.fetchMyCreatedEmojiList().map { it.map { dto -> Emoji(dto) } }
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             flowOf(PagingData.empty())
         } catch (e: Exception) {
@@ -96,7 +96,7 @@ class EmojiUseCaseImpl @Inject constructor(
     override suspend fun fetchMySavedEmojiList(): Flow<PagingData<Emoji>> {
         return try {
             emojiRepository.fetchMySavedEmojiList().map { it.map { dto -> Emoji(dto) } }
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             flowOf(PagingData.empty())
         } catch (e: Exception) {
@@ -106,17 +106,28 @@ class EmojiUseCaseImpl @Inject constructor(
     }
 
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
-        return x3dRepository.createEmoji(videoUri, topK)
+        return try {
+            x3dRepository.createEmoji(videoUri, topK)
+        } catch (e: Exception) {
+            Log.e("EmojiUseCase", "Unknown Exception on createEmoji: ${e.message}")
+            x3dRepository.DEFAULT_EMOJI_LIST
+        }
     }
 
     override suspend fun uploadEmoji(emojiUnicode: String, emojiLabel: String, videoFile: File): Boolean {
         val dto = UploadEmojiDto(emojiUnicode, emojiLabel)
         return try {
-            emojiRepository.uploadEmoji(videoFile, dto)
+            val response = emojiRepository.uploadEmoji(videoFile, dto)
+            if (response.isSuccessful) {
+                true
+            } else {
+                errorController.setErrorState(response.code())
+                false
+            }
         } catch (e: IOException) {
             Log.e("EmojiUseCase", "IOException")
             false
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             false
         } catch (e: Exception) {
@@ -128,7 +139,7 @@ class EmojiUseCaseImpl @Inject constructor(
     override suspend fun saveEmoji(id: String): Boolean {
         return try {
             emojiRepository.saveEmoji(id).isSuccessful
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             false
         } catch (e: Exception) {
@@ -140,7 +151,7 @@ class EmojiUseCaseImpl @Inject constructor(
     override suspend fun unSaveEmoji(id: String): Boolean {
         return try {
             emojiRepository.unSaveEmoji(id).isSuccessful
-        } catch (e: HttpException) {
+        } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
             false
         } catch (e: Exception) {
