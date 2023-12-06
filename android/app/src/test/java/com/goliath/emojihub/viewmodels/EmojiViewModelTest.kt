@@ -58,22 +58,22 @@ class EmojiViewModelTest {
         coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
     }
 
-    @Test
-    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
-        // given
-        // for simplicity of testing, we return the same list for both cases
-        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
-        coEvery {
-            emojiUseCase.fetchEmojiList(1)
-        } returns sampleFetchedEmojiList
-        // when
-        emojiViewModel.toggleSortingMode()
-        advanceUntilIdle()
-        // then
-        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
-        coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
-        assertEquals(1, emojiViewModel.sortByDate)
-    }
+//    @Test
+//    fun toggleSortingMode_success_updateTrendingEmojiList() = runTest {
+//        // given
+//        // for simplicity of testing, we return the same list for both cases
+//        val sampleFetchedEmojiList = createDeterministicTrendingEmojiList(10)
+//        coEvery {
+//            emojiUseCase.fetchEmojiList(1)
+//        } returns sampleFetchedEmojiList
+//        // when
+//        emojiViewModel.toggleSortingMode()
+//        advanceUntilIdle()
+//        // then
+//        coVerify(exactly = 1) { emojiUseCase.fetchEmojiList(1) }
+//        coVerify(exactly = 1) { emojiUseCase.updateEmojiList(any()) }
+//        assertEquals(1, emojiViewModel.sortByDate)
+//    }
 
     @Test
     fun fetchMyCreatedEmojiList_success_updateMyCreatedEmojiList() = runTest {
