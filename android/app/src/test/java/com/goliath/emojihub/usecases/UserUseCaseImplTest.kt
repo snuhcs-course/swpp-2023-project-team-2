@@ -6,8 +6,10 @@ import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.LocalStorage
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.RegisterUserDto
+import com.goliath.emojihub.models.UserDetails
 import com.goliath.emojihub.models.responses.LoginResponseDto
 import com.goliath.emojihub.repositories.remote.UserRepository
+import com.goliath.emojihub.sampleUserDetailsDto
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -37,14 +39,14 @@ class UserUseCaseImplTest {
 
     // ! Fake SharedPreferences for testing
     class FakeSharedLocalStorage : LocalStorage {
-        private val fakePreference = mutableMapOf<String, String>()
+        private val fakePreference = mutableMapOf<String, String?>()
         override var accessToken: String?
             get() = fakePreference.getOrDefault("accessToken", "")
-            set(value) = fakePreference.set("accessToken", value!!)
+            set(value) = fakePreference.set("accessToken", value)
 
         override var currentUser: String?
             get() = fakePreference.getOrDefault("currentUser", "")
-            set(value) = fakePreference.set("currentUser", value!!)
+            set(value) = fakePreference.set("currentUser", value)
     }
 
     @Before
@@ -53,6 +55,39 @@ class UserUseCaseImplTest {
         mockkObject(EmojiHubApplication.Companion)
         every { EmojiHubApplication.preferences } returns FakeSharedLocalStorage()
         userUseCaseImpl = UserUseCaseImpl(userRepository, apiErrorController)
+    }
+
+    @Test
+    fun fetchMyInfo_success_updateUserDetailsState() {
+        // given
+        EmojiHubApplication.preferences.accessToken = sampleAccessToken
+        coEvery {
+            userRepository.fetchMyInfo(any())
+        } returns Response.success(sampleUserDetailsDto)
+        // when
+        runBlocking { userUseCaseImpl.fetchMyInfo() }
+        // then
+        coVerify(exactly = 1) { userRepository.fetchMyInfo(any()) }
+        assertEquals(
+            UserDetails(sampleUserDetailsDto),
+            userUseCaseImpl.userDetailsState.value
+        )
+    }
+
+    @Test
+    fun fetchMyInfo_failure_updateErrorState() {
+        // given
+        EmojiHubApplication.preferences.accessToken = sampleAccessToken
+        coEvery {
+            userRepository.fetchMyInfo(any())
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
+        // when
+        runBlocking { userUseCaseImpl.fetchMyInfo() }
+        // then
+        coVerify(exactly = 1) { userRepository.fetchMyInfo(any()) }
+        verify(exactly = 1) {
+            apiErrorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
+        }
     }
 
     @Test
@@ -139,13 +174,73 @@ class UserUseCaseImplTest {
         verify(exactly = 1) { apiErrorController.setErrorState(401) }
     }
 
-    // @Test
-    // TODO: Not yet implemented
-    fun logout() {
+    @Test
+    fun logout_success_updateAccessTokenAndUserStateToNull() {
+        // given
+        coEvery {
+            userRepository.logout()
+        } returns Response.success(Unit)
+        // when
+        runBlocking { userUseCaseImpl.logout() }
+        // then
+        coVerify(exactly = 1) { userRepository.logout() }
+        assertEquals(
+            null,
+            userUseCaseImpl.accessTokenState.value
+        )
+        assertEquals(
+            null,
+            userUseCaseImpl.userState.value
+        )
     }
 
-    // @Test
-    // TODO: Not yet implemented
-    fun signOut() {
+    @Test
+    fun logout_failure_updateErrorState() {
+        // given
+        coEvery {
+            userRepository.logout()
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
+        // when
+        runBlocking { userUseCaseImpl.logout() }
+        // then
+        coVerify(exactly = 1) { userRepository.logout() }
+        verify(exactly = 1) {
+            apiErrorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
+        }
+    }
+
+    @Test
+    fun signOut_success_updateAccessTokenAndUserStateToNull() {
+        // given
+        coEvery {
+            userRepository.signOut(any())
+        } returns Response.success(Unit)
+        // when
+        runBlocking { userUseCaseImpl.signOut() }
+        // then
+        coVerify(exactly = 1) { userRepository.signOut(any()) }
+        assertEquals(
+            null,
+            userUseCaseImpl.accessTokenState.value
+        )
+        assertEquals(
+            null,
+            userUseCaseImpl.userState.value
+        )
+    }
+
+    @Test
+    fun signOut_failure_updateErrorState() {
+        // given
+        coEvery {
+            userRepository.signOut(any())
+        } returns Response.error(CustomError.INTERNAL_SERVER_ERROR.statusCode, mockk(relaxed=true))
+        // when
+        runBlocking { userUseCaseImpl.signOut() }
+        // then
+        coVerify(exactly = 1) { userRepository.signOut(any()) }
+        verify(exactly = 1) {
+            apiErrorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
+        }
     }
 }
