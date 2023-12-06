@@ -9,14 +9,13 @@ import javax.inject.Inject
 class ReactionPagingSource @Inject constructor(
     private val api: ReactionApi,
     private val postId: String,
-    private val emojiUnicode: String,
-    private val index: Int
+    private val emojiUnicode: String
 ): PagingSource<Int, ReactionWithEmojiDto>(){
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReactionWithEmojiDto> {
         val cursor = params.key ?: 1
         val count = params.loadSize
         return try {
-            val response: List<ReactionWithEmojiDto>? = api.fetchReactionList(postId, emojiUnicode, index, count).body()
+            val response: List<ReactionWithEmojiDto>? = api.fetchReactionList(postId, emojiUnicode, cursor, count).body()
             val data = response ?: listOf()
             LoadResult.Page(
                 data = data,

@@ -15,7 +15,7 @@ import javax.inject.Singleton
 interface ReactionUseCase {
 
     val reactionList: StateFlow<PagingData<ReactionWithEmoji>>
-    suspend fun fetchReactionList(postId: String, emojiUnicode: String, index: Int): Flow<PagingData<ReactionWithEmoji>>
+    suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmoji>>
     suspend fun updateReactionList(data: PagingData<ReactionWithEmoji>)
     suspend fun uploadReaction(postId: String, emojiId: String): Boolean
     suspend fun getReactionWithId(id: String)
@@ -36,8 +36,8 @@ class ReactionUseCaseImpl @Inject constructor(
         _reactionList.emit(data)
     }
 
-    override suspend fun fetchReactionList(postId: String, emojiUnicode: String, index: Int): Flow<PagingData<ReactionWithEmoji>> {
-        return repository.fetchReactionList(postId, emojiUnicode, index).map { it.map { dto -> ReactionWithEmoji(dto) } }
+    override suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmoji>> {
+        return repository.fetchReactionList(postId, emojiUnicode).map { it.map { dto -> ReactionWithEmoji(dto) } }
     }
 
     override suspend fun uploadReaction(postId: String, emojiId: String): Boolean {

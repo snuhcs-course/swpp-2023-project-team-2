@@ -35,7 +35,7 @@ data class ReactionWithEmojiDto(
     @SerializedName("created_by") val createdBy: String,
     @SerializedName("emoji_id") val emojiId: String,
     @SerializedName("post_id") val postId: String,
-    @SerializedName("emojiDto") val emojiDto: EmojiDto
+    @SerializedName("emojiDto") val emojiDto: EmojiDto?
 )
 
 class ReactionWithEmoji(
@@ -46,5 +46,5 @@ class ReactionWithEmoji(
     val createdBy: String = dto.createdBy
     val emojiId: String = dto.emojiId
     val postId: String = dto.postId
-    val emojiDto: EmojiDto = dto.emojiDto
+    val emojiDto: EmojiDto? = dto.emojiDto
 }

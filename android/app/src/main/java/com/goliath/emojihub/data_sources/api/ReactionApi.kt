@@ -15,7 +15,7 @@ interface ReactionApi {
         @Query("emojiId") emojiId: String
     ): Response<Unit>
 
-    @GET("reactions")
+    @GET("reaction")
     suspend fun fetchReactionList(
         @Query("postId") postId: String,
         @Query("emojiUnicode") emojiUnicode: String,

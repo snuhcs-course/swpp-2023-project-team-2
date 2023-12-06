@@ -12,7 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface ReactionRepository {
-    suspend fun fetchReactionList(postId: String, emojiUnicode: String, index: Int): Flow<PagingData<ReactionWithEmojiDto>>
+    suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmojiDto>>
     suspend fun uploadReaction(postId: String, emojiId: String): Response<Unit>
     suspend fun getReactionWithId(id: String)
     suspend fun deleteReaction(reactionId: String)
@@ -22,10 +22,10 @@ interface ReactionRepository {
 class ReactionRepositoryImpl @Inject constructor(
     private val reactionApi: ReactionApi
 ): ReactionRepository {
-    override suspend fun fetchReactionList(postId: String, emojiUnicode: String, index: Int): Flow<PagingData<ReactionWithEmojiDto>> {
+    override suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmojiDto>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { ReactionPagingSource(reactionApi, postId, emojiUnicode, index) }
+            pagingSourceFactory = { ReactionPagingSource(reactionApi, postId, emojiUnicode) }
         ).flow
     }
 
