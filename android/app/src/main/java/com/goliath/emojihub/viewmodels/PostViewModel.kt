@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.usecases.PostUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ class PostViewModel @Inject constructor(
     val postList = postUseCase.postList
     val myPostList = postUseCase.myPostList
     var currentPostId by mutableStateOf("")
+    lateinit var currentPost: Post
 
     suspend fun fetchPostList() {
         viewModelScope.launch {

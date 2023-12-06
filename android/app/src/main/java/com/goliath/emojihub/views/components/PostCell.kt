@@ -92,13 +92,15 @@ fun PostCell(
                         onClick = {
                             coroutineScope.launch {
                                 emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
+                                postViewModel.currentPostId = post.id
+                                postViewModel.currentPost = post
                                 bottomSheetState.show()
                             }
                         },
 
                         ) {
                         Text(
-                            text = reactionsToString(post.reaction), //TODO: Replace with reaction_unicode sent from backend
+                            text = reactionsToString(post.reaction),
                             fontSize = 13.sp,
                             color = EmojiHubDetailLabel
                         )
@@ -118,6 +120,7 @@ fun PostCell(
                         coroutineScope.launch {
                             emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
                             postViewModel.currentPostId = post.id
+                            postViewModel.currentPost = post
                             bottomSheetState.show()
                         }
                     }

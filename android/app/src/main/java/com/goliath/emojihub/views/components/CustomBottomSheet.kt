@@ -64,21 +64,26 @@ fun CustomBottomSheet (
     val reactionViewModel = hiltViewModel<ReactionViewModel>()
     val postViewModel = hiltViewModel<PostViewModel>()
     val navController = LocalNavController.current
-    val reactionList = reactionViewModel.reactionList.collectAsLazyPagingItems()
-
-    var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
-    val emojisByClass = emojiList.groupBy { it.unicode }
-    val emojiClassFilters = listOf("전체") + emojisByClass.keys.toList()
-    val emojiCounts = emojisByClass.mapValues { it.value.size }
 
     val myCreatedEmojiList = viewModel.myCreatedEmojiList.collectAsLazyPagingItems()
     val mySavedEmojiList = viewModel.mySavedEmojiList.collectAsLazyPagingItems()
+    val reactionList = reactionViewModel.reactionList.collectAsLazyPagingItems()
     var displayMyCreatedEmojis by remember { mutableStateOf(true) }
+
+    var selectedEmojiClass by remember { mutableStateOf<String?>("전체") }
+    //val emojisByClass = emojiList.groupBy { it.unicode }
+    //val emojiClassFilters = listOf("전체") + emojisByClass.keys.toList()
+    //val emojiCounts = emojisByClass.mapValues { it.value.size }
+    var selectedEmojiUnicode by remember { mutableStateOf("") }
+
+    val emojisByUnicode = postViewModel.currentPost.reaction.groupBy { it.emoji_unicode }
+    val emojiUnicodeFilters = listOf("전체") + emojisByUnicode.keys.toList()
+    val emojiCounts = emojisByUnicode.mapValues { it.value.size }
 
     LaunchedEffect(Unit) {
         viewModel.fetchMyCreatedEmojiList()
         viewModel.fetchMySavedEmojiList()
-        reactionViewModel.fetchReactionList(postId = postViewModel.currentPostId, emojiUnicode = "", index = 0)
+        reactionViewModel.fetchReactionList(postViewModel.currentPostId, selectedEmojiUnicode)
     }
 
     ModalBottomSheet(
@@ -100,16 +105,18 @@ fun CustomBottomSheet (
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         EmojiClassFilterRow(
-                            emojiClass = emojiClassFilters,
+                            emojiClass = emojiUnicodeFilters,
                             emojiCounts = emojiCounts,
                             onEmojiClassSelected = { selectedEmojiClass = it}
                         ) {
-                            items(emojiClassFilters.size) { emojiClass ->
+                            items(emojiUnicodeFilters.size) { unicode ->
                                 EmojiClassFilterButton(
-                                    text = if (emojiClassFilters[emojiClass] == "전체") "전체" else "${emojiClassFilters[emojiClass].toEmoji()}${emojiCounts[emojiClassFilters[emojiClass]]}",
-                                    isSelected = emojiClassFilters[emojiClass] == selectedEmojiClass,
+                                    text = if (emojiUnicodeFilters[unicode] == "전체") "전체" else "${emojiUnicodeFilters[unicode].toEmoji()}${emojiCounts[emojiUnicodeFilters[unicode]]}",
+                                    isSelected = emojiUnicodeFilters[unicode] == selectedEmojiClass,
                                     onSelected = {
-                                        selectedEmojiClass = emojiClassFilters[emojiClass]
+                                        selectedEmojiClass = emojiUnicodeFilters[unicode]
+                                        selectedEmojiUnicode = if (emojiUnicodeFilters[unicode] == "전체") "" else emojiUnicodeFilters[unicode].replace("+", "%2B")
+                                        Log.d("selectedEmojiUnicode", selectedEmojiUnicode)
                                     }
                                 )
                             }
@@ -181,12 +188,18 @@ fun CustomBottomSheet (
                     BottomSheetContent.EMPTY -> {}
 
                     BottomSheetContent.VIEW_REACTION -> {
-                        items(
-                            if (selectedEmojiClass == "전체") emojiList
-                            else emojiList.filter { it.unicode == selectedEmojiClass }, key = { it.id }) { emoji ->
-                            EmojiCell(emoji = emoji, displayMode = EmojiCellDisplay.VERTICAL) {selectedEmoji ->
-                                viewModel.currentEmoji = selectedEmoji
-                                navController.navigate(NavigationDestination.PlayEmojiVideo)
+                        //Log.d("viewReaction", "itemCount= ${reactionList.itemCount}")
+                        items(reactionList.itemCount) { index ->
+                            reactionList[index]?.let {
+                                Log.d("viewReaction", "emojiDto= ${it.emojiDto}")
+                                val emojiDto = it.emojiDto
+                                if (emojiDto != null){
+                                    Log.d("viewReaction", "emojiUnicode= ${emojiDto.unicode}")
+                                    EmojiCell(emoji = Emoji(emojiDto), displayMode = EmojiCellDisplay.VERTICAL) { selectedEmoji ->
+                                        viewModel.currentEmoji = selectedEmoji
+                                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                                    }
+                                }
                             }
                         }
                     }
