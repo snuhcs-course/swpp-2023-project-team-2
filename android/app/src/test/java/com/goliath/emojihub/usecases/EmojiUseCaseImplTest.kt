@@ -184,7 +184,7 @@ class EmojiUseCaseImplTest {
         val videoFile = File("sample.mp4")
         coEvery {
             emojiRepository.uploadEmoji(videoFile, any())
-        } returns true
+        } returns Response.success(Unit)
         // when
         val isUploaded = runBlocking {
             emojiUseCaseImpl.uploadEmoji(emojiUnicode, emojiLabel, videoFile)

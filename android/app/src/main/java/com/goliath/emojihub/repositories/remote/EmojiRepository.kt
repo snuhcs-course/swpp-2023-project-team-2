@@ -25,7 +25,7 @@ interface EmojiRepository {
     suspend fun fetchMyCreatedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun fetchMySavedEmojiList(): Flow<PagingData<EmojiDto>>
     suspend fun getEmojiWithId(id: String): EmojiDto?
-    suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean
+    suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Response<Unit>
     suspend fun saveEmoji(id: String): Response<Unit>
     suspend fun unSaveEmoji(id: String): Response<Unit>
     suspend fun deleteEmoji(id: String): Response<Unit>
@@ -61,7 +61,7 @@ class EmojiRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Boolean {
+    override suspend fun uploadEmoji(videoFile: File, emojiDto: UploadEmojiDto): Response<Unit> {
         val emojiDtoJson = Gson().toJson(emojiDto)
         val emojiDtoRequestBody = emojiDtoJson.toRequestBody("application/json".toMediaTypeOrNull())
 
@@ -75,7 +75,6 @@ class EmojiRepositoryImpl @Inject constructor(
             thumbnailFile.name, thumbnailRequestBody)
 
         return emojiApi.uploadEmoji(videoFileMultipartBody, thumbnailMultipartBody, emojiDtoRequestBody)
-            .isSuccessful
     }
 
     override suspend fun saveEmoji(id: String): Response<Unit> {

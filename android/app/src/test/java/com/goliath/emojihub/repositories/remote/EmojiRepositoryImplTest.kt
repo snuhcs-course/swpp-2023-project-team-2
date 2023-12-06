@@ -130,12 +130,12 @@ class EmojiRepositoryImplTest {
         } returns File("sampleThumbnailFile")
 
         // when
-        val isUploaded = runBlocking {
+        val response = runBlocking {
             emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
         }
         // then
         coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
-        assertTrue(isUploaded)
+        assertTrue(response.isSuccessful)
     }
 
     @Test
