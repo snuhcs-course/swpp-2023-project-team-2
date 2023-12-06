@@ -31,10 +31,11 @@ class EmojiPagingSource @Inject constructor(
                 }
             }
             val data = response ?: listOf()
+            val nextKey = if (response?.size!! < count) null else cursor + 1 //Stops infinite fetching
             LoadResult.Page(
                 data = data,
                 prevKey = if (cursor == 1) null else cursor - 1,
-                nextKey = if (data.isEmpty()) null else cursor + 1
+                nextKey = nextKey
             )
         } catch (exception: Exception) {
             LoadResult.Error(exception)
