@@ -125,8 +125,8 @@ fun SignUpPage() {
                 title = "완료",
                 body = "계정 생성이 완료되었습니다.",
                 onDismissRequest = { showDialog = false },
-                confirm = { navController.navigateAsOrigin(NavigationDestination.Login)},
-                dismiss = {showDialog = false}
+                dismiss = { showDialog = false },
+                confirm = { navController.navigateAsOrigin(NavigationDestination.Login) }
             )
         }
     }
