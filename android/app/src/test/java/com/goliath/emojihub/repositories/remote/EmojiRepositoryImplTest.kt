@@ -3,6 +3,7 @@ package com.goliath.emojihub.repositories.remote
 import androidx.paging.testing.asSnapshot
 import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.api.EmojiApi
+import com.goliath.emojihub.data_sources.remote.EmojiDataSource
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.UploadEmojiDto
@@ -28,8 +29,8 @@ import java.lang.Exception
 @RunWith(JUnit4::class)
 class EmojiRepositoryImplTest {
     private val emojiApi = mockk<EmojiApi>()
-    private val context = mockk<android.content.Context>()
-    private val emojiRepositoryImpl = EmojiRepositoryImpl(emojiApi, context)
+    private val emojiDataSource = mockk<EmojiDataSource>()
+    private val emojiRepositoryImpl = EmojiRepositoryImpl(emojiApi, emojiDataSource)
     private val sampleEmojiDto = EmojiDto(
         createdBy = "channn",
         createdAt = "2023-11-24 14:25:05",
@@ -123,22 +124,22 @@ class EmojiRepositoryImplTest {
             emojiApi.uploadEmoji(any(), any(), any())
         } returns Response.success(Unit)
 
-        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, context))
+        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, emojiDataSource))
         every {
-            emojiRepositoryImpl.createVideoThumbnail(any(), any())
+            emojiDataSource.createVideoThumbNail(any())
         } returns File("sampleThumbnailFile")
 
         // when
-        val isUploaded = runBlocking {
+        val response = runBlocking {
             emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
         }
         // then
         coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
-        assertTrue(isUploaded)
+        assertTrue(response.isSuccessful)
     }
 
     @Test
-    fun uploadEmoji_failureWithIOException_returnsFalse() {
+    fun uploadEmoji_failureWithException_throwsException() {
         // given
         mockkStatic(File::class)
         val sampleVideoFile = File("sampleVideoFile")
@@ -147,18 +148,21 @@ class EmojiRepositoryImplTest {
             emojiApi.uploadEmoji(any(), any(), any())
         } throws mockk<IOException>()
 
-        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, context))
+        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, emojiDataSource))
         every {
-            emojiRepositoryImpl.createVideoThumbnail(any(), any())
+            emojiDataSource.createVideoThumbNail(any())
         } returns File("sampleThumbnailFile")
 
         // when
-        val isUploaded = runBlocking {
-            emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
+        try {
+            runBlocking {
+                emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
+            }
+        } catch (e: Exception) {
+            // then
+            coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
+            assertTrue(e is IOException)
         }
-        // then
-        coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
-        assertFalse(isUploaded)
     }
 
     @Test
@@ -171,42 +175,21 @@ class EmojiRepositoryImplTest {
             emojiApi.uploadEmoji(any(), any(), any())
         } throws mockk<HttpException>()
 
-        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, context))
+        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, emojiDataSource))
         every {
-            emojiRepositoryImpl.createVideoThumbnail(any(), any())
+            emojiDataSource.createVideoThumbNail(any())
         } returns File("sampleThumbnailFile")
 
         // when
-        val isUploaded = runBlocking {
-            emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
+        try {
+            runBlocking {
+                emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
+            }
+        } catch (e: Exception) {
+            // then
+            coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
+            assertTrue(e is HttpException)
         }
-        // then
-        coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
-        assertFalse(isUploaded)
-    }
-
-    @Test
-    fun uploadEmoji_failureWithOtherException_returnsFalse() {
-        // given
-        mockkStatic(File::class)
-        val sampleVideoFile = File("sampleVideoFile")
-        val sampleUploadEmojiDto = mockk<UploadEmojiDto>()
-        coEvery {
-            emojiApi.uploadEmoji(any(), any(), any())
-        } throws spyk<Exception>()
-
-        val emojiRepositoryImpl = spyk(EmojiRepositoryImpl(emojiApi, context))
-        every {
-            emojiRepositoryImpl.createVideoThumbnail(any(), any())
-        } returns File("sampleThumbnailFile")
-
-        // when
-        val isUploaded = runBlocking {
-            emojiRepositoryImpl.uploadEmoji(sampleVideoFile, sampleUploadEmojiDto)
-        }
-        // then
-        coVerify(exactly = 1) { emojiApi.uploadEmoji(any(), any(), any()) }
-        assertFalse(isUploaded)
     }
 
     @Test
