@@ -7,6 +7,8 @@ import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
+import com.goliath.emojihub.models.ReactionWithEmojiUnicode
+import com.goliath.emojihub.models.UserDetailsDto
 import com.goliath.emojihub.models.X3dInferenceResult
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -22,18 +24,28 @@ fun mockLogClass() {
     every { Log.e(any(), any()) } returns 0
 }
 
+// USER TESTING UTILS
+val sampleUserDetailsDto = UserDetailsDto(
+    email = "sampleEmail",
+    name = "sampleName",
+    password = "samplePassword",
+    savedEmojiList = listOf("a", "b", "c"),
+    createdEmojiList = listOf("d", "e", "f"),
+    createdPostList = listOf("g", "h", "i"),
+)
+
 // EMOJI TESTING UTILS
 val dummyUsernames = listOf("channn", "doggydog", "meow_0w0", "mpunchmm", "kick_back")
 val dummyUnicodes = listOf("U+1F44D", "U+1F600", "U+1F970", "U+1F60E", "U+1F621", "U+1F63A", "U+1F496", "U+1F415")
 const val dummyMaxSavedCounts = 2000
-fun createDeterministicDummyEmojiDtoList(listSize : Int): Flow<PagingData<EmojiDto>> {
+fun createDeterministicTrendingEmojiDtoList(listSize : Int): Flow<PagingData<EmojiDto>> {
     val dummyEmojiList = mutableListOf<EmojiDto>()
     for (i in 0 until listSize) {
         dummyEmojiList.add(
             EmojiDto(
                 createdBy = dummyUsernames[i % dummyUsernames.size],
-                createdAt = "2023.09.16",
-                savedCount = dummyMaxSavedCounts % (i + 1),
+                createdAt = "2023."+i%12+".16",
+                savedCount = dummyMaxSavedCounts - i*10,
                 videoLink = "",
                 thumbnailLink = "",
                 unicode = dummyUnicodes[i % dummyUnicodes.size],
@@ -44,8 +56,8 @@ fun createDeterministicDummyEmojiDtoList(listSize : Int): Flow<PagingData<EmojiD
     }
     return flowOf(PagingData.from(dummyEmojiList))
 }
-fun createDeterministicDummyEmojiList(listSize: Int): Flow<PagingData<Emoji>> {
-    return createDeterministicDummyEmojiDtoList(listSize).map { it.map { dto -> Emoji(dto) } }
+fun createDeterministicTrendingEmojiList(listSize: Int): Flow<PagingData<Emoji>> {
+    return createDeterministicTrendingEmojiDtoList(listSize).map { it.map { dto -> Emoji(dto) } }
 }
 
 // POST TESTING UTILS
@@ -57,7 +69,10 @@ val samplePostDto = PostDto(
             "지갑이 하수구 구멍으로 빠지려는 찰나, 발로 굴러가는 지갑을 막아서 다행히 참사는 막을 수 있었다. " +
             "지갑 주인분께서 감사하다고 카페 드림에서 커피도 한 잔 사주셨다.",
     modifiedAt = "2023.10.23",
-    reaction = listOf("good", "check", "good")
+    reaction = listOf(
+        ReactionWithEmojiUnicode("3456", "U+1F44D"),
+        ReactionWithEmojiUnicode("5678", "U+1F44D")
+    )
 )
 fun createDeterministicDummyPostDtoList(listSize : Int): Flow<PagingData<PostDto>> {
     val dummyPostList = mutableListOf<PostDto>()
@@ -71,7 +86,10 @@ fun createDeterministicDummyPostDtoList(listSize : Int): Flow<PagingData<PostDto
                         "지갑이 하수구 구멍으로 빠지려는 찰나, 발로 굴러가는 지갑을 막아서 다행히 참사는 막을 수 있었다. " +
                         "지갑 주인분께서 감사하다고 카페 드림에서 커피도 한 잔 사주셨다.",
                 modifiedAt = "2023.10.23",
-                reaction = listOf("good", "check", "good")
+                reaction = listOf(
+                    ReactionWithEmojiUnicode("3456", "U+1F44D"),
+                    ReactionWithEmojiUnicode("5678", "U+1F44D")
+                )
             )
         )
     }

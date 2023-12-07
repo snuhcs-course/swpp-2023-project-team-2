@@ -18,6 +18,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,9 +36,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.goliath.emojihub.LocalBottomNavigationController
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.R
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.UnderlinedTextField
@@ -47,20 +51,28 @@ fun LoginPage() {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
 
+    val isLoginButtonDisabled by remember { derivedStateOf { username.text.isEmpty() || password.text.isEmpty() }}
+
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
 
     val userViewModel = hiltViewModel<UserViewModel>()
     val coroutineScope = rememberCoroutineScope()
+
     val navController = LocalNavController.current
+    val bottomNavigationController = LocalBottomNavigationController.current
+
+    LaunchedEffect(Unit) {
+        bottomNavigationController.updateDestination(PageItem.Feed)
+    }
 
     Box(modifier = Modifier
-            .background(Color.White)
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .clickable(interactionSource = interactionSource, indication = null) {
-                focusManager.clearFocus()
-            },
+        .background(Color.White)
+        .fillMaxSize()
+        .padding(horizontal = 16.dp)
+        .clickable(interactionSource = interactionSource, indication = null) {
+            focusManager.clearFocus()
+        },
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -94,8 +106,13 @@ fun LoginPage() {
                     coroutineScope.launch {
                         userViewModel.login(username.text, password.text)
                     }
+                    userViewModel.fetchMyInfo()
                 },
-                modifier = Modifier.padding(top = 24.dp).fillMaxWidth().height(44.dp),
+                modifier = Modifier
+                    .padding(top = 24.dp)
+                    .fillMaxWidth()
+                    .height(44.dp),
+                enabled = !isLoginButtonDisabled,
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -112,7 +129,9 @@ fun LoginPage() {
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = { navController.navigate(NavigationDestination.SignUp) },
-                modifier = Modifier.fillMaxWidth().height(44.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
                 shape = RoundedCornerShape(50),
                 border = BorderStroke(1.dp, Color.Black),
                 colors = ButtonDefaults.buttonColors(
@@ -133,7 +152,7 @@ fun LoginPage() {
                 color = Color.DarkGray,
                 style = TextStyle(textDecoration = TextDecoration.Underline),
                 modifier = Modifier.clickable {
-                    navController.navigate(NavigationDestination.MainPage)
+                    navController.navigateAsOrigin(NavigationDestination.MainPage)
                 }
             )
             Spacer(modifier = Modifier.height(24.dp))

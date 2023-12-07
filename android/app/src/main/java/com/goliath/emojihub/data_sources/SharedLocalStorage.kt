@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 interface LocalStorage {
     var accessToken: String?
-    val currentUser: String?
+    var currentUser: String?
 }
 
 @Singleton

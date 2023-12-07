@@ -3,6 +3,7 @@ package com.goliath.emojihub.viewmodels
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -26,25 +27,29 @@ class EmojiViewModel @Inject constructor(
     private val emojiUseCase: EmojiUseCase
 ): ViewModel() {
     lateinit var videoUri: Uri
-    var currentEmoji: Emoji? = null
+    lateinit var currentEmoji: Emoji
     var bottomSheetContent by mutableStateOf(BottomSheetContent.EMPTY)
 
-    private val _saveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    // 0: not saved, 1: saved, -1: not changed
+    private val _saveEmojiState = MutableStateFlow(-1)
     val saveEmojiState = _saveEmojiState.asStateFlow()
 
-    private val _unSaveEmojiState = MutableStateFlow<Result<Unit>?>(null)
+    private val _unSaveEmojiState = MutableStateFlow(-1)
     val unSaveEmojiState = _unSaveEmojiState.asStateFlow()
+
+    var sortByDate by mutableIntStateOf(0)
 
     val emojiList = emojiUseCase.emojiList
     val myCreatedEmojiList = emojiUseCase.myCreatedEmojiList
     val mySavedEmojiList = emojiUseCase.mySavedEmojiList
+
     companion object {
         private const val _topK = 3
     }
 
     fun fetchEmojiList() {
         viewModelScope.launch {
-            emojiUseCase.fetchEmojiList()
+            emojiUseCase.fetchEmojiList(sortByDate)
                 .cachedIn(viewModelScope)
                 .collect {
                     emojiUseCase.updateEmojiList(it)
@@ -86,15 +91,23 @@ class EmojiViewModel @Inject constructor(
 
     fun saveEmoji(id: String) {
         viewModelScope.launch {
-            val result = emojiUseCase.saveEmoji(id)
-            _saveEmojiState.value = result
+            val isSuccess = emojiUseCase.saveEmoji(id)
+            _saveEmojiState.value = if (isSuccess) 1 else 0
         }
     }
 
     fun unSaveEmoji(id: String) {
         viewModelScope.launch {
-        val result = emojiUseCase.unSaveEmoji(id)
-        _unSaveEmojiState.value = result
+            val isSuccess = emojiUseCase.unSaveEmoji(id)
+            _unSaveEmojiState.value = if (isSuccess) 1 else 0
         }
+    }
+
+    fun resetSaveEmojiState() {
+        _saveEmojiState.value = -1
+    }
+
+    fun resetUnSaveEmojiState() {
+        _unSaveEmojiState.value = -1
     }
 }

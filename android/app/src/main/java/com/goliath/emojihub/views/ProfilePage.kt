@@ -29,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.ui.theme.Color.White
@@ -61,6 +62,11 @@ fun ProfilePage() {
 
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+
+    // 앱이 처음 실행될 때, 유저 정보를 가져오기 위함
+    LaunchedEffect(userViewModel) {
+        userViewModel.fetchMyInfo()
+    }
 
     LaunchedEffect(Unit) {
         postViewModel.fetchMyPostList()
@@ -125,11 +131,14 @@ fun ProfilePage() {
                         navigateToDestination = { navController.navigate(NavigationDestination.MyEmojiList) }
                     ) {
                         items(myCreatedEmojiList.itemCount) { index ->
-                            myCreatedEmojiList[index]?.let {
+                            myCreatedEmojiList[index]?.let { emoji ->
                                 EmojiCell(
-                                    emoji = it,
+                                    emoji = emoji,
                                     displayMode = EmojiCellDisplay.HORIZONTAL,
-                                    onSelected = {})
+                                    onSelected = {
+                                        emojiViewModel.currentEmoji = emoji
+                                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                                    })
                             }
                         }
                     }
@@ -142,11 +151,14 @@ fun ProfilePage() {
                         navigateToDestination = { navController.navigate(NavigationDestination.MySavedEmojiList) }
                     ) {
                         items(mySavedEmojiList.itemCount) { index ->
-                            mySavedEmojiList[index]?.let {
+                            mySavedEmojiList[index]?.let { emoji ->
                                 EmojiCell(
-                                    emoji = it,
+                                    emoji = emoji,
                                     displayMode = EmojiCellDisplay.HORIZONTAL,
-                                    onSelected = {})
+                                    onSelected = {
+                                        emojiViewModel.currentEmoji = emoji
+                                        navController.navigate(NavigationDestination.PlayEmojiVideo)
+                                    })
                             }
                         }
                     }
@@ -173,7 +185,10 @@ fun ProfilePage() {
                     needsCancelButton = true,
                     onDismissRequest = { showLogoutDialog = false },
                     dismiss = { showLogoutDialog = false },
-                    confirm = { userViewModel.logout() }
+                    confirm = {
+                        navController.navigateAsOrigin(NavigationDestination.Onboard)
+                        userViewModel.logout()
+                    }
                 )
             }
 
@@ -186,7 +201,10 @@ fun ProfilePage() {
                     needsCancelButton = true,
                     onDismissRequest = { showSignOutDialog = false },
                     dismiss = { showSignOutDialog = false },
-                    confirm = { userViewModel.signOut() }
+                    confirm = {
+                        navController.navigateAsOrigin(NavigationDestination.Onboard)
+                        userViewModel.signOut()
+                    }
                 )
             }
         }

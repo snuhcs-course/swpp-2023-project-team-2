@@ -1,5 +1,7 @@
 package com.goliath.emojihub.extensions
 
+import com.goliath.emojihub.models.ReactionWithEmojiUnicode
+
 fun String.toEmoji(): String {
     return try {
         this.trim().split(" ").map { it.removePrefix("U+").toInt(16) }
@@ -9,18 +11,20 @@ fun String.toEmoji(): String {
     }
 }
 
-fun reactionsToString (reactions: List<String>): String {
+fun reactionsToString (reactions: List<ReactionWithEmojiUnicode>): String {
     var emojisStr = ""
 
     if (reactions.size >= 3) {
-        for (emoji in reactions) {
-            emojisStr += emoji
+        val lastThreeReactions = reactions.takeLast(3)
+        for (reaction in lastThreeReactions) {
+            emojisStr += reaction.emoji_unicode.toEmoji()
             emojisStr += " "
         }
-        emojisStr += "외 ${reactions.size - 3}개의 반응"
+        emojisStr += if (reactions.size == 3) "3개의 반응"
+        else "외 ${reactions.size - 3}개의 반응"
     } else {
-        for (emoji in reactions) {
-            emojisStr += emoji
+        for (reaction in reactions) {
+            emojisStr += reaction.emoji_unicode.toEmoji()
             emojisStr += " "
         }
         emojisStr += "${reactions.size}개의 반응"

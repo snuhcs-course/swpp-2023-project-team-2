@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,8 +33,11 @@ import com.goliath.emojihub.views.LoginPage
 import com.goliath.emojihub.views.MainPage
 import com.goliath.emojihub.views.SignUpPage
 import com.goliath.emojihub.views.TransformVideoPage
+import com.goliath.emojihub.views.components.CreatedEmojiListView
+import com.goliath.emojihub.views.components.CreatedPostListView
 import com.goliath.emojihub.views.components.CustomDialog
 import com.goliath.emojihub.views.components.PlayEmojiView
+import com.goliath.emojihub.views.components.SavedEmojiListView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -50,7 +54,10 @@ class RootActivity : ComponentActivity() {
 
         setContent {
             EmojiHubTheme {
-                Box(Modifier.fillMaxSize().background(Color.White)) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.White)) {
                     val accessToken = userViewModel.accessTokenState.collectAsState().value
                     val error by apiErrorController.apiErrorState.collectAsState()
 
@@ -110,20 +117,62 @@ class RootActivity : ComponentActivity() {
                 }
 
                 composable(NavigationDestination.TransformVideo) {
-                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
                     TransformVideoPage(emojiViewModel)
                 }
 
                 composable(NavigationDestination.PlayEmojiVideo) {
-                    val emojiViewModel = hiltViewModel<EmojiViewModel>()
-                    PlayEmojiView(emojiViewModel)
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+                    val userViewModel = hiltViewModel<UserViewModel>(parentEntry)
+                    PlayEmojiView(emojiViewModel, userViewModel)
                 }
 
                 composable(NavigationDestination.CreatePost) {
-                    val postViewModel = hiltViewModel<PostViewModel>()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
                     CreatePostPage(postViewModel)
+                }
+
+                composable(NavigationDestination.MyPostList) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+                    CreatedPostListView(postViewModel.myPostList)
+                }
+
+                composable(NavigationDestination.MyEmojiList) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+                    CreatedEmojiListView(emojiViewModel)
+                }
+
+                composable(NavigationDestination.MySavedEmojiList) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+                    SavedEmojiListView(emojiViewModel)
                 }
             }
         }
+    }
+}
+
+fun NavController.navigateAsOrigin(route: String) {
+    navigate(route) {
+        while (popBackStack()) { }
+        launchSingleTop = true
+        restoreState = true
     }
 }

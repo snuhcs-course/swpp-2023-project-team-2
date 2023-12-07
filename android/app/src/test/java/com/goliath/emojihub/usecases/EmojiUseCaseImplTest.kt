@@ -3,7 +3,7 @@ package com.goliath.emojihub.usecases
 import androidx.paging.PagingData
 import androidx.paging.map
 import androidx.paging.testing.asSnapshot
-import com.goliath.emojihub.createDeterministicDummyEmojiDtoList
+import com.goliath.emojihub.createDeterministicTrendingEmojiDtoList
 import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.CreatedEmoji
@@ -24,6 +24,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import retrofit2.Response
 import java.io.File
 
 @RunWith(JUnit4::class)
@@ -72,15 +73,15 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
-            emojiRepository.fetchEmojiList()
+            emojiRepository.fetchEmojiList(1)
         } returns sampleEmojiPagingDataFlow
         // when
-        val fetchedEmojiPagingDataFlow = runBlocking { emojiUseCaseImpl.fetchEmojiList() }
+        val fetchedEmojiPagingDataFlow = runBlocking { emojiUseCaseImpl.fetchEmojiList(1) }
         // then
-        coVerify(exactly = 1) { emojiRepository.fetchEmojiList() }
+        coVerify(exactly = 1) { emojiRepository.fetchEmojiList(1) }
         runBlocking {
             val sampleAnswerAsSnapshot = sampleAnswer.asSnapshot()
             val fetchedEmojiPagingDataFlowAsSnapshot = fetchedEmojiPagingDataFlow.asSnapshot()
@@ -96,7 +97,7 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchMyCreatedEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
             emojiRepository.fetchMyCreatedEmojiList()
@@ -120,7 +121,7 @@ class EmojiUseCaseImplTest {
     @Test
     fun fetchMySavedEmojiList_returnsFlowOfEmojiPagingData() {
         // given
-        val sampleEmojiPagingDataFlow = createDeterministicDummyEmojiDtoList(5)
+        val sampleEmojiPagingDataFlow = createDeterministicTrendingEmojiDtoList(5)
         val sampleAnswer = sampleEmojiPagingDataFlow.map { it.map { dto -> Emoji(dto) } }
         coEvery {
             emojiRepository.fetchMySavedEmojiList()
@@ -153,9 +154,7 @@ class EmojiUseCaseImplTest {
             x3dRepository.createEmoji(videoUri, topK)
         } returns sampleTop3CreatedEmojiList
         // when
-        val createdEmojiList = runBlocking {
-            emojiUseCaseImpl.createEmoji(videoUri, topK)
-        }
+        val createdEmojiList = runBlocking { emojiUseCaseImpl.createEmoji(videoUri, topK) }
         // then
         coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
         assertEquals(sampleTop3CreatedEmojiList, createdEmojiList)
@@ -170,9 +169,7 @@ class EmojiUseCaseImplTest {
             x3dRepository.createEmoji(videoUri, topK)
         } returns emptyList()
         // when
-        val createdEmojiList = runBlocking {
-            emojiUseCaseImpl.createEmoji(videoUri, topK)
-        }
+        val createdEmojiList = runBlocking { emojiUseCaseImpl.createEmoji(videoUri, topK) }
         // then
         coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
         assertEquals(emptyList<CreatedEmoji>(), createdEmojiList)
@@ -187,7 +184,7 @@ class EmojiUseCaseImplTest {
         val videoFile = File("sample.mp4")
         coEvery {
             emojiRepository.uploadEmoji(videoFile, any())
-        } returns true
+        } returns Response.success(Unit)
         // when
         val isUploaded = runBlocking {
             emojiUseCaseImpl.uploadEmoji(emojiUnicode, emojiLabel, videoFile)
@@ -208,14 +205,12 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.saveEmoji(sampleId)
-        } returns Result.success(Unit)
+        } returns Response.success(Unit)
         // when
-        val result = runBlocking {
-            emojiUseCaseImpl.saveEmoji(sampleId)
-        }
+        val isSuccess = runBlocking { emojiUseCaseImpl.saveEmoji(sampleId) }
         // then
         coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
-        assertTrue(result.isSuccess)
+        assertTrue(isSuccess)
     }
 
     @Test
@@ -224,14 +219,26 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.saveEmoji(sampleId)
-        } returns Result.failure(Exception("Failed to save Emoji (Id: $sampleId), 404"))
+        } returns Response.error(404, mockk(relaxed = true))
         // when
-        val result = runBlocking {
-            emojiUseCaseImpl.saveEmoji(sampleId)
-        }
+        val isSuccess = runBlocking { emojiUseCaseImpl.saveEmoji(sampleId) }
         // then
         coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
-        assertTrue(result.isFailure)
+        assertFalse(isSuccess)
+    }
+
+    @Test
+    fun saveEmoji_exception_returnsFalse() {
+        // given
+        val sampleId = "sampleId"
+        coEvery {
+            emojiRepository.saveEmoji(sampleId)
+        } throws Exception("Failed to save Emoji (Id: $sampleId), 404")
+        // when
+        val isSuccess = runBlocking { emojiUseCaseImpl.saveEmoji(sampleId) }
+        // then
+        coVerify(exactly = 1) { emojiRepository.saveEmoji(sampleId) }
+        assertFalse(isSuccess)
     }
 
     @Test
@@ -240,14 +247,12 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.unSaveEmoji(sampleId)
-        } returns Result.success(Unit)
+        } returns Response.success(Unit)
         // when
-        val result = runBlocking {
-            emojiUseCaseImpl.unSaveEmoji(sampleId)
-        }
+        val isSuccess = runBlocking { emojiUseCaseImpl.unSaveEmoji(sampleId) }
         // then
         coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
-        assertTrue(result.isSuccess)
+        assertTrue(isSuccess)
     }
 
     @Test
@@ -256,13 +261,25 @@ class EmojiUseCaseImplTest {
         val sampleId = "sampleId"
         coEvery {
             emojiRepository.unSaveEmoji(sampleId)
-        } returns Result.failure(Exception("Failed to unsave Emoji (Id: $sampleId), 404"))
+        } returns Response.error(404, mockk(relaxed = true))
         // when
-        val result = runBlocking {
-            emojiUseCaseImpl.unSaveEmoji(sampleId)
-        }
+        val isSuccess = runBlocking { emojiUseCaseImpl.unSaveEmoji(sampleId) }
         // then
         coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
-        assertTrue(result.isFailure)
+        assertFalse(isSuccess)
+    }
+
+    @Test
+    fun unSaveEmoji_exception_returnsFalse() {
+        // given
+        val sampleId = "sampleId"
+        coEvery {
+            emojiRepository.unSaveEmoji(sampleId)
+        } throws Exception("Failed to unSave Emoji (Id: $sampleId), 404")
+        // when
+        val isSuccess = runBlocking { emojiUseCaseImpl.unSaveEmoji(sampleId) }
+        // then
+        coVerify(exactly = 1) { emojiRepository.unSaveEmoji(sampleId) }
+        assertFalse(isSuccess)
     }
 }

@@ -15,7 +15,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -23,19 +27,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalBottomSheetController
+import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
 import com.goliath.emojihub.extensions.reactionsToString
 import com.goliath.emojihub.models.Post
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDetailLabel
 import com.goliath.emojihub.viewmodels.EmojiViewModel
+import com.goliath.emojihub.viewmodels.PostViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun PostCell(
-    post: Post
+    post: Post,
+    isNonUser: Boolean = false
 ) {
+    val navController = LocalNavController.current
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
+    val postViewModel = hiltViewModel<PostViewModel>()
+
+    var showNonUserDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -79,13 +92,15 @@ fun PostCell(
                         onClick = {
                             coroutineScope.launch {
                                 emojiViewModel.bottomSheetContent = BottomSheetContent.VIEW_REACTION
+                                postViewModel.currentPostId = post.id
+                                postViewModel.currentPost = post
                                 bottomSheetState.show()
                             }
                         },
 
                         ) {
                         Text(
-                            text = reactionsToString(post.reaction), //TODO: Replace with reaction_unicode sent from backend
+                            text = reactionsToString(post.reaction),
                             fontSize = 13.sp,
                             color = EmojiHubDetailLabel
                         )
@@ -99,9 +114,15 @@ fun PostCell(
                 }
 
                 IconButton(onClick = {
-                    coroutineScope.launch {
-                        emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
-                        bottomSheetState.show()
+                    if (isNonUser) {
+                        showNonUserDialog = true
+                    } else {
+                        coroutineScope.launch {
+                            emojiViewModel.bottomSheetContent = BottomSheetContent.ADD_REACTION
+                            postViewModel.currentPostId = post.id
+                            postViewModel.currentPost = post
+                            bottomSheetState.show()
+                        }
                     }
                 }) {
                     Icon(
@@ -110,6 +131,20 @@ fun PostCell(
                     )
                 }
             }
+        }
+
+        if (showNonUserDialog) {
+            CustomDialog(
+                title = "비회원 모드",
+                body = "회원만 게시물에 반응을 남길 수 있습니다. 로그인 화면으로 이동할까요?",
+                confirmText = "이동",
+                needsCancelButton = true,
+                onDismissRequest = { showNonUserDialog = false },
+                dismiss = { showNonUserDialog = false },
+                confirm = {
+                    navController.navigateAsOrigin(NavigationDestination.Onboard)
+                }
+            )
         }
     }
 }
