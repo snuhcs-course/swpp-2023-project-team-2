@@ -59,7 +59,7 @@ class EmojiService(
             }
             // sort
             if (emojiList.size != 0) {
-                emojiList.sortByDescending { it.created_at }
+                emojiList.reverse()
                 // pagination
                 emojiList =  emojiList.subList(
                     min((index - 1) * count, emojiList.size - 1),

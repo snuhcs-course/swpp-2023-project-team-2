@@ -6,6 +6,7 @@ import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.EMOJI_STOR
 import com.goliath.emojihub.springboot.global.util.StringValue.Collection.EMOJI_COLLECTION_NAME
 import com.goliath.emojihub.springboot.global.util.StringValue.EmojiField.NUM_SAVED
 import com.goliath.emojihub.springboot.global.util.StringValue.EmojiField.CREATED_AT
+import com.goliath.emojihub.springboot.global.util.generateId
 import com.google.cloud.firestore.*
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
@@ -73,6 +74,7 @@ class EmojiDao(
         storage.createFrom(thumbnailBlob, ByteArrayInputStream(thumbnail.bytes))
         val thumbnailUrl = storage.get(thumbnailBlobId).signUrl(100, TimeUnit.DAYS)
         val emoji = EmojiDtoBuilder()
+            .id(generateId())
             .createdBy(username)
             .emojiUnicode(emojiUnicode)
             .emojiLabel(emojiLabel)
