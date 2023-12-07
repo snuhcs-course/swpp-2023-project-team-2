@@ -7,6 +7,8 @@ import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.EmojiDto
 import com.goliath.emojihub.models.Post
 import com.goliath.emojihub.models.PostDto
+import com.goliath.emojihub.models.ReactionWithEmoji
+import com.goliath.emojihub.models.ReactionWithEmojiDto
 import com.goliath.emojihub.models.ReactionWithEmojiUnicode
 import com.goliath.emojihub.models.UserDetailsDto
 import com.goliath.emojihub.models.X3dInferenceResult
@@ -99,6 +101,39 @@ fun createDeterministicDummyPostDtoList(listSize : Int): Flow<PagingData<PostDto
 fun createDeterministicDummyPostList(listSize: Int): Flow<PagingData<Post>> {
     return createDeterministicDummyPostDtoList(listSize).map { it.map { dto -> Post(dto) } }
 }
+
+// REACTION TESTING UTILS
+val sampleReactionWithEmojiDto = ReactionWithEmojiDto(
+    id = "1234",
+    createdAt = "2023.09.16",
+    createdBy = "channn",
+    emojiId = "3456",
+    postId = "5678",
+    emojiDto = sampleEmojiDto
+)
+
+fun createReactionWithEmojiDtoList(listSize : Int): Flow<PagingData<ReactionWithEmojiDto>> {
+    val dummyReactionList = mutableListOf<ReactionWithEmojiDto>()
+    for (i in 0 until listSize) {
+        dummyReactionList.add(sampleReactionWithEmojiDto)
+    }
+    return flowOf(PagingData.from(dummyReactionList))
+}
+
+fun createReactionWithEmojiList(listSize: Int): Flow<PagingData<ReactionWithEmoji>> {
+    return createReactionWithEmojiDtoList(listSize).map { it.map { dto -> ReactionWithEmoji(dto) } }
+}
+
+
+// USER TESTING UTILS
+val sampleUserDetailsDto = UserDetailsDto(
+    email = "sampleEmail",
+    name = "sampleName",
+    password = "samplePassword",
+    savedEmojiList = listOf("a", "b", "c"),
+    createdEmojiList = listOf("d", "e", "f"),
+    createdPostList = listOf("g", "h", "i"),
+)
 
 // X3D TESTING UTILS
 val sampleX3dInferenceResultListOverScoreThreshold = listOf(
