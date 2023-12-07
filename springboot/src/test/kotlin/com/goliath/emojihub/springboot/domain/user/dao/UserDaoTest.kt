@@ -186,7 +186,7 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (!result!!.created_posts!!.contains(postId) && a <= 5) {
+        while (!result!!.created_posts.contains(postId) && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
@@ -196,7 +196,7 @@ internal class UserDaoTest {
         userDao.deleteId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (result!!.created_posts!!.contains(postId) && b <= 5) {
+        while (result!!.created_posts.contains(postId) && b <= 5) {
             result = userDao.getUser(username)
             b++
         }
@@ -207,7 +207,7 @@ internal class UserDaoTest {
     fun deleteId() {
         // given
         val username = userList[1].username
-        val postId = userList[1].created_posts!![1]
+        val postId = userList[1].created_posts[1]
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
@@ -217,7 +217,7 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (result!!.created_posts!!.size != 1 && a <= 5) {
+        while (result!!.created_posts.size != 1 && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
@@ -227,7 +227,7 @@ internal class UserDaoTest {
         userDao.insertId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (!result!!.created_posts!!.contains(postId) && b <= 5) {
+        while (!result!!.created_posts.contains(postId) && b <= 5) {
             result = userDao.getUser(username)
             b++
         }
@@ -238,7 +238,7 @@ internal class UserDaoTest {
     fun deleteAllSavedEmojiId() {
         // given
         val username = userList[0].username
-        val emojiId = userList[0].saved_emojis!![0]
+        val emojiId = userList[0].saved_emojis[0]
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
@@ -248,21 +248,21 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (result!!.saved_emojis!!.contains(emojiId) && a <= 5) {
+        while (result!!.saved_emojis.contains(emojiId) && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
-        assertEquals(result.saved_emojis!!.contains(emojiId), false)
+        assertEquals(result.saved_emojis.contains(emojiId), false)
 
         // after work
         userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (!result!!.saved_emojis!!.contains(emojiId) && b <= 5) {
+        while (!result!!.saved_emojis.contains(emojiId) && b <= 5) {
             userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
             result = userDao.getUser(username)
             b++
         }
-        assertEquals(result.saved_emojis!!.contains(emojiId), true)
+        assertEquals(result.saved_emojis.contains(emojiId), true)
     }
 }

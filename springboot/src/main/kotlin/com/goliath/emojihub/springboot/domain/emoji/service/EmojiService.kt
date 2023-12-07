@@ -52,7 +52,7 @@ class EmojiService(
             user.saved_emojis
         }
         var emojiList = mutableListOf<EmojiDto>()
-        if (emojiIdList != null && emojiIdList.size != 0) {
+        if (emojiIdList.size != 0) {
             for (emojiId in emojiIdList) {
                 val emoji = emojiDao.getEmoji(emojiId) ?: continue
                 emojiList.add(emoji)
@@ -91,9 +91,9 @@ class EmojiService(
         if (emojiDao.existsEmoji(emojiId).not())
             throw CustomHttp404(EMOJI_NOT_FOUND)
         val user = userDao.getUser(username) ?: throw CustomHttp404(USER_NOT_FOUND)
-        if (user.created_emojis?.contains(emojiId) == true)
+        if (user.created_emojis.contains(emojiId))
             throw CustomHttp403(USER_CREATED)
-        if (user.saved_emojis?.contains(emojiId) == true)
+        if (user.saved_emojis.contains(emojiId))
             throw CustomHttp403(USER_ALREADY_SAVED)
         emojiDao.numSavedChange(emojiId, 1)
         userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
@@ -103,9 +103,9 @@ class EmojiService(
         if (emojiDao.existsEmoji(emojiId).not())
             throw CustomHttp404(EMOJI_NOT_FOUND)
         val user = userDao.getUser(username) ?: throw CustomHttp404(USER_NOT_FOUND)
-        if (user.created_emojis?.contains(emojiId) == true)
+        if (user.created_emojis.contains(emojiId))
             throw CustomHttp403(USER_CREATED)
-        if (user.saved_emojis == null || !user.saved_emojis!!.contains(emojiId))
+        if (!user.saved_emojis.contains(emojiId))
             throw CustomHttp403(USER_ALREADY_UNSAVED)
         emojiDao.numSavedChange(emojiId, -1)
         userDao.deleteId(username, emojiId, SAVED_EMOJIS.string)

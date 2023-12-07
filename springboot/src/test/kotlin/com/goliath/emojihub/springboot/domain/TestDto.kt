@@ -11,7 +11,7 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
 // 각 user는 다른 user들의 첫번째 created emoji를 save함 (자신의 다음 user부터 순서대로)
 // 각 user 'i'는 각 user 'j'(자신 포함)의 첫번째 post에 자신의 이모지(첫번째), 저장한 이모지(첫번째)로 reaction
 // userSize 만큼 user 생성
-    () {
+{
     var userSize: Int
     var userList: MutableList<UserDto>
 
@@ -60,7 +60,7 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
                         video_url = "test_video_url${i}_${j}",
                     )
                 )
-                userList[i].created_emojis!!.add(emojiId)
+                userList[i].created_emojis.add(emojiId)
             }
             // 각 user는 postSize 만큼 post 생성
             for (j in 0 until postSize) {
@@ -74,16 +74,16 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
                         modified_at = "test_modified_at${i}_${j}",
                     )
                 )
-                userList[i].created_posts!!.add(postId)
+                userList[i].created_posts.add(postId)
             }
         }
         for (i in 0 until userSize) {
             for (j in i + 1 until userSize) {
-                userList[i].saved_emojis!!.add(emojiList[createdEmojiSize * j].id)
+                userList[i].saved_emojis.add(emojiList[createdEmojiSize * j].id)
                 emojiList[createdEmojiSize * j].num_saved++
             }
             for (j in 0 until i) {
-                userList[i].saved_emojis!!.add(emojiList[createdEmojiSize * j].id)
+                userList[i].saved_emojis.add(emojiList[createdEmojiSize * j].id)
                 emojiList[createdEmojiSize * j].num_saved++
             }
         }
@@ -110,7 +110,7 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
                         id = reactionIdWithCreatedEmoji,
                         created_by = userList[i].username,
                         post_id = postList[postSize * j].id,
-                        emoji_id = userList[i].created_emojis!![0],
+                        emoji_id = userList[i].created_emojis[0],
                         created_at = "test_created_at${i}_${j}_c"
                     )
                 )
@@ -119,7 +119,7 @@ class TestDto// 각 user는 createdEmojiSize 만큼 emoji 생성
                         id = reactionIdWithSavedEmoji,
                         created_by = userList[i].username,
                         post_id = postList[postSize * j].id,
-                        emoji_id = userList[i].saved_emojis!![0],
+                        emoji_id = userList[i].saved_emojis[0],
                         created_at = "test_created_at${i}_${j}_s"
                     )
                 )
