@@ -13,15 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -31,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,17 +57,17 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransformVideoPage(
-    viewModel: EmojiViewModel,
+    emojiViewModel: EmojiViewModel,
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     var showSuccessDialog by remember { mutableStateOf(false) }
-    var currentEmojiIndex by remember { mutableStateOf(0) }
+    var currentEmojiIndex by remember { mutableIntStateOf(0) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(viewModel.videoUri))
+            setMediaItem(MediaItem.fromUri(emojiViewModel.videoUri))
             repeatMode = Player.REPEAT_MODE_ALL
             prepare()
         }
@@ -103,7 +101,7 @@ fun TransformVideoPage(
                         onClick = {
                             if (createdEmojiList.isEmpty()) {
                                 coroutineScope.launch {
-                                    createdEmojiList = viewModel.createEmoji(viewModel.videoUri)
+                                    createdEmojiList = emojiViewModel.createEmoji(emojiViewModel.videoUri)
                                     Log.d("TransformVideoPage", "createdEmojis: $createdEmojiList")
                                 }
                             }
@@ -112,7 +110,7 @@ fun TransformVideoPage(
                                 // Query to get the actual file path
                                 val projection = arrayOf(MediaStore.Images.Media.DATA)
                                 val cursor = context.contentResolver.query(
-                                    viewModel.videoUri, projection, null, null, null
+                                    emojiViewModel.videoUri, projection, null, null, null
                                 )
 
                                 cursor?.use {
@@ -125,7 +123,7 @@ fun TransformVideoPage(
                                 Log.d("TransformVideoPage", "videoPath: $realPath")
                                 coroutineScope.launch {
                                     // FIXME: add choose emoji dialog from topK emojis
-                                    val success = viewModel.uploadEmoji(
+                                    val success = emojiViewModel.uploadEmoji(
                                         createdEmojiList[currentEmojiIndex].emojiUnicode,
                                         createdEmojiList[currentEmojiIndex].emojiClassName,
                                         videoFile
@@ -211,7 +209,7 @@ fun TransformVideoPage(
                                 fontSize = 60.sp
                             )
                         }
-                        if(currentEmojiIndex < 2) {
+                        if(currentEmojiIndex < createdEmojiList.size - 1) {
                             IconButton(onClick = {
                                 currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
                                 },
