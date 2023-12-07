@@ -124,11 +124,11 @@ class EmojiUseCaseImpl @Inject constructor(
                 errorController.setErrorState(response.code())
                 false
             }
-        } catch (e: IOException) {
-            Log.e("EmojiUseCase", "IOException")
-            false
         } catch (e: ConnectException) {
             errorController.setErrorState(CustomError.INTERNAL_SERVER_ERROR.statusCode)
+            false
+        } catch (e: IOException) {
+            Log.e("EmojiUseCase", "IOException")
             false
         } catch (e: Exception) {
             Log.e("EmojiUseCase", "Unknown Exception on uploadEmoji: ${e.message}")
