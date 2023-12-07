@@ -142,7 +142,11 @@ class RootActivity : ComponentActivity() {
                 }
 
                 composable(NavigationDestination.MyPostList) {
-                    CreatedPostListView()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val postViewModel = hiltViewModel<PostViewModel>(parentEntry)
+                    CreatedPostListView(postViewModel.myPostList)
                 }
 
                 composable(NavigationDestination.MyEmojiList) {
