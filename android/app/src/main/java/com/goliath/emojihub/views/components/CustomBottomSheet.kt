@@ -206,6 +206,7 @@ fun CustomBottomSheet (
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
+                                                postViewModel.fetchPostList()
                                             }
                                         }
                                     }
@@ -221,6 +222,7 @@ fun CustomBottomSheet (
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
+                                                postViewModel.fetchPostList()
                                             }
                                         }
                                     }
