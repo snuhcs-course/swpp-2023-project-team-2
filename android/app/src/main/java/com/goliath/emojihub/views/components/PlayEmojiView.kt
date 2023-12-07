@@ -242,7 +242,7 @@ fun checkEmojiHasSaved(currentUserDetails: UserDetails?, currentEmoji: Emoji): B
     if (currentUserDetails == null) return false
     Log.d("checkEmojiHasSaved", "currentUserDetails.savedEmojiList: ${currentUserDetails.savedEmojiList}")
     Log.d("checkEmojiHasSaved", "currentEmoji.id: ${currentEmoji.id}")
-    return currentUserDetails.savedEmojiList?.contains(currentEmoji.id) == true
+    return currentUserDetails.savedEmojiList.contains(currentEmoji.id)
 }
 
 fun checkEmojiHasCreated(currentUser: User?, currentEmoji: Emoji): Boolean {
