@@ -42,11 +42,6 @@ class PostDtoBuilder {
         return this
     }
 
-    fun reactions(reactions: MutableList<ReactionWithEmojiUnicode>): PostDtoBuilder {
-        postDto.reactions = reactions
-        return this
-    }
-
     fun build(): PostDto {
         return postDto
     }
