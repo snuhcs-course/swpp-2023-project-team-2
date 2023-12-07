@@ -184,8 +184,9 @@ fun CustomBottomSheet (
                         items(reactionList.itemCount) { index ->
                             reactionList[index]?.let {
                                 val emojiDto = it.emojiDto
+                                val reactedBy = it.createdBy
                                 if (emojiDto != null){
-                                    EmojiCell(emoji = Emoji(emojiDto), displayMode = EmojiCellDisplay.VERTICAL) { selectedEmoji ->
+                                    ReactionEmojiCell(emoji = Emoji(emojiDto), reactedBy = reactedBy) { selectedEmoji ->
                                         viewModel.currentEmoji = selectedEmoji
                                         navController.navigate(NavigationDestination.PlayEmojiVideo)
                                     }
