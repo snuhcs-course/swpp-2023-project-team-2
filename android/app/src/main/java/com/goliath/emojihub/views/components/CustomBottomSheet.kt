@@ -75,9 +75,14 @@ fun CustomBottomSheet (
     var selectedEmojiUnicode by remember { mutableStateOf("") }
 
     LaunchedEffect(selectedEmojiUnicode) {
-        viewModel.fetchMyCreatedEmojiList()
-        viewModel.fetchMySavedEmojiList()
         reactionViewModel.fetchReactionList(postViewModel.currentPostId, selectedEmojiUnicode)
+    }
+
+    LaunchedEffect(bottomSheetContent) {
+        if(bottomSheetContent == BottomSheetContent.ADD_REACTION) {
+            viewModel.fetchMyCreatedEmojiList()
+            viewModel.fetchMySavedEmojiList()
+        }
     }
 
     ModalBottomSheet(
@@ -206,6 +211,7 @@ fun CustomBottomSheet (
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
+                                                postViewModel.fetchPostList()
                                             }
                                         }
                                     }
@@ -221,6 +227,7 @@ fun CustomBottomSheet (
                                                 coroutineScope.launch {
                                                     bottomSheetState.hide()
                                                 }
+                                                postViewModel.fetchPostList()
                                             }
                                         }
                                     }
