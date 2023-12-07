@@ -13,9 +13,16 @@ class UserViewModel @Inject constructor(
 ): ViewModel() {
     val accessTokenState = userUseCase.accessTokenState
     val userState = userUseCase.userState
+    val userDetailsState = userUseCase.userDetailsState
 
     suspend fun fetchUser(id: String) {
         userUseCase.fetchUser(id)
+    }
+
+    fun fetchMyInfo() {
+        viewModelScope.launch {
+            userUseCase.fetchMyInfo()
+        }
     }
 
     suspend fun login(username: String, password: String) {

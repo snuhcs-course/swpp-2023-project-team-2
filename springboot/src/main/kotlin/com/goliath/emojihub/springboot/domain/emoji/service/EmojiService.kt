@@ -51,21 +51,17 @@ class EmojiService(
         } else {
             user.saved_emojis
         }
-        var emojiList = mutableListOf<EmojiDto>()
+        val emojiArrayDeque = ArrayDeque<EmojiDto>()
+        var emojiList = listOf<EmojiDto>()
         if (emojiIdList.size != 0) {
             for (emojiId in emojiIdList) {
                 val emoji = emojiDao.getEmoji(emojiId) ?: continue
-                emojiList.add(emoji)
+                emojiArrayDeque.addFirst(emoji)
             }
-            // sort
-            if (emojiList.size != 0) {
-                emojiList.sortByDescending { it.created_at }
-                // pagination
-                emojiList =  emojiList.subList(
-                    min((index - 1) * count, emojiList.size - 1),
-                    min(index * count, emojiList.size)
-                )
-            }
+            // pagination
+            val start = min((index - 1) * count, emojiArrayDeque.size - 1)
+            val end = min(index * count, emojiArrayDeque.size)
+            emojiList = emojiArrayDeque.toList().subList(start, end)
         }
         return emojiList
     }

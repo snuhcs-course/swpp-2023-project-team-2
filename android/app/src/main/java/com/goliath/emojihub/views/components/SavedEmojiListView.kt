@@ -16,18 +16,18 @@ import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 
 @Composable
-fun CreatedEmojiListView(
+fun SavedEmojiListView(
     emojiViewModel: EmojiViewModel
 ) {
     val navController = LocalNavController.current
 
-    val emojiList = emojiViewModel.myCreatedEmojiList.collectAsLazyPagingItems()
+    val emojiList = emojiViewModel.mySavedEmojiList.collectAsLazyPagingItems()
 
     Column (
         Modifier.background(Color.White)
     ) {
         TopNavigationBar(
-            title = "내가 만든 이모지",
+            title = "저장된 이모지",
             navigate = { navController.popBackStack() }
         )
 

@@ -6,6 +6,7 @@ import com.goliath.emojihub.mockLogClass
 import com.goliath.emojihub.models.LoginUserDto
 import com.goliath.emojihub.models.RegisterUserDto
 import com.goliath.emojihub.models.responses.LoginResponseDto
+import com.goliath.emojihub.sampleUserDetailsDto
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -34,6 +35,19 @@ class UserRepositoryImplTest {
     // @Test
     // TODO("Not yet implemented")
     fun fetchUser() {
+    }
+
+    @Test
+    fun fetchMyInfo_withValidToken_returnsResponseSuccessWithUserDetailsDto() {
+        // given
+        coEvery {
+            userApi.fetchMyInfo(any())
+        } returns Response.success(sampleUserDetailsDto)
+        // when
+        val response = runBlocking { userRepositoryImpl.fetchMyInfo("sampleToken") }
+        // then
+        coVerify(exactly = 1) { userApi.fetchMyInfo("sampleToken") }
+        assertEquals(sampleUserDetailsDto, response.body())
     }
 
     @Test
@@ -113,5 +127,31 @@ class UserRepositoryImplTest {
         coVerify(exactly = 1) { userApi.login(any()) }
         assertFalse(response.isSuccessful)
         assertEquals(401, response.code())
+    }
+
+    @Test
+    fun logout_unit_returnsResponseSuccess() {
+        // given
+        coEvery {
+            userApi.logout()
+        } returns Response.success(Unit)
+        // when
+        val response = runBlocking { userRepositoryImpl.logout() }
+        // then
+        coVerify(exactly = 1) { userApi.logout() }
+        assertTrue(response.isSuccessful)
+    }
+
+    @Test
+    fun signOut_withValidToken_returnsResponseSuccess() {
+        // given
+        coEvery {
+            userApi.signOut(any())
+        } returns Response.success(Unit)
+        // when
+        val response = runBlocking { userRepositoryImpl.signOut("sampleToken") }
+        // then
+        coVerify(exactly = 1) { userApi.signOut("sampleToken") }
+        assertTrue(response.isSuccessful)
     }
 }
