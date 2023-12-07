@@ -111,11 +111,7 @@ fun FeedPage() {
 
     if (bottomSheetController.isVisible) {
         CustomBottomSheet(
-            bottomSheetContent = emojiViewModel.bottomSheetContent,
-            emojiList = emojiList
-        ) { emoji ->
-            emojiViewModel.currentEmoji = emoji
-            navController.navigate(NavigationDestination.PlayEmojiVideo)
-        }
+            bottomSheetContent = emojiViewModel.bottomSheetContent
+        )
     }
 }

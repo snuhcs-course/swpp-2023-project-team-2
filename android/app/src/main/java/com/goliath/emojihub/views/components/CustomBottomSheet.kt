@@ -34,15 +34,15 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.extensions.toEmoji
 import com.goliath.emojihub.models.Emoji
+import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
 import com.goliath.emojihub.ui.theme.Color.LightGray
-import kotlinx.coroutines.launch
 import com.goliath.emojihub.ui.theme.Color.White
 import com.goliath.emojihub.viewmodels.EmojiViewModel
 import com.goliath.emojihub.viewmodels.PostViewModel
 import com.goliath.emojihub.viewmodels.ReactionViewModel
+import kotlinx.coroutines.launch
 
 enum class BottomSheetContent {
     VIEW_REACTION, ADD_REACTION, EMPTY
@@ -51,9 +51,7 @@ enum class BottomSheetContent {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomBottomSheet (
-    bottomSheetContent: BottomSheetContent,
-    emojiList: List<Emoji>,
-    emojiCellClicked: (Emoji) -> Unit
+    bottomSheetContent: BottomSheetContent
 ){
     val bottomSheetState = LocalBottomSheetController.current
     val coroutineScope = rememberCoroutineScope()
