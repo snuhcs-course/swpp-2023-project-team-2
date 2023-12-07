@@ -29,7 +29,6 @@ fun CreatedPostListView(
 
     val emojiViewModel = hiltViewModel<EmojiViewModel>()
 
-
     val pagingPostList = postList.collectAsLazyPagingItems()
 
     Column (Modifier.background(Color.White)) {

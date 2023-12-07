@@ -150,11 +150,19 @@ class RootActivity : ComponentActivity() {
                 }
 
                 composable(NavigationDestination.MyEmojiList) {
-                    CreatedEmojiListView()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+                    CreatedEmojiListView(emojiViewModel)
                 }
 
                 composable(NavigationDestination.MySavedEmojiList) {
-                    SavedEmojiListView()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(NavigationDestination.MainPage)
+                    }
+                    val emojiViewModel = hiltViewModel<EmojiViewModel>(parentEntry)
+                    SavedEmojiListView(emojiViewModel)
                 }
             }
         }
