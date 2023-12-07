@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain.user.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.dto.UserDtoBuilder
 import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.TEST_SERVICE_ACCOUNT_KEY
 import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.TEST_EMOJI_STORAGE_BUCKET_NAME
 import com.goliath.emojihub.springboot.global.util.StringValue.Collection.USER_COLLECTION_NAME
@@ -119,11 +120,11 @@ internal class UserDaoTest {
         // given
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
-        val user = UserDto(
-            email = "new_test_email",
-            username = "new_test_username",
-            password = "new_test_password"
-        )
+        val user = UserDtoBuilder()
+            .email("new_test_email")
+            .username("new_test_username")
+            .password("new_test_password")
+            .build()
 
         // when
         userDao.insertUser(user)

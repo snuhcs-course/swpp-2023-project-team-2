@@ -1,12 +1,14 @@
 package com.goliath.emojihub.springboot.domain.post.dao
 
 import com.goliath.emojihub.springboot.domain.post.dto.PostDto
+import com.goliath.emojihub.springboot.domain.post.dto.PostDtoBuilder
 import com.goliath.emojihub.springboot.domain.post.dto.ReactionWithEmojiUnicode
 import com.goliath.emojihub.springboot.global.util.StringValue.Collection.POST_COLLECTION_NAME
 import com.goliath.emojihub.springboot.global.util.StringValue.PostField.CONTENT
 import com.goliath.emojihub.springboot.global.util.StringValue.PostField.CREATED_AT
 import com.goliath.emojihub.springboot.global.util.StringValue.PostField.MODIFIED_AT
 import com.goliath.emojihub.springboot.global.util.StringValue.PostField.REACTIONS
+import com.goliath.emojihub.springboot.global.util.generateId
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.*
 import lombok.extern.slf4j.Slf4j
@@ -20,7 +22,12 @@ class PostDao(
 
     fun insertPost(username: String, content: String): PostDto {
         val dateTime = getDateTimeNow()
-        val post = PostDto(username, content, dateTime)
+        val post = PostDtoBuilder()
+            .id(generateId())
+            .createdBy(username)
+            .content(content)
+            .createdAt(dateTime)
+            .build()
         db.collection(POST_COLLECTION_NAME.string)
             .document(post.id)
             .set(post)

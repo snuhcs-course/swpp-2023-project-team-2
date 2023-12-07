@@ -8,6 +8,7 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.dto.UserDtoBuilder
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
@@ -41,11 +42,11 @@ class UserService(
             throw CustomHttp409(ID_EXIST)
         }
         val encodedPassword = passwordEncoder.encode(password)
-        val user = UserDto(
-            email = email,
-            username = username,
-            password = encodedPassword
-        )
+        val user = UserDtoBuilder()
+            .email(email)
+            .username(username)
+            .password(encodedPassword)
+            .build()
         userDao.insertUser(user)
         val authToken = jwtTokenProvider.createToken(username)
         return UserDto.AuthToken(authToken)

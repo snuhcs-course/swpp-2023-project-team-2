@@ -1,6 +1,6 @@
 package com.goliath.emojihub.springboot.global.auth
 
-import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.dto.UserDtoBuilder
 import com.goliath.emojihub.springboot.domain.user.model.UserAdapter
 import com.goliath.emojihub.springboot.domain.user.service.UserDetailService
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
@@ -94,11 +94,11 @@ internal class JwtTokenProviderTest {
     fun getAuthentication() {
         // given
         val userDetails = UserAdapter(
-            UserDto(
-                username = username,
-                email = "test_email",
-                password = "test_password"
-            )
+            UserDtoBuilder()
+                .username(username)
+                .email("test_email")
+                .password("test_password")
+                .build()
         )
         Mockito.`when`(userDetailService.loadUserByUsername(username)).thenReturn(userDetails)
 
