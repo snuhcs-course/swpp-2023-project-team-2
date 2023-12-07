@@ -70,6 +70,15 @@ internal class EmojiDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore Database Emojis
+            val emojiDocuments = testDB.collection(EMOJI_COLLECTION_NAME.string).get().get().documents
+            for (document in emojiDocuments) {
+                val emoji = document.toObject(EmojiDto::class.java)
+                testDB.collection(EMOJI_COLLECTION_NAME.string).document(emoji.id).delete()
+            }
+            for (emoji in testDto.emojiList) {
+                testDB.collection(EMOJI_COLLECTION_NAME.string).document(emoji.id).set(emoji)
+            }
         }
     }
 

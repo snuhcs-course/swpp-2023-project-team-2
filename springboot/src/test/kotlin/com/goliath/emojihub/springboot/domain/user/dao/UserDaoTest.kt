@@ -54,6 +54,15 @@ internal class UserDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore database Users
+            val userDocuments = testDB.collection(USER_COLLECTION_NAME.string).get().get().documents
+            for (document in userDocuments) {
+                val user = document.toObject(UserDto::class.java)
+                testDB.collection(USER_COLLECTION_NAME.string).document(user.username).delete()
+            }
+            for (user in testDto.userList) {
+                testDB.collection(USER_COLLECTION_NAME.string).document(user.username).set(user)
+            }
         }
     }
 

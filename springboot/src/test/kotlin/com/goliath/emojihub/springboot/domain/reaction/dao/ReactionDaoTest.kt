@@ -53,6 +53,15 @@ internal class ReactionDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore Database Posts
+            val reactionDocuments = testDB.collection(REACTION_COLLECTION_NAME.string).get().get().documents
+            for (document in reactionDocuments) {
+                val reaction = document.toObject(ReactionDto::class.java)
+                testDB.collection(REACTION_COLLECTION_NAME.string).document(reaction.id).delete()
+            }
+            for (reaction in testDto.reactionList) {
+                testDB.collection(REACTION_COLLECTION_NAME.string).document(reaction.id).set(reaction)
+            }
         }
     }
 

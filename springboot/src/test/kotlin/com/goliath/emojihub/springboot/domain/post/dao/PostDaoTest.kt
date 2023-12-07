@@ -56,6 +56,15 @@ internal class PostDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore Database Posts
+            val postDocuments = testDB.collection(POST_COLLECTION_NAME.string).get().get().documents
+            for (document in postDocuments) {
+                val post = document.toObject(PostDto::class.java)
+                testDB.collection(POST_COLLECTION_NAME.string).document(post.id).delete()
+            }
+            for (post in testDto.postList) {
+                testDB.collection(POST_COLLECTION_NAME.string).document(post.id).set(post)
+            }
         }
     }
 
