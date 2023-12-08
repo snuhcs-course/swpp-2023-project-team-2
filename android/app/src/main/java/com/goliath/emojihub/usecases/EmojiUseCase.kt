@@ -10,6 +10,7 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
+import com.goliath.emojihub.repositories.remote.ClipRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +42,7 @@ interface EmojiUseCase {
 @Singleton
 class EmojiUseCaseImpl @Inject constructor(
     private val emojiRepository: EmojiRepository,
-    private val x3dRepository: X3dRepository,
+    private val x3dRepository: ClipRepository,
     private val errorController: ApiErrorController
 ): EmojiUseCase {
 
