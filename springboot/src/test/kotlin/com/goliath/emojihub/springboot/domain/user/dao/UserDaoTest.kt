@@ -2,6 +2,7 @@ package com.goliath.emojihub.springboot.domain.user.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.dto.UserDtoBuilder
 import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.TEST_SERVICE_ACCOUNT_KEY
 import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.TEST_EMOJI_STORAGE_BUCKET_NAME
 import com.goliath.emojihub.springboot.global.util.StringValue.Collection.USER_COLLECTION_NAME
@@ -54,6 +55,15 @@ internal class UserDaoTest {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore database Users
+            val userDocuments = testDB.collection(USER_COLLECTION_NAME.string).get().get().documents
+            for (document in userDocuments) {
+                val user = document.toObject(UserDto::class.java)
+                testDB.collection(USER_COLLECTION_NAME.string).document(user.username).delete()
+            }
+            for (user in testDto.userList) {
+                testDB.collection(USER_COLLECTION_NAME.string).document(user.username).set(user)
+            }
         }
     }
 
@@ -110,11 +120,11 @@ internal class UserDaoTest {
         // given
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
-        val user = UserDto(
-            email = "new_test_email",
-            username = "new_test_username",
-            password = "new_test_password"
-        )
+        val user = UserDtoBuilder()
+            .email("new_test_email")
+            .username("new_test_username")
+            .password("new_test_password")
+            .build()
 
         // when
         userDao.insertUser(user)
@@ -186,7 +196,7 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (!result!!.created_posts!!.contains(postId) && a <= 5) {
+        while (!result!!.created_posts.contains(postId) && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
@@ -196,7 +206,7 @@ internal class UserDaoTest {
         userDao.deleteId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (result!!.created_posts!!.contains(postId) && b <= 5) {
+        while (result!!.created_posts.contains(postId) && b <= 5) {
             result = userDao.getUser(username)
             b++
         }
@@ -207,7 +217,7 @@ internal class UserDaoTest {
     fun deleteId() {
         // given
         val username = userList[1].username
-        val postId = userList[1].created_posts!![1]
+        val postId = userList[1].created_posts[1]
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
@@ -217,7 +227,7 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (result!!.created_posts!!.size != 1 && a <= 5) {
+        while (result!!.created_posts.size != 1 && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
@@ -227,7 +237,7 @@ internal class UserDaoTest {
         userDao.insertId(username, postId, CREATED_POSTS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (!result!!.created_posts!!.contains(postId) && b <= 5) {
+        while (!result!!.created_posts.contains(postId) && b <= 5) {
             result = userDao.getUser(username)
             b++
         }
@@ -238,7 +248,7 @@ internal class UserDaoTest {
     fun deleteAllSavedEmojiId() {
         // given
         val username = userList[0].username
-        val emojiId = userList[0].saved_emojis!![0]
+        val emojiId = userList[0].saved_emojis[0]
         Mockito.`when`(db.collection(USER_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(USER_COLLECTION_NAME.string))
 
@@ -248,21 +258,21 @@ internal class UserDaoTest {
         // then
         var result = userDao.getUser(username)
         var a = 1
-        while (result!!.saved_emojis!!.contains(emojiId) && a <= 5) {
+        while (result!!.saved_emojis.contains(emojiId) && a <= 5) {
             result = userDao.getUser(username)
             a++
         }
-        assertEquals(result.saved_emojis!!.contains(emojiId), false)
+        assertEquals(result.saved_emojis.contains(emojiId), false)
 
         // after work
         userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
         result = userDao.getUser(username)
         var b = 1
-        while (!result!!.saved_emojis!!.contains(emojiId) && b <= 5) {
+        while (!result!!.saved_emojis.contains(emojiId) && b <= 5) {
             userDao.insertId(username, emojiId, SAVED_EMOJIS.string)
             result = userDao.getUser(username)
             b++
         }
-        assertEquals(result.saved_emojis!!.contains(emojiId), true)
+        assertEquals(result.saved_emojis.contains(emojiId), true)
     }
 }

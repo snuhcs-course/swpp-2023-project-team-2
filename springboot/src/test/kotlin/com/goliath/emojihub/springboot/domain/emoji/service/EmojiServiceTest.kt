@@ -118,10 +118,10 @@ internal class EmojiServiceTest {
         )
         verify(userDao, times(2)).getUser(username)
         verify(userDao, times(1)).getUser(wrongUsername)
-        for (emojiId in user.created_emojis!!) {
+        for (emojiId in user.created_emojis) {
             verify(emojiDao, times(1)).getEmoji(emojiId)
         }
-        for (emojiId in user.saved_emojis!!) {
+        for (emojiId in user.saved_emojis) {
             verify(emojiDao, times(1)).getEmoji(emojiId)
         }
     }
@@ -238,7 +238,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.created_emojis!![0]
+        val emojiId = user.created_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -259,7 +259,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.saved_emojis!![0]
+        val emojiId = user.saved_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -280,7 +280,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.saved_emojis!![0]
+        val emojiId = user.saved_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -337,7 +337,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.created_emojis!![0]
+        val emojiId = user.created_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 

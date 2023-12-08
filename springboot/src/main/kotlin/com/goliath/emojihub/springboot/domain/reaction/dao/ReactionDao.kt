@@ -1,11 +1,13 @@
 package com.goliath.emojihub.springboot.domain.reaction.dao
 
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDtoBuilder
 import com.goliath.emojihub.springboot.global.util.StringValue.Collection.REACTION_COLLECTION_NAME
 import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_BY
 import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.POST_ID
 import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_AT
+import com.goliath.emojihub.springboot.global.util.generateId
 import com.goliath.emojihub.springboot.global.util.getDateTimeNow
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.Firestore
@@ -21,7 +23,13 @@ class ReactionDao(
 
     fun insertReaction(username: String, postId: String, emojiId: String): ReactionDto {
         val dateTime = getDateTimeNow()
-        val reaction = ReactionDto(username, postId, emojiId, dateTime)
+        val reaction = ReactionDtoBuilder()
+            .id(generateId())
+            .createdBy(username)
+            .postId(postId)
+            .emojiId(emojiId)
+            .createdAt(dateTime)
+            .build()
         db.collection(REACTION_COLLECTION_NAME.string)
             .document(reaction.id)
             .set(reaction)

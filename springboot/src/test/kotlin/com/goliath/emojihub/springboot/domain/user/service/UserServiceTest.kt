@@ -247,7 +247,7 @@ internal class UserServiceTest {
             Mockito.`when`(emojiDao.existsEmoji(emoji.id)).thenReturn(true)
         }
         for (userDto in testDto.userList) {
-            val firstEmojiId = userDto.created_emojis!![0]
+            val firstEmojiId = userDto.created_emojis[0]
             val reactions = mutableListOf<ReactionDto>()
             for (reaction in testDto.reactionList) {
                 if (reaction.emoji_id == firstEmojiId) {

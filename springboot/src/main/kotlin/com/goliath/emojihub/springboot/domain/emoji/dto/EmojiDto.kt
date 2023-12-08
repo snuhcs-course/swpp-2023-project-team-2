@@ -1,7 +1,5 @@
 package com.goliath.emojihub.springboot.domain.emoji.dto
 
-import kotlin.streams.asSequence
-
 data class EmojiDto(
     var id: String = "",
     var created_by: String = "",
@@ -11,21 +9,52 @@ data class EmojiDto(
     var created_at: String = "",
     var num_saved: Int = 0,
     var thumbnail_url: String = ""
-){
-    constructor(username: String, emojiUnicode: String, emojiLabel: String, emojiVideoUrl: String, dateTime: String, thumbnailUrl: String) : this() {
-        val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        val outputStrLength: Long = 20
-        id = java.util.Random().ints(outputStrLength, 0, source.length)
-                .asSequence()
-                .map(source::get)
-                .joinToString("")
+)
 
-        created_by = username
-        video_url = emojiVideoUrl
-        emoji_unicode = emojiUnicode
-        emoji_label = emojiLabel
-        created_at = dateTime
-        num_saved = 0
-        thumbnail_url = thumbnailUrl
+class EmojiDtoBuilder {
+    private val emojiDto: EmojiDto = EmojiDto()
+
+    fun id(id: String): EmojiDtoBuilder {
+        emojiDto.id = id
+        return this
+    }
+
+    fun createdBy(createdBy: String): EmojiDtoBuilder {
+        emojiDto.created_by = createdBy
+        return this
+    }
+
+    fun videoUrl(videoUrl: String): EmojiDtoBuilder {
+        emojiDto.video_url = videoUrl
+        return this
+    }
+
+    fun emojiUnicode(emojiUnicode: String): EmojiDtoBuilder {
+        emojiDto.emoji_unicode = emojiUnicode
+        return this
+    }
+
+    fun emojiLabel(emojiLabel: String): EmojiDtoBuilder {
+        emojiDto.emoji_label = emojiLabel
+        return this
+    }
+
+    fun createdAt(createdAt: String): EmojiDtoBuilder {
+        emojiDto.created_at = createdAt
+        return this
+    }
+
+    fun numSaved(numSaved: Int): EmojiDtoBuilder {
+        emojiDto.num_saved = numSaved
+        return this
+    }
+
+    fun thumbnailUrl(thumbnailUrl: String): EmojiDtoBuilder {
+        emojiDto.thumbnail_url = thumbnailUrl
+        return this
+    }
+
+    fun build(): EmojiDto {
+        return emojiDto
     }
 }

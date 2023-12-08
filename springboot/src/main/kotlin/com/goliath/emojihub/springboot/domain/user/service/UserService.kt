@@ -8,6 +8,7 @@ import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
 import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.domain.user.dto.UserDtoBuilder
 import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
 import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
@@ -41,11 +42,11 @@ class UserService(
             throw CustomHttp409(ID_EXIST)
         }
         val encodedPassword = passwordEncoder.encode(password)
-        val user = UserDto(
-            email = email,
-            username = username,
-            password = encodedPassword
-        )
+        val user = UserDtoBuilder()
+            .email(email)
+            .username(username)
+            .password(encodedPassword)
+            .build()
         userDao.insertUser(user)
         val authToken = jwtTokenProvider.createToken(username)
         return UserDto.AuthToken(authToken)
@@ -76,43 +77,37 @@ class UserService(
             reactionDao.deleteReaction(reaction.id)
         }
         // delete all posts(and posts' reactions) created by user
-        if (postIds != null) {
-            for (postId in postIds) {
-                val post = postDao.getPost(postId) ?: continue
-                if (username != post.created_by) continue
-                val reactionWithEmojiUnicodes = post.reactions
-                for (reactionWithEmojiUnicode in reactionWithEmojiUnicodes) {
-                    val reaction = reactionDao.getReaction(reactionWithEmojiUnicode.id) ?: continue
-                    if (postId != reaction.post_id) continue
-                    reactionDao.deleteReaction(reactionWithEmojiUnicode.id)
-                }
-                postDao.deletePost(postId)
+        for (postId in postIds) {
+            val post = postDao.getPost(postId) ?: continue
+            if (username != post.created_by) continue
+            val reactionWithEmojiUnicodes = post.reactions
+            for (reactionWithEmojiUnicode in reactionWithEmojiUnicodes) {
+                val reaction = reactionDao.getReaction(reactionWithEmojiUnicode.id) ?: continue
+                if (postId != reaction.post_id) continue
+                reactionDao.deleteReaction(reactionWithEmojiUnicode.id)
             }
+            postDao.deletePost(postId)
         }
         // delete all emojis(and reactions(and reaction id in posts) using these emojis) created by user
-        if (createdEmojiIds != null) {
-            for (emojiId in createdEmojiIds) {
-                val emoji = emojiDao.getEmoji(emojiId) ?: continue
-                if (username != emoji.created_by) continue
-                val fileBlobName = username + "_" + emoji.created_at + ".mp4"
-                val thumbnailBlobName = username + "_" + emoji.created_at + ".jpeg"
-                emojiDao.deleteFileInStorage(fileBlobName)
-                emojiDao.deleteFileInStorage(thumbnailBlobName)
-                val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)
-                for (reaction in reactions) {
-                    postDao.deleteReaction(reaction.post_id, reaction.id)
-                    reactionDao.deleteReaction(reaction.id)
-                }
-                userDao.deleteAllSavedEmojiId(emojiId)
-                emojiDao.deleteEmoji(emojiId)
+        for (emojiId in createdEmojiIds) {
+            val emoji = emojiDao.getEmoji(emojiId) ?: continue
+            if (username != emoji.created_by) continue
+            val fileBlobName = username + "_" + emoji.created_at + ".mp4"
+            val thumbnailBlobName = username + "_" + emoji.created_at + ".jpeg"
+            emojiDao.deleteFileInStorage(fileBlobName)
+            emojiDao.deleteFileInStorage(thumbnailBlobName)
+            val reactions = reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)
+            for (reaction in reactions) {
+                postDao.deleteReaction(reaction.post_id, reaction.id)
+                reactionDao.deleteReaction(reaction.id)
             }
+            userDao.deleteAllSavedEmojiId(emojiId)
+            emojiDao.deleteEmoji(emojiId)
         }
         // unsave all emojis saved by user
-        if (savedEmojiIds != null) {
-            for (emojiId in savedEmojiIds) {
-                if (!emojiDao.existsEmoji(emojiId)) continue
-                emojiDao.numSavedChange(emojiId, -1)
-            }
+        for (emojiId in savedEmojiIds) {
+            if (!emojiDao.existsEmoji(emojiId)) continue
+            emojiDao.numSavedChange(emojiId, -1)
         }
         // delete user
         return userDao.deleteUser(username)

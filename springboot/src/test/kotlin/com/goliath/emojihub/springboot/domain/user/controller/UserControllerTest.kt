@@ -79,9 +79,9 @@ internal class UserControllerTest @Autowired constructor(
             .andExpect(jsonPath("$.email").value(user.email))
             .andExpect(jsonPath("$.username").value(user.username))
             .andExpect(jsonPath("$.password").value(user.password))
-            .andExpect(jsonPath("$.created_emojis.length()", equalTo(user.created_emojis!!.size)))
-            .andExpect(jsonPath("$.saved_emojis.length()", equalTo(user.saved_emojis!!.size)))
-            .andExpect(jsonPath("$.created_posts.length()", equalTo(user.created_posts!!.size)))
+            .andExpect(jsonPath("$.created_emojis.length()", equalTo(user.created_emojis.size)))
+            .andExpect(jsonPath("$.saved_emojis.length()", equalTo(user.saved_emojis.size)))
+            .andExpect(jsonPath("$.created_posts.length()", equalTo(user.created_posts.size)))
         verify(userService, times(1)).getMe(username)
     }
 
