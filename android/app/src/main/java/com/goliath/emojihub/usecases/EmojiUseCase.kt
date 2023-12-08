@@ -42,7 +42,7 @@ interface EmojiUseCase {
 @Singleton
 class EmojiUseCaseImpl @Inject constructor(
     private val emojiRepository: EmojiRepository,
-    private val x3dRepository: ClipRepository,
+    private val modelRepository: ClipRepository, // or X3dRepository
     private val errorController: ApiErrorController
 ): EmojiUseCase {
 
@@ -108,10 +108,10 @@ class EmojiUseCaseImpl @Inject constructor(
 
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
         return try {
-            x3dRepository.createEmoji(videoUri, topK)
+            modelRepository.createEmoji(videoUri, topK)
         } catch (e: Exception) {
             Log.e("EmojiUseCase", "Unknown Exception on createEmoji: ${e.message}")
-            x3dRepository.DEFAULT_EMOJI_LIST
+            modelRepository.DEFAULT_EMOJI_LIST
         }
     }
 
