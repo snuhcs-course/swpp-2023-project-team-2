@@ -1,5 +1,7 @@
 package com.goliath.emojihub.data_sources
 
+import com.goliath.emojihub.data_sources.local.MediaDataSource
+import com.goliath.emojihub.data_sources.local.MediaDataSourceImpl
 import com.goliath.emojihub.data_sources.local.X3dDataSource
 import com.goliath.emojihub.data_sources.local.X3dDataSourceImpl
 import com.goliath.emojihub.data_sources.remote.EmojiDataSource
@@ -17,6 +19,9 @@ abstract class DataSourceModule {
 
     @Binds
     abstract fun bindsEmojiDataSource(impl: EmojiDataSourceImpl): EmojiDataSource
+
+    @Binds
+    abstract fun bindsMediaDataSource(impl: MediaDataSourceImpl): MediaDataSource
 
     @Binds
     abstract fun bindsApiErrorController(impl: ApiErrorControllerImpl): ApiErrorController
