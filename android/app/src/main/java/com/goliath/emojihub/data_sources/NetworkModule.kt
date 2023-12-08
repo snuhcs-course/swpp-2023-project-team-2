@@ -1,6 +1,7 @@
 package com.goliath.emojihub.data_sources
 
 import com.goliath.emojihub.EmojiHubApplication
+import com.goliath.emojihub.data_sources.api.ClipApi
 import com.goliath.emojihub.data_sources.api.EmojiApi
 import com.goliath.emojihub.data_sources.api.PostApi
 import com.goliath.emojihub.data_sources.api.ReactionApi
@@ -18,21 +19,33 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.reflect.Type
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val baseURL = API_BASE_URL
+    private const val clipBaseURL = CLIP_BASE_URL
 
     @Provides
     @Singleton
-    fun provideRetrofit(
-
-    ): Retrofit {
+    @Named("ApiRetrofit")
+    fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseURL)
             .client(provideOkHttpClient())
+            .addConverterFactory(nullOnEmptyConverterFactory)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    @Provides
+    @Singleton
+    @Named("ClipRetrofit")
+    fun provideClipRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(clipBaseURL)
+            .client(provideClipOkHttpClient())
             .addConverterFactory(nullOnEmptyConverterFactory)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -47,23 +60,35 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesUserRestApi(retrofit: Retrofit): UserApi =
+    fun provideClipOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(CLIPAuthInterceptor())
+            .build()
+
+    @Provides
+    @Singleton
+    fun providesUserRestApi(@Named("ApiRetrofit") retrofit: Retrofit): UserApi =
         retrofit.create(UserApi::class.java)
 
     @Provides
     @Singleton
-    fun providesEmojiRestApi(retrofit: Retrofit): EmojiApi =
+    fun providesEmojiRestApi(@Named("ApiRetrofit") retrofit: Retrofit): EmojiApi =
         retrofit.create(EmojiApi::class.java)
 
     @Provides
     @Singleton
-    fun providesPostRestApi(retrofit: Retrofit): PostApi =
+    fun providesPostRestApi(@Named("ApiRetrofit") retrofit: Retrofit): PostApi =
         retrofit.create(PostApi::class.java)
 
     @Provides
     @Singleton
-    fun providesReactionRestApi(retrofit: Retrofit): ReactionApi =
+    fun providesReactionRestApi(@Named("ApiRetrofit") retrofit: Retrofit): ReactionApi =
         retrofit.create(ReactionApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providesCLIPRestApi(@Named("ClipRetrofit") retrofit: Retrofit): ClipApi =
+        retrofit.create(ClipApi::class.java)
 
     // empty responses should be handled `success`
     private val nullOnEmptyConverterFactory = object : Converter.Factory() {
@@ -90,5 +115,15 @@ class AuthInterceptor @Inject constructor(): Interceptor {
             request.header("Authorization", "Bearer $accessToken")
         }
         return chain.proceed(request.build())
+    }
+}
+
+class CLIPAuthInterceptor @Inject constructor(): Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val clipApiKey = CLIP_API_TOKEN
+        val request = chain.request().newBuilder()
+            .addHeader("Authorization", "Bearer $clipApiKey")
+            .build()
+        return chain.proceed(request)
     }
 }
