@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import android.annotation.SuppressLint
 import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.background
@@ -55,8 +56,8 @@ import com.goliath.emojihub.views.components.CustomDialog
 import kotlinx.coroutines.launch
 import java.io.File
 
+@SuppressLint("UnsafeOptInUsageError")
 @OptIn(ExperimentalMaterial3Api::class)
-@androidx.media3.common.util.UnstableApi
 @Composable
 fun TransformVideoPage(
     emojiViewModel: EmojiViewModel,
