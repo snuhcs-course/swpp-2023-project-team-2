@@ -125,6 +125,9 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.44")
 
+    // json
+    implementation("org.json:json:20210307")
+
     // navigation
     implementation("androidx.navigation:navigation-compose:2.5.3")
 

@@ -10,6 +10,7 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
+import com.goliath.emojihub.repositories.remote.ClipRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -30,10 +31,10 @@ import java.io.File
 @RunWith(JUnit4::class)
 class EmojiUseCaseImplTest {
     private val emojiRepository = mockk<EmojiRepository>()
-    private val x3dRepository = mockk<X3dRepository>()
+    private val modelRepository = mockk<ClipRepository>()
     private val apiErrorController = spyk<ApiErrorController>()
     private val emojiUseCaseImpl = EmojiUseCaseImpl(
-        emojiRepository, x3dRepository, apiErrorController
+        emojiRepository, modelRepository, apiErrorController
     )
     @Before
     fun setUp() {
@@ -151,12 +152,12 @@ class EmojiUseCaseImplTest {
             mockk(), mockk(), mockk()
         )
         coEvery {
-            x3dRepository.createEmoji(videoUri, topK)
+            modelRepository.createEmoji(videoUri, topK)
         } returns sampleTop3CreatedEmojiList
         // when
         val createdEmojiList = runBlocking { emojiUseCaseImpl.createEmoji(videoUri, topK) }
         // then
-        coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
+        coVerify(exactly = 1) { modelRepository.createEmoji(videoUri, topK) }
         assertEquals(sampleTop3CreatedEmojiList, createdEmojiList)
     }
 
@@ -166,12 +167,12 @@ class EmojiUseCaseImplTest {
         val videoUri = mockk<android.net.Uri>()
         val topK = 3
         coEvery {
-            x3dRepository.createEmoji(videoUri, topK)
+            modelRepository.createEmoji(videoUri, topK)
         } returns emptyList()
         // when
         val createdEmojiList = runBlocking { emojiUseCaseImpl.createEmoji(videoUri, topK) }
         // then
-        coVerify(exactly = 1) { x3dRepository.createEmoji(videoUri, topK) }
+        coVerify(exactly = 1) { modelRepository.createEmoji(videoUri, topK) }
         assertEquals(emptyList<CreatedEmoji>(), createdEmojiList)
     }
 
