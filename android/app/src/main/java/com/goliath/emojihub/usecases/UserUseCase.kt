@@ -40,7 +40,16 @@ class UserUseCaseImpl @Inject constructor(
     override val accessTokenState: StateFlow<String?>
         get() = _accessTokenState
 
-    private val _userState: MutableStateFlow<User?> = MutableStateFlow(User(UserDto(EmojiHubApplication.preferences.currentUser ?: "")))
+    private val isCurrentUserEmpty = EmojiHubApplication.preferences.currentUser.isNullOrEmpty()
+
+    private val _userState: MutableStateFlow<User?> = MutableStateFlow(
+        if (isCurrentUserEmpty) {
+            null
+        } else {
+            User(UserDto(EmojiHubApplication.preferences.currentUser!!))
+        }
+    )
+
     override val userState: StateFlow<User?>
         get() = _userState
 

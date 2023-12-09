@@ -25,7 +25,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.goliath.emojihub.LocalBottomSheetController
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
-import com.goliath.emojihub.models.createDummyEmoji
 import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.ui.theme.Color.EmojiHubDividerColor
@@ -48,7 +47,6 @@ fun FeedPage() {
 
     val currentUser = userViewModel.userState.collectAsState().value
 
-    val emojiList = (1..10).map { createDummyEmoji() }
     val postList = postViewModel.postList.collectAsLazyPagingItems()
 
     var showNonUserDialog by remember { mutableStateOf(false) }
