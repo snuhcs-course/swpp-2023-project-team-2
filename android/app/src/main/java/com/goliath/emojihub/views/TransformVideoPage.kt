@@ -29,10 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
+@androidx.media3.common.util.UnstableApi
 @Composable
 fun TransformVideoPage(
     emojiViewModel: EmojiViewModel,
@@ -69,6 +70,7 @@ fun TransformVideoPage(
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(emojiViewModel.videoUri))
             repeatMode = Player.REPEAT_MODE_ALL
+            playWhenReady = true
             prepare()
         }
     }
@@ -142,18 +144,18 @@ fun TransformVideoPage(
             )
         }
     ) { it ->
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(Modifier.fillMaxSize()) {
             AndroidView(
                 factory = {
                     PlayerView(it).apply {
+                        setShowFastForwardButton(false)
+                        setShowRewindButton(false)
+                        setShowNextButton(false)
+                        setShowPreviousButton(false)
                         player = exoPlayer
                     }
                 },
-                modifier = Modifier
-                    .padding(it)
-                    .fillMaxSize()
+                modifier = Modifier.padding(it).fillMaxSize()
             )
 
             if (createdEmojiList.isNotEmpty()) {
@@ -171,15 +173,15 @@ fun TransformVideoPage(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(40.dp))
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ){
-                        if(currentEmojiIndex > 0) {
-                            IconButton(onClick = {
-                                currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
+                        if (currentEmojiIndex > 0) {
+                            IconButton(
+                                onClick = {
+                                    currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
                                 },
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -209,9 +211,11 @@ fun TransformVideoPage(
                                 fontSize = 60.sp
                             )
                         }
-                        if(currentEmojiIndex < createdEmojiList.size - 1) {
-                            IconButton(onClick = {
-                                currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
+
+                        if (currentEmojiIndex < createdEmojiList.size - 1) {
+                            IconButton(
+                                onClick = {
+                                    currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
                                 },
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -233,7 +237,7 @@ fun TransformVideoPage(
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        color = com.goliath.emojihub.ui.theme.Color.White
+                        color = Color.White
                     )
                 }
             }
