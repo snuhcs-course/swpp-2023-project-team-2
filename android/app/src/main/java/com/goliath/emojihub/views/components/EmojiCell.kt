@@ -43,7 +43,7 @@ fun EmojiCell (
     onSelected: (Emoji) -> Unit
 ) {
     val thumbnailLink = emoji.thumbnailLink.takeIf{ it.isNotEmpty()} ?:"https://i.pinimg.com/236x/4b/05/0c/4b050ca4fcf588eedc58aa6135f5eecf.jpg"
-    Log.d("create_TN", emoji.thumbnailLink)
+    Log.d("display_TN", emoji.thumbnailLink)
 
     Card (
         modifier = when (displayMode) {

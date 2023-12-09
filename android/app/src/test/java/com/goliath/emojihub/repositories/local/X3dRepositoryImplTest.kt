@@ -1,6 +1,7 @@
 package com.goliath.emojihub.repositories.local
 
 import android.net.Uri
+import com.goliath.emojihub.data_sources.local.MediaDataSource
 import com.goliath.emojihub.data_sources.local.X3dDataSource
 import com.goliath.emojihub.sampleX3dInferenceResultListOverScoreThreshold
 import com.goliath.emojihub.sampleX3dInferenceResultListUnderScoreThreshold
@@ -16,7 +17,8 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class X3dRepositoryImplTest {
     private val x3dDataSource = mockk<X3dDataSource>()
-    private val x3dRepositoryImpl = X3dRepositoryImpl(x3dDataSource)
+    private val mediaDataSource = mockk<MediaDataSource>()
+    private val x3dRepositoryImpl = X3dRepositoryImpl(x3dDataSource, mediaDataSource)
 
 
     @Test
@@ -24,7 +26,7 @@ class X3dRepositoryImplTest {
         // given
         val validVideoUri = mockk<Uri>()
         every {
-            x3dDataSource.loadVideoMediaMetadataRetriever(any())
+            mediaDataSource.loadVideoMediaMetadataRetriever(any())
         } returns mockk()
         every {
             x3dDataSource.extractFrameTensorsFromVideo(any())
@@ -34,7 +36,7 @@ class X3dRepositoryImplTest {
         // then
         assertNotNull(videoTensor)
         verify(exactly = 1) {
-            x3dDataSource.loadVideoMediaMetadataRetriever(any())
+            mediaDataSource.loadVideoMediaMetadataRetriever(any())
             x3dDataSource.extractFrameTensorsFromVideo(any())
         }
     }
@@ -44,7 +46,7 @@ class X3dRepositoryImplTest {
         // given
         val invalidVideoUri = mockk<Uri>()
         every {
-            x3dDataSource.loadVideoMediaMetadataRetriever(any())
+            mediaDataSource.loadVideoMediaMetadataRetriever(any())
         } returns null
         // when
         val videoTensor = x3dRepositoryImpl.loadVideoTensor(invalidVideoUri)

@@ -2,6 +2,7 @@ package com.goliath.emojihub.repositories.local
 
 import android.net.Uri
 import android.util.Log
+import com.goliath.emojihub.data_sources.local.MediaDataSource
 import com.goliath.emojihub.data_sources.local.X3dDataSource
 import com.goliath.emojihub.models.CreatedEmoji
 import org.pytorch.Module
@@ -16,7 +17,8 @@ interface X3dRepository {
 
 @Singleton
 class X3dRepositoryImpl @Inject constructor(
-    private val x3dDataSource: X3dDataSource
+    private val x3dDataSource: X3dDataSource,
+    private val mediaDataSource: MediaDataSource
 ): X3dRepository {
 
     // FIXME: Default emojis should be topK different emojis -> use just 3 emojis for now
@@ -45,7 +47,7 @@ class X3dRepositoryImpl @Inject constructor(
 
     fun loadVideoTensor(videoUri: Uri): Tensor? {
         val mediaMetadataRetriever =
-            x3dDataSource.loadVideoMediaMetadataRetriever(videoUri) ?: return null
+            mediaDataSource.loadVideoMediaMetadataRetriever(videoUri) ?: return null
         return x3dDataSource.extractFrameTensorsFromVideo(mediaMetadataRetriever)
     }
 

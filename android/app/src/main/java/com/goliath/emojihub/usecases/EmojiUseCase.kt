@@ -10,6 +10,7 @@ import com.goliath.emojihub.models.CreatedEmoji
 import com.goliath.emojihub.models.Emoji
 import com.goliath.emojihub.models.UploadEmojiDto
 import com.goliath.emojihub.repositories.local.X3dRepository
+import com.goliath.emojihub.repositories.remote.ClipRepository
 import com.goliath.emojihub.repositories.remote.EmojiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +42,7 @@ interface EmojiUseCase {
 @Singleton
 class EmojiUseCaseImpl @Inject constructor(
     private val emojiRepository: EmojiRepository,
-    private val x3dRepository: X3dRepository,
+    private val modelRepository: ClipRepository, // or X3dRepository
     private val errorController: ApiErrorController
 ): EmojiUseCase {
 
@@ -107,10 +108,10 @@ class EmojiUseCaseImpl @Inject constructor(
 
     override suspend fun createEmoji(videoUri: Uri, topK: Int): List<CreatedEmoji> {
         return try {
-            x3dRepository.createEmoji(videoUri, topK)
+            modelRepository.createEmoji(videoUri, topK)
         } catch (e: Exception) {
             Log.e("EmojiUseCase", "Unknown Exception on createEmoji: ${e.message}")
-            x3dRepository.DEFAULT_EMOJI_LIST
+            modelRepository.DEFAULT_EMOJI_LIST
         }
     }
 

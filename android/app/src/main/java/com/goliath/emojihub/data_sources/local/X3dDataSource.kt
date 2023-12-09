@@ -25,7 +25,6 @@ interface X3dDataSource {
     fun checkAnnotationFilesExist(
         idToClassFileName: String, classToUnicodeFileName: String
     ): Pair<String, String>?
-    fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever?
     fun extractFrameTensorsFromVideo(mediaMetadataRetriever: MediaMetadataRetriever): Tensor?
     fun runInference(x3dModule: Module, videoTensor: Tensor, topK: Int): List<X3dInferenceResult>
     fun indexToCreatedEmojiList(
@@ -89,24 +88,6 @@ class X3dDataSourceImpl @Inject constructor(
             return Pair(classNameFile.absolutePath, unicodeFile.absolutePath)
         } catch (e: Exception) {
             Log.e("X3dDataSource", "Error loading class names ${e.message}")
-        }
-        return null
-    }
-
-    override fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever? {
-        try {
-            val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, videoUri)
-            if ((mediaMetadataRetriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION
-                )?.toLong() ?: 0) <= 0
-            ) {
-                Log.e("X3dDataSource", "Video file is invalid")
-                return null
-            }
-            return mediaMetadataRetriever
-        } catch (e: Exception) {
-            Log.e("X3dDataSource", "Error loading video media metadata retriever ${e.message}")
         }
         return null
     }
