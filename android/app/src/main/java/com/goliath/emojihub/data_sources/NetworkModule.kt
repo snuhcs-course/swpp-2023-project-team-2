@@ -120,7 +120,7 @@ class AuthInterceptor @Inject constructor(): Interceptor {
 
 class CLIPAuthInterceptor @Inject constructor(): Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val clipApiKey = CLIP_API_TOKEN
+        val clipApiKey = CLIP_API_KEY
         val request = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer $clipApiKey")
             .build()
