@@ -46,7 +46,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.extensions.toEmoji
@@ -154,7 +154,7 @@ fun TransformVideoPage(
                         setShowRewindButton(false)
                         setShowNextButton(false)
                         setShowPreviousButton(false)
-                        resizeMode = RESIZE_MODE_FILL
+                        resizeMode = RESIZE_MODE_ZOOM
                         player = exoPlayer
                     }
                 },
