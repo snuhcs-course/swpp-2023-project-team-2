@@ -37,24 +37,22 @@ class ClipRepositoryImpl @Inject constructor(
         val stringImageList = extractStringImageListFromVideo(videoUri, 1)
         if (stringImageList.isEmpty()) return emptyList()
         // 2. Run CLIP inference
-        val inferenceResults = runClipInference(
-            stringImageList, topK
-        )
+        val inferenceResults = runClipInference(stringImageList, topK)
         if (inferenceResults.isEmpty()) return emptyList()
         // 3. Convert inference results to created emoji list
         return inferenceResultToCreatedEmojiList(inferenceResults)
     }
 
-    private fun extractStringImageListFromVideo(videoUri: Uri, numImages: Int): List<String> {
+    fun extractStringImageListFromVideo(videoUri: Uri, numImages: Int): List<String> {
         Log.d("ClipRepository", "Extracting string image list from " +
                 "videoUri: $videoUri with numImages: $numImages")
         val mediaMetadataRetriever =
             mediaDataSource.loadVideoMediaMetadataRetriever(videoUri) ?: return emptyList()
-        val bitmaps = mediaDataSource.extractFrameImagesFromVideo(mediaMetadataRetriever, numImages)
-        return bitmaps.map { mediaDataSource.bitmapToBase64Utf8(it) }
+        val bitmapList = mediaDataSource.extractFrameImagesFromVideo(mediaMetadataRetriever, numImages)
+        return bitmapList.map { mediaDataSource.bitmapToBase64Utf8(it) }
     }
 
-    private suspend fun runClipInference(
+    suspend fun runClipInference(
         imageList: List<String>, topK: Int
     ): List<ClipInferenceResponse> {
         Log.d("ClipRepository", "Loading class name to unicode json object: " +
@@ -64,8 +62,8 @@ class ClipRepositoryImpl @Inject constructor(
             ?: return emptyList() // Empty list if classUnicodeFilePath is invalid (ERROR)
         val classNameList = classNameToUnicodeJSONObject.keys().asSequence().toList()
 
-        Log.d("ClipRepository", """Running clip inference with 
-            imageList: $imageList and topK: $topK""".trimIndent())
+        Log.d("ClipRepository", "Running clip inference with " +
+                "imageList: $imageList and topK: $topK")
         val parameters = mapOf("candidate_labels" to classNameList)
         try {
             // FIXME: Use only 1 image for now
@@ -88,14 +86,14 @@ class ClipRepositoryImpl @Inject constructor(
         return emptyList()
     }
 
-    private fun inferenceResultToCreatedEmojiList(
+    fun inferenceResultToCreatedEmojiList(
         inferenceResults: List<ClipInferenceResponse>
     ): List<CreatedEmoji> {
         Log.d("ClipRepository", "Converting inference results " +
             "to created emoji list with inferenceResults: $inferenceResults")
         val classUnicodeJSONObject =
-            mediaDataSource.getJSONObjectFromAssets(classNameToUnicodeFileName)
-            ?: return emptyList() // Empty list if classUnicodeFilePath is invalid (ERROR)
+            mediaDataSource.getJSONObjectFromAssets(classNameToUnicodeFileName)?:
+            return emptyList() // Empty list if classUnicodeFilePath is invalid (ERROR)
 
         val createdEmojiList = mutableListOf<CreatedEmoji>()
         return try {
