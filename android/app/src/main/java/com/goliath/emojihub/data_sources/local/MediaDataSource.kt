@@ -19,17 +19,13 @@ interface MediaDataSource {
         numImages: Int
     ): List<Bitmap>
     fun bitmapToBase64Utf8(bitmap: Bitmap): String
-    fun getClassToUnicodeJSONObject(classToUnicodeFileName: String): JSONObject?
+    fun getJSONObjectFromAssets(fileName: String): JSONObject?
 }
 
 @Singleton
 class MediaDataSourceImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): MediaDataSource {
-
-    companion object{
-        private const val FRAMES_PER_SECOND = 30 // FIXME: Maybe use 24, 60 fps instead?
-    }
 
     override fun loadVideoMediaMetadataRetriever(videoUri: Uri): MediaMetadataRetriever? {
         try {
@@ -54,24 +50,31 @@ class MediaDataSourceImpl @Inject constructor(
         numImages: Int
     ): List<Bitmap> {
         try {
-            val videoLengthInMs = mediaMetadataRetriever.extractMetadata(
-                MediaMetadataRetriever.METADATA_KEY_DURATION
+            val numFrames = mediaMetadataRetriever.extractMetadata(
+                MediaMetadataRetriever.METADATA_KEY_VIDEO_FRAME_COUNT
             )?.toLong() ?: return emptyList()
-
-            val videoLengthInSec = videoLengthInMs / 1000
-            val numFrames = videoLengthInSec * FRAMES_PER_SECOND
-            val frameInterval = (numFrames / numImages)
+            Log.d("MediaDataSource", "Video has $numFrames frames")
+            val frameInterval = (numFrames / (numImages + 1))
+            Log.d("MediaDataSource", "Frame will be extracted every $frameInterval " +
+                    "/ $numFrames (frames / 1 image) for numImages: $numImages times")
 
             val frameImages = mutableListOf<Bitmap>()
-            for (i in 0 until numImages) {
+            for (i in 1 until numImages + 1) {
                 val frameTime = i * frameInterval
                 val bitmap = mediaMetadataRetriever.getFrameAtTime(
                     frameTime,
                     MediaMetadataRetriever.OPTION_CLOSEST_SYNC
                 )
                 if (bitmap != null) {
+                    Log.d("MediaDataSource", "Extracted $i th frame image")
                     frameImages.add(bitmap)
                 }
+            }
+            Log.i("MediaDataSource", "Expected numImages: $numImages, " +
+                    "Actual frameImages.size: ${frameImages.size}")
+            if (frameImages.isEmpty()) {
+                Log.e("MediaDataSource", "0 images extracted from video")
+                return emptyList()
             }
             return frameImages
         } catch (e: Exception) {
@@ -89,13 +92,13 @@ class MediaDataSourceImpl @Inject constructor(
         return Base64.getEncoder().encodeToString(byteArray)
     }
 
-    override fun getClassToUnicodeJSONObject(classToUnicodeFileName: String): JSONObject? {
+    override fun getJSONObjectFromAssets(fileName: String): JSONObject? {
         try {
-            val classToUnicodeFile = context.assets.open(classToUnicodeFileName)
+            val classToUnicodeFile = context.assets.open(fileName)
             val classToUnicodeString = classToUnicodeFile.bufferedReader().use { it.readText() }
             return JSONObject(classToUnicodeString)
         } catch (e: Exception) {
-            Log.e("MediaDataSource", "Error loading class to unicode json object ${e.message}")
+            Log.e("MediaDataSource", "Error loading json object from assets ${e.message}")
         }
         return null
     }
