@@ -1,5 +1,6 @@
 package com.goliath.emojihub.views
 
+import android.annotation.SuppressLint
 import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.background
@@ -29,10 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.media3.ui.PlayerView
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.extensions.toEmoji
@@ -54,6 +56,7 @@ import com.goliath.emojihub.views.components.CustomDialog
 import kotlinx.coroutines.launch
 import java.io.File
 
+@SuppressLint("UnsafeOptInUsageError")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransformVideoPage(
@@ -69,6 +72,7 @@ fun TransformVideoPage(
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(emojiViewModel.videoUri))
             repeatMode = Player.REPEAT_MODE_ALL
+            playWhenReady = true
             prepare()
         }
     }
@@ -142,99 +146,102 @@ fun TransformVideoPage(
             )
         }
     ) { it ->
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(Modifier.fillMaxSize()) {
             AndroidView(
                 factory = {
                     PlayerView(it).apply {
+                        setShowFastForwardButton(false)
+                        setShowRewindButton(false)
+                        setShowNextButton(false)
+                        setShowPreviousButton(false)
+                        resizeMode = RESIZE_MODE_ZOOM
                         player = exoPlayer
                     }
                 },
-                modifier = Modifier
-                    .padding(it)
-                    .fillMaxSize()
+                modifier = Modifier.padding(it).fillMaxSize()
             )
 
             if (createdEmojiList.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "영상과 가장 잘 어울리는\n이모지를 골라주세요",
-                        color = com.goliath.emojihub.ui.theme.Color.White,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(40.dp))
+                Box(Modifier.background(Color.Black.copy(alpha = 0.5f))) {
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 48.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "영상과 가장 잘 어울리는\n이모지를 골라주세요",
+                            color = com.goliath.emojihub.ui.theme.Color.White,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(40.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ){
+                            if (currentEmojiIndex > 0) {
+                                IconButton(
+                                    onClick = {
+                                        currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.NavigateBefore,
+                                        contentDescription = "Previous emoji",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                }
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ){
-                        if(currentEmojiIndex > 0) {
-                            IconButton(onClick = {
-                                currentEmojiIndex = (currentEmojiIndex - 1 + createdEmojiList.size) % createdEmojiList.size
-                                },
-                                modifier = Modifier.weight(1f)
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.weight(1f).size(120.dp)
+                                    .background(
+                                        color = Color.White.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.NavigateBefore,
-                                    contentDescription = "Previous emoji",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(48.dp)
+                                Text(
+                                    text = createdEmojiList[currentEmojiIndex].emojiUnicode.toEmoji(),
+                                    fontSize = 60.sp
                                 )
                             }
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
+
+                            if (currentEmojiIndex < createdEmojiList.size - 1) {
+                                IconButton(
+                                    onClick = {
+                                        currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.NavigateNext,
+                                        contentDescription = "Next emoji",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                }
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
 
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .weight(1f)
-                                .size(120.dp)
-                                .background(
-                                    color = Color.White.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                        ) {
-                            Text(
-                                text = createdEmojiList[currentEmojiIndex].emojiUnicode.toEmoji(),
-                                fontSize = 60.sp
-                            )
-                        }
-                        if(currentEmojiIndex < createdEmojiList.size - 1) {
-                            IconButton(onClick = {
-                                currentEmojiIndex = (currentEmojiIndex + 1) % createdEmojiList.size
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.NavigateNext,
-                                    contentDescription = "Next emoji",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                            }
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Text(
+                            text = createdEmojiList[currentEmojiIndex].emojiClassName,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = Color.White
+                        )
                     }
-
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Text(
-                        text = createdEmojiList[currentEmojiIndex].emojiClassName,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = com.goliath.emojihub.ui.theme.Color.White
-                    )
                 }
             }
 

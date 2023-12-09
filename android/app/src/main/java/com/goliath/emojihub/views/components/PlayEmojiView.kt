@@ -79,6 +79,7 @@ fun PlayEmojiView(
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(currentEmoji.videoLink))
             repeatMode = Player.REPEAT_MODE_ALL
+            playWhenReady = true
             prepare()
         }
     }
@@ -104,7 +105,11 @@ fun PlayEmojiView(
             modifier = Modifier.fillMaxSize(),
             factory = {
                 PlayerView(it).apply {
-                    this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+                    setShowFastForwardButton(false)
+                    setShowRewindButton(false)
+                    setShowNextButton(false)
+                    setShowPreviousButton(false)
+                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                     player = exoPlayer
                 }
             }
