@@ -24,7 +24,7 @@ interface ReactionUseCase {
 
 @Singleton
 class ReactionUseCaseImpl @Inject constructor(
-    private val repository: ReactionRepository,
+    private val reactionRepository: ReactionRepository,
     private val errorController: ApiErrorController
 ): ReactionUseCase {
 
@@ -37,11 +37,11 @@ class ReactionUseCaseImpl @Inject constructor(
     }
 
     override suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmoji>> {
-        return repository.fetchReactionList(postId, emojiUnicode).map { it.map { dto -> ReactionWithEmoji(dto) } }
+        return reactionRepository.fetchReactionList(postId, emojiUnicode).map { it.map { dto -> ReactionWithEmoji(dto) } }
     }
 
     override suspend fun uploadReaction(postId: String, emojiId: String): Boolean {
-        val response = repository.uploadReaction(postId, emojiId)
+        val response = reactionRepository.uploadReaction(postId, emojiId)
         return if (response.isSuccessful) {
             true
         } else {
@@ -51,10 +51,10 @@ class ReactionUseCaseImpl @Inject constructor(
     }
 
     override suspend fun getReactionWithId(id: String) {
-        repository.getReactionWithId(id)
+        reactionRepository.getReactionWithId(id)
     }
 
     override suspend fun deleteReaction(reactionId: String) {
-        repository.deleteReaction(reactionId)
+        reactionRepository.deleteReaction(reactionId)
     }
 }

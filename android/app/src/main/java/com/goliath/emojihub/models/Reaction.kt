@@ -47,4 +47,26 @@ class ReactionWithEmoji(
     val emojiId: String = dto.emojiId
     val postId: String = dto.postId
     val emojiDto: EmojiDto? = dto.emojiDto
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is ReactionWithEmoji) {
+            return false
+        }
+        return this.id == other.id &&
+                this.createdAt == other.createdAt &&
+                this.createdBy == other.createdBy &&
+                this.emojiId == other.emojiId &&
+                this.postId == other.postId &&
+                this.emojiDto == other.emojiDto
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + createdBy.hashCode()
+        result = 31 * result + emojiId.hashCode()
+        result = 31 * result + postId.hashCode()
+        result = 31 * result + (emojiDto?.hashCode() ?: 0)
+        return result
+    }
 }

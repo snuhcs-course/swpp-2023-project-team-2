@@ -15,7 +15,7 @@ interface ReactionRepository {
     suspend fun fetchReactionList(postId: String, emojiUnicode: String): Flow<PagingData<ReactionWithEmojiDto>>
     suspend fun uploadReaction(postId: String, emojiId: String): Response<Unit>
     suspend fun getReactionWithId(id: String)
-    suspend fun deleteReaction(reactionId: String)
+    suspend fun deleteReaction(reactionId: String): Response<Unit>
 }
 
 @Singleton
@@ -37,7 +37,7 @@ class ReactionRepositoryImpl @Inject constructor(
         TODO()
     }
 
-    override suspend fun deleteReaction(reactionId: String) {
-        reactionApi.deleteReaction(reactionId)
+    override suspend fun deleteReaction(reactionId: String): Response<Unit> {
+        return reactionApi.deleteReaction(reactionId)
     }
 }
