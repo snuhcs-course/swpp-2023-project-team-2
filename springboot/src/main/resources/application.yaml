@@ -1,0 +1,10 @@
+auth.jwt:
+  issuer: TEAM_2
+  jwtSecret: SWPP_2023_PROJECT_TEAM_2_SECRET_KEY
+  jwtExpiration: 360000
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB

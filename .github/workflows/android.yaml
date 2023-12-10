@@ -1,0 +1,37 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./android
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Add API_BASE_URL to local.properties
+      run: echo "API_BASE_URL= \"${{ secrets.API_BASE_URL }}\"" >> local.properties
+    - name: Add CLIP_BASE_URL to local.properties
+      run: echo "CLIP_BASE_URL= \"${{ secrets.CLIP_BASE_URL }}\"" >> local.properties
+    - name: Add CLIP_API_KEY to local.properties
+      run: echo "CLIP_API_KEY= \"${{ secrets.CLIP_API_KEY }}\"" >> local.properties
+
+    - name: Build with Gradle
+      run: ./gradlew clean build
