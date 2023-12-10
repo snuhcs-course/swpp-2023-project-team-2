@@ -52,7 +52,10 @@ enum class CustomError(
     },
     INTERNAL_SERVER_ERROR(500) {
         override fun body(): String = "네트워크 접속 오류가 발생했습니다."
-    },;
+    },
+    NETWORK_IS_BUSY(503) {
+        override fun body(): String = "네트워크가 혼잡합니다.\n잠시 후 다시 시도해주세요."
+    };
 
     companion object {
         fun getBy(statusCode: Int) = values().firstOrNull { it.statusCode == statusCode }
