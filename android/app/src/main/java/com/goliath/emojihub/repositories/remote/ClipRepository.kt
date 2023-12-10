@@ -2,6 +2,8 @@ package com.goliath.emojihub.repositories.remote
 
 import android.net.Uri
 import android.util.Log
+import com.goliath.emojihub.data_sources.ApiErrorController
+import com.goliath.emojihub.data_sources.CustomError
 import com.goliath.emojihub.data_sources.api.ClipApi
 import com.goliath.emojihub.data_sources.local.MediaDataSource
 import com.goliath.emojihub.models.ClipRequestDto
@@ -18,7 +20,8 @@ interface ClipRepository {
 @Singleton
 class ClipRepositoryImpl @Inject constructor(
     private val clipApi: ClipApi,
-    private val mediaDataSource: MediaDataSource
+    private val mediaDataSource: MediaDataSource,
+    private val errorController: ApiErrorController
 ): ClipRepository {
     // FIXME: Default emojis should be topK different emojis -> use just 3 emojis for now
     override val DEFAULT_EMOJI_LIST = listOf(
@@ -79,9 +82,11 @@ class ClipRepositoryImpl @Inject constructor(
                 }
             }
             Log.e("ClipRepository", "Clip inference response is not successful")
+            errorController.setErrorState(CustomError.NETWORK_IS_BUSY.statusCode)
             return emptyList()
         } catch (e: Exception) {
             Log.e("ClipRepository", "Error running clip inference ${e.message}")
+            errorController.setErrorState(CustomError.NETWORK_IS_BUSY.statusCode)
         }
         return emptyList()
     }
