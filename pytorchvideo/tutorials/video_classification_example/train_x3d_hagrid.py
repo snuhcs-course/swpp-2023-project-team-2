@@ -29,7 +29,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
-from slurm import copy_and_run_with_config
+# from slurm import copy_and_run_with_config
 from torchvision.transforms import (
     CenterCrop,
     Compose,
@@ -137,7 +137,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
                 )
 
                 _state_dict = torch.load(
-                    "./lightning_logs/version_14/epoch=1-step=33000.ckpt",
+                    "./lightning_logs/HaGrid/version_16/epoch=1-step=9000.ckpt",
                 )['state_dict']
                 for key, value in _state_dict.copy().items():
                     _state_dict[key.replace('model.', '', 1)] = value
@@ -446,7 +446,7 @@ def main():
         callbacks=[
             # EarlyStopping('val_loss'),
             ModelCheckpoint(
-                dirpath="./lightning_logs/version_15/",
+                dirpath="./lightning_logs/HaGrid/version_17/",
                 every_n_train_steps=3000,
                 save_last=True,
             ),
