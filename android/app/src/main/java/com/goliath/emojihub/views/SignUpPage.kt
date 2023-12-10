@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goliath.emojihub.LocalNavController
+import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 import com.goliath.emojihub.viewmodels.UserViewModel
 import com.goliath.emojihub.views.components.CustomDialog
@@ -122,7 +124,10 @@ fun SignUpPage() {
         if (showDialog) {
             CustomDialog(
                 title = "완료",
-                body = "계정 생성이 완료되었습니다."
+                body = "계정 생성이 완료되었습니다.",
+                onDismissRequest = { showDialog = false },
+                dismiss = { showDialog = false },
+                confirm = { navController.navigateAsOrigin(NavigationDestination.Login) }
             )
         }
     }

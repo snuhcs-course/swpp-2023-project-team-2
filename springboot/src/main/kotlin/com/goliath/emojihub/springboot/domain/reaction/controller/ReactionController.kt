@@ -1,6 +1,6 @@
 package com.goliath.emojihub.springboot.domain.reaction.controller
 
-import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionWithEmoji
 import com.goliath.emojihub.springboot.domain.reaction.service.ReactionService
 import com.goliath.emojihub.springboot.domain.user.model.CurrentUser
 import org.springframework.http.HttpStatus
@@ -14,8 +14,11 @@ class ReactionController(private val reactionService: ReactionService) {
     @GetMapping
     fun getReactionsOfPost(
         @RequestParam(value = "postId", defaultValue = "") postId: String,
-    ): ResponseEntity<List<ReactionDto>> {
-        return ResponseEntity.ok(reactionService.getReactionsOfPost(postId))
+        @RequestParam(value = "emojiUnicode", defaultValue = "") emojiUnicode: String,
+        @RequestParam(value = "index", defaultValue = 1.toString()) index: Int,
+        @RequestParam(value = "count", defaultValue = 10.toString()) count: Int
+    ): ResponseEntity<List<ReactionWithEmoji>> {
+        return ResponseEntity.ok(reactionService.getReactionsOfPost(postId, emojiUnicode, index, count))
     }
 
     @PostMapping
@@ -23,7 +26,6 @@ class ReactionController(private val reactionService: ReactionService) {
         @CurrentUser username: String,
         @RequestParam(value = "postId", defaultValue = "") postId: String,
         @RequestParam(value = "emojiId", defaultValue = "") emojiId: String
-
     ): ResponseEntity<Unit> {
         return ResponseEntity(
             reactionService.postReaction(username, postId, emojiId), HttpStatus.CREATED

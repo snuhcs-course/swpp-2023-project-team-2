@@ -9,6 +9,17 @@ import com.goliath.emojihub.springboot.domain.user.dao.UserDao
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp403
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INDEX_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.COUNT_OUT_OF_BOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.EMOJI_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_CREATED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_SAVED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.USER_ALREADY_UNSAVED
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Forbidden.EMOJI_DELETE_FORBIDDEN
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.CREATED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -44,9 +55,6 @@ internal class EmojiServiceTest {
     lateinit var postDao: PostDao
 
     companion object {
-        const val CREATED_EMOJIS = "created_emojis"
-        const val SAVED_EMOJIS = "saved_emojis"
-        const val EMOJI_ID = "emoji_id"
         private val testDto = TestDto()
     }
 
@@ -73,8 +81,8 @@ internal class EmojiServiceTest {
         // then
         assertAll(
             { assertEquals(result, testDto.emojiList) },
-            { assertEquals(assertThrows1.message, "Index should be positive integer.") },
-            { assertEquals(assertThrows2.message, "Count should be positive integer.") }
+            { assertEquals(assertThrows1.message, INDEX_OUT_OF_BOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, COUNT_OUT_OF_BOUND.getMessage()) }
         )
         verify(emojiDao, times(1)).getEmojis(sortByDate, index, count)
     }
@@ -96,24 +104,24 @@ internal class EmojiServiceTest {
         }
 
         // when
-        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS, index, countCreated)
-        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS, index, countSaved)
+        val createdEmojisResult = emojiService.getMyEmojis(username, CREATED_EMOJIS.string, index, countCreated)
+        val savedEmojisResult = emojiService.getMyEmojis(username, SAVED_EMOJIS.string, index, countSaved)
         val assertThrows = assertThrows(CustomHttp404::class.java) {
-            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS, index, countCreated)
+            emojiService.getMyEmojis(wrongUsername, CREATED_EMOJIS.string, index, countCreated)
         }
 
         // then
         assertAll(
             { assertEquals(createdEmojisResult.size, testDto.createdEmojiSize) },
             { assertEquals(savedEmojisResult.size, testDto.savedEmojiSize) },
-            { assertEquals(assertThrows.message, "User doesn't exist.") }
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
         )
         verify(userDao, times(2)).getUser(username)
         verify(userDao, times(1)).getUser(wrongUsername)
-        for (emojiId in user.created_emojis!!) {
+        for (emojiId in user.created_emojis) {
             verify(emojiDao, times(1)).getEmoji(emojiId)
         }
-        for (emojiId in user.saved_emojis!!) {
+        for (emojiId in user.saved_emojis) {
             verify(emojiDao, times(1)).getEmoji(emojiId)
         }
     }
@@ -138,7 +146,7 @@ internal class EmojiServiceTest {
         // then
         assertAll(
             { assertEquals(result, emoji) },
-            { assertEquals(assertThrows.message, "Emoji doesn't exist.") }
+            { assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage()) }
         )
         verify(emojiDao, times(1)).existsEmoji(id)
         verify(emojiDao, times(1)).existsEmoji(wrongId)
@@ -164,7 +172,7 @@ internal class EmojiServiceTest {
 
         // then
         verify(emojiDao, times(1)).insertEmoji(any(), any(), any(), any(), any(), any())
-        verify(userDao, times(1)).insertId(username, emoji.id, CREATED_EMOJIS)
+        verify(userDao, times(1)).insertId(username, emoji.id, CREATED_EMOJIS.string)
     }
 
     @Test
@@ -200,7 +208,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Emoji doesn't exist.")
+        assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(wrongId)
     }
 
@@ -219,7 +227,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(wrongUsername)
     }
@@ -230,7 +238,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.created_emojis!![0]
+        val emojiId = user.created_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -240,7 +248,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User created this emoji.")
+        assertEquals(assertThrows.message, USER_CREATED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -251,7 +259,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.saved_emojis!![0]
+        val emojiId = user.saved_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -261,7 +269,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User already saved this emoji.")
+        assertEquals(assertThrows.message, USER_ALREADY_SAVED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -272,7 +280,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.saved_emojis!![0]
+        val emojiId = user.saved_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -299,7 +307,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Emoji doesn't exist.")
+        assertEquals(assertThrows.message, EMOJI_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(wrongId)
     }
 
@@ -318,7 +326,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(wrongUsername)
     }
@@ -329,7 +337,7 @@ internal class EmojiServiceTest {
         // given
         val user = testDto.userList[0]
         val username = user.username
-        val emojiId = user.created_emojis!![0]
+        val emojiId = user.created_emojis[0]
         Mockito.`when`(emojiDao.existsEmoji(emojiId)).thenReturn(true)
         Mockito.`when`(userDao.getUser(username)).thenReturn(user)
 
@@ -339,7 +347,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User created this emoji.")
+        assertEquals(assertThrows.message, USER_CREATED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -360,7 +368,7 @@ internal class EmojiServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User already unsaved this emoji.")
+        assertEquals(assertThrows.message, USER_ALREADY_UNSAVED.getMessage())
         verify(emojiDao, times(1)).existsEmoji(emojiId)
         verify(userDao, times(1)).getUser(username)
     }
@@ -384,7 +392,7 @@ internal class EmojiServiceTest {
                 reactions.add(reaction)
             }
         }
-        Mockito.`when`(reactionDao.getReactionsWithField(emojiId, EMOJI_ID)).thenReturn(reactions)
+        Mockito.`when`(reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)).thenReturn(reactions)
 
         // when
         emojiService.deleteEmoji(username, emojiId)
@@ -397,20 +405,20 @@ internal class EmojiServiceTest {
 
         // then
         assertAll(
-            { assertEquals(assertThrows1.message, "Emoji doesn't exist.") },
-            { assertEquals(assertThrows2.message, "You can't delete this emoji.") }
+            { assertEquals(assertThrows1.message, EMOJI_NOT_FOUND.getMessage()) },
+            { assertEquals(assertThrows2.message, EMOJI_DELETE_FORBIDDEN.getMessage()) }
         )
         verify(emojiDao, times(2)).getEmoji(emojiId)
         verify(emojiDao, times(1)).getEmoji(wrongId)
         verify(emojiDao, times(1)).deleteFileInStorage(fileBlobName)
         verify(emojiDao, times(1)).deleteFileInStorage(thumbnailBlobName)
-        verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID)
+        verify(reactionDao, times(1)).getReactionsWithField(emojiId, EMOJI_ID.string)
         for (reaction in reactions) {
-            verify(postDao, times(1)).deleteReactionId(reaction.post_id, reaction.id)
+            verify(postDao, times(1)).deleteReaction(reaction.post_id, reaction.id)
             verify(reactionDao, times(1)).deleteReaction(reaction.id)
         }
         verify(userDao, times(1)).deleteAllSavedEmojiId(emojiId)
-        verify(userDao, times(1)).deleteId(username, emojiId, CREATED_EMOJIS)
+        verify(userDao, times(1)).deleteId(username, emojiId, CREATED_EMOJIS.string)
         verify(emojiDao, times(1)).deleteEmoji(emojiId)
     }
 }

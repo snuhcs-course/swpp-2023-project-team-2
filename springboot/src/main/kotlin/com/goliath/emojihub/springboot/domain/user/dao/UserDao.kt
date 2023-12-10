@@ -1,6 +1,8 @@
 package com.goliath.emojihub.springboot.domain.user.dao
 
 import com.goliath.emojihub.springboot.domain.user.dto.UserDto
+import com.goliath.emojihub.springboot.global.util.StringValue.Collection.USER_COLLECTION_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.SAVED_EMOJIS
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
@@ -14,13 +16,9 @@ class UserDao(
     private val db: Firestore
 ) {
 
-    companion object {
-        const val USER_COLLECTION_NAME = "Users"
-    }
-
     fun getUsers(): List<UserDto> {
         val list = mutableListOf<UserDto>()
-        val future = db.collection(USER_COLLECTION_NAME).get()
+        val future = db.collection(USER_COLLECTION_NAME.string).get()
         val documents: List<QueryDocumentSnapshot> = future.get().documents
         for (document in documents) {
             list.add(document.toObject(UserDto::class.java))
@@ -29,7 +27,7 @@ class UserDao(
     }
 
     fun getUser(username: String): UserDto? {
-        val future = db.collection(USER_COLLECTION_NAME).document(username).get()
+        val future = db.collection(USER_COLLECTION_NAME.string).document(username).get()
         val document: DocumentSnapshot = future.get()
         var result: UserDto? = null
         if (document.exists()) {
@@ -39,37 +37,37 @@ class UserDao(
     }
 
     fun existUser(username: String): Boolean {
-        val future = db.collection(USER_COLLECTION_NAME).document(username).get()
+        val future = db.collection(USER_COLLECTION_NAME.string).document(username).get()
         val document: DocumentSnapshot = future.get()
         return document.exists()
     }
 
     fun insertUser(userDto: UserDto) {
-        db.collection(USER_COLLECTION_NAME)
+        db.collection(USER_COLLECTION_NAME.string)
             .document(userDto.username)
             .set(userDto)
     }
 
     fun deleteUser(username: String) {
-        db.collection(USER_COLLECTION_NAME).document(username).delete()
+        db.collection(USER_COLLECTION_NAME.string).document(username).delete()
     }
 
     fun insertId(username: String, id: String, field: String) {
-        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        val userRef = db.collection(USER_COLLECTION_NAME.string).document(username)
         userRef.update(field, FieldValue.arrayUnion(id))
     }
 
     fun deleteId(username: String, id: String, field: String) {
-        val userRef = db.collection(USER_COLLECTION_NAME).document(username)
+        val userRef = db.collection(USER_COLLECTION_NAME.string).document(username)
         userRef.update(field, FieldValue.arrayRemove(id))
     }
 
     fun deleteAllSavedEmojiId(emojiId: String) {
-        val usersWithDeletedEmoji = db.collection(USER_COLLECTION_NAME)
-            .whereArrayContains("saved_emojis", emojiId)
+        val usersWithDeletedEmoji = db.collection(USER_COLLECTION_NAME.string)
+            .whereArrayContains(SAVED_EMOJIS.string, emojiId)
             .get().get().documents
         for (user in usersWithDeletedEmoji) {
-            user.reference.update("saved_emojis", FieldValue.arrayRemove(emojiId))
+            user.reference.update(SAVED_EMOJIS.string, FieldValue.arrayRemove(emojiId))
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.goliath.emojihub.springboot.domain.reaction.dto
 
-import kotlin.streams.asSequence
 
 data class ReactionDto(
     var id: String = "",
@@ -8,17 +7,37 @@ data class ReactionDto(
     var post_id: String = "",
     var emoji_id: String = "",
     var created_at: String = ""
-) {
-    constructor(username: String, post_id: String, emoji_id: String, dateTime: String) : this() {
-        val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        val outputStrLength: Long = 20
-        id = java.util.Random().ints(outputStrLength, 0, source.length)
-            .asSequence()
-            .map(source::get)
-            .joinToString("")
-        created_by = username
-        this.post_id = post_id
-        this.emoji_id = emoji_id
-        created_at = dateTime
+)
+
+class ReactionDtoBuilder {
+    private val reactionDto: ReactionDto = ReactionDto()
+
+    fun id(id: String): ReactionDtoBuilder {
+        reactionDto.id = id
+        return this
+    }
+
+    fun createdBy(createdBy: String): ReactionDtoBuilder {
+        reactionDto.created_by = createdBy
+        return this
+    }
+
+    fun postId(postId: String): ReactionDtoBuilder {
+        reactionDto.post_id = postId
+        return this
+    }
+
+    fun emojiId(emojiId: String): ReactionDtoBuilder {
+        reactionDto.emoji_id = emojiId
+        return this
+    }
+
+    fun createdAt(createdAt: String): ReactionDtoBuilder {
+        reactionDto.created_at = createdAt
+        return this
+    }
+
+    fun build(): ReactionDto {
+        return reactionDto
     }
 }

@@ -2,6 +2,12 @@ package com.goliath.emojihub.springboot.global.auth
 
 import com.goliath.emojihub.springboot.global.exception.CustomHttp400
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.INVALID_TOKEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.BadRequest.NO_TOKEN
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.EXPIRED_TOKEN
+import com.goliath.emojihub.springboot.global.util.StringValue.JWT.JWT_TOKEN_PREFIX
+import com.goliath.emojihub.springboot.global.util.StringValue.Header.AUTHORIZATION
+import com.goliath.emojihub.springboot.global.util.StringValue.UserField.USERNAME
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -23,12 +29,11 @@ class JwtTokenProvider (
     private val authProperties: AuthProperties,
     private val userDetailsService: UserDetailsService,
     ){
-    private val tokenPrefix = "Bearer "
     private val signingKey = Keys.hmacShaKeyFor(authProperties.jwtSecret.toByteArray())
 
     fun createToken(username: String): String {
         val claims: Claims = Jwts.claims()
-        claims["username"] = username
+        claims[USERNAME.string] = username
         val issuer = authProperties.issuer
         val expiryDate: Date = Date.from(
             LocalDateTime
@@ -47,16 +52,16 @@ class JwtTokenProvider (
 
     fun getUsernameFromToken(authToken: String): String {
         return try {
-            getAllClaims(authToken)["username"] as String
+            getAllClaims(authToken)[USERNAME.string] as String
         } catch (e: ExpiredJwtException) {
-            throw CustomHttp401("Token is expired.")
+            throw CustomHttp401(EXPIRED_TOKEN)
         } catch (e: Exception) {
-            throw CustomHttp400("Token is invalid.")
+            throw CustomHttp400(INVALID_TOKEN)
         }
     }
 
     fun getAllClaims(authToken: String): Claims {
-        val prefixRemoved = authToken.replace(tokenPrefix, "").trim { it <= ' ' }
+        val prefixRemoved = authToken.replace(JWT_TOKEN_PREFIX.string, "").trim { it <= ' ' }
         return Jwts
             .parserBuilder()
             .setSigningKey(signingKey)
@@ -66,16 +71,16 @@ class JwtTokenProvider (
     }
 
     fun resolveToken(request: HttpServletRequest): String {
-        return request.getHeader("Authorization") ?: throw CustomHttp400("There is no token.")
+        return request.getHeader(AUTHORIZATION.string) ?: throw CustomHttp400(NO_TOKEN)
     }
 
     fun validateToken(authToken: String): Boolean {
         try {
             return getAllClaims(authToken).expiration.after(Date())
         } catch (e: ExpiredJwtException) {
-            throw CustomHttp401("Token is expired.")
+            throw CustomHttp401(EXPIRED_TOKEN)
         } catch (e: Exception) {
-            throw CustomHttp400("Token is invalid.")
+            throw CustomHttp400(INVALID_TOKEN)
         }
     }
 

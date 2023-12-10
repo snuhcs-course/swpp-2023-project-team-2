@@ -2,6 +2,10 @@ package com.goliath.emojihub.springboot.domain.emoji.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.emoji.dto.EmojiDto
+import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.TEST_SERVICE_ACCOUNT_KEY
+import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.EMOJI_STORAGE_BUCKET_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.TEST_EMOJI_STORAGE_BUCKET_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.Collection.EMOJI_COLLECTION_NAME
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.storage.Blob
@@ -49,7 +53,6 @@ internal class EmojiDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        const val EMOJI_COLLECTION_NAME = "Emojis"
         private val testDto = TestDto()
         val userList = testDto.userList
         val emojiList = testDto.emojiList
@@ -58,15 +61,24 @@ internal class EmojiDaoTest {
         @JvmStatic
         fun beforeAll() {
             val serviceAccount =
-                FileInputStream("src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json")
+                FileInputStream(TEST_SERVICE_ACCOUNT_KEY.string)
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setStorageBucket("emojihub-e2023.appspot.com")
+                .setStorageBucket(TEST_EMOJI_STORAGE_BUCKET_NAME.string)
                 .build()
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore Database Emojis
+            val emojiDocuments = testDB.collection(EMOJI_COLLECTION_NAME.string).get().get().documents
+            for (document in emojiDocuments) {
+                val emoji = document.toObject(EmojiDto::class.java)
+                testDB.collection(EMOJI_COLLECTION_NAME.string).document(emoji.id).delete()
+            }
+            for (emoji in testDto.emojiList) {
+                testDB.collection(EMOJI_COLLECTION_NAME.string).document(emoji.id).set(emoji)
+            }
         }
     }
 
@@ -77,8 +89,8 @@ internal class EmojiDaoTest {
         val sorByNumSaved = 0
         val index = 1
         val count = 10
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
         val expectedResult1 = mutableListOf<EmojiDto>()
         expectedResult1.addAll(emojiList)
         val expectedResult2 = mutableListOf<EmojiDto>()
@@ -103,8 +115,8 @@ internal class EmojiDaoTest {
         // given
         val emojiId = emojiList[0].id
         val wrongId = "wrong_emoji_id"
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
 
         // when
         val result = emojiDao.getEmoji(emojiId)
@@ -129,15 +141,15 @@ internal class EmojiDaoTest {
         val dateTime = "test_date_time"
         val blobIdPart = username + "_" + dateTime
         val emojiVideoBlobId: BlobId = BlobId.of(
-            "emojihub-e2023.appspot.com",
+            EMOJI_STORAGE_BUCKET_NAME.string,
             "$blobIdPart.mp4"
         )
         val thumbnailBlobId: BlobId = BlobId.of(
-            "emojihub-e2023.appspot.com",
+            EMOJI_STORAGE_BUCKET_NAME.string,
             "$blobIdPart.jpeg"
         )
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
         Mockito.`when`(storage.get(emojiVideoBlobId)).thenReturn(blob)
         Mockito.`when`(storage.get(thumbnailBlobId)).thenReturn(blob)
         Mockito.`when`(blob.signUrl(100, TimeUnit.DAYS)).thenReturn(this.url)
@@ -175,8 +187,8 @@ internal class EmojiDaoTest {
         // given
         val emoji = emojiList[0]
         val emojiId = emoji.id
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
 
         // when
         emojiDao.numSavedChange(emojiId, 1)
@@ -205,8 +217,8 @@ internal class EmojiDaoTest {
     fun deleteEmoji() {
         // given
         val emojiId = emojiList[3].id
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
 
         // when
         emojiDao.deleteEmoji(emojiId)
@@ -221,7 +233,7 @@ internal class EmojiDaoTest {
         assertEquals(result, false)
 
         // after work
-        testDB.collection(EmojiDao.EMOJI_COLLECTION_NAME)
+        testDB.collection(EMOJI_COLLECTION_NAME.string)
             .document(emojiId)
             .set(emojiList[3])
     }
@@ -230,8 +242,8 @@ internal class EmojiDaoTest {
     fun existsEmoji() {
         // given
         val emojiId = emojiList[1].id
-        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME))
-            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME))
+        Mockito.`when`(db.collection(EMOJI_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(EMOJI_COLLECTION_NAME.string))
 
         // when
         val result = emojiDao.existsEmoji(emojiId)
@@ -244,7 +256,7 @@ internal class EmojiDaoTest {
     fun deleteFileInStorage() {
         // given
         val blobName = "test_blob_name"
-        val blobId = BlobId.of("emojihub-e2023.appspot.com", blobName)
+        val blobId = BlobId.of(EMOJI_STORAGE_BUCKET_NAME.string, blobName)
 
         // when
         emojiDao.deleteFileInStorage(blobName)

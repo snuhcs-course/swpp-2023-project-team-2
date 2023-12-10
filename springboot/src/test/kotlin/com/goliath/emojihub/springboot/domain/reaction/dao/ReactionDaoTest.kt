@@ -2,6 +2,12 @@ package com.goliath.emojihub.springboot.domain.reaction.dao
 
 import com.goliath.emojihub.springboot.domain.TestDto
 import com.goliath.emojihub.springboot.domain.reaction.dto.ReactionDto
+import com.goliath.emojihub.springboot.global.util.StringValue.FilePathName.TEST_SERVICE_ACCOUNT_KEY
+import com.goliath.emojihub.springboot.global.util.StringValue.Bucket.TEST_EMOJI_STORAGE_BUCKET_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.Collection.REACTION_COLLECTION_NAME
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_BY
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.POST_ID
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
@@ -32,25 +38,30 @@ internal class ReactionDaoTest {
     companion object {
 
         lateinit var testDB: Firestore
-        const val REACTION_COLLECTION_NAME = "Reactions"
-        const val CREATED_BY = "created_by"
-        const val POST_ID = "post_id"
-        const val EMOJI_ID = "emoji_id"
         private val testDto = TestDto()
 
         @BeforeAll
         @JvmStatic
         fun beforeAll() {
             val serviceAccount =
-                FileInputStream("src/test/kotlin/com/goliath/emojihub/springboot/TestServiceAccountKey.json")
+                FileInputStream(TEST_SERVICE_ACCOUNT_KEY.string)
             val options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setStorageBucket("emojihub-e2023.appspot.com")
+                .setStorageBucket(TEST_EMOJI_STORAGE_BUCKET_NAME.string)
                 .build()
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options)
             }
             testDB = FirestoreClient.getFirestore()
+            // Initialization of firestore Database Posts
+            val reactionDocuments = testDB.collection(REACTION_COLLECTION_NAME.string).get().get().documents
+            for (document in reactionDocuments) {
+                val reaction = document.toObject(ReactionDto::class.java)
+                testDB.collection(REACTION_COLLECTION_NAME.string).document(reaction.id).delete()
+            }
+            for (reaction in testDto.reactionList) {
+                testDB.collection(REACTION_COLLECTION_NAME.string).document(reaction.id).set(reaction)
+            }
         }
     }
 
@@ -60,8 +71,8 @@ internal class ReactionDaoTest {
         val username = "new_username"
         val postId = "new_post_id"
         val emojiId = "new_emoji_id"
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
         val result = reactionDao.insertReaction(username, postId, emojiId)
@@ -90,8 +101,8 @@ internal class ReactionDaoTest {
     fun existReaction() {
         // given
         val reactionId = testDto.reactionList[0].id
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
         val result = reactionDao.existReaction(reactionId)
@@ -107,8 +118,8 @@ internal class ReactionDaoTest {
         val username = reaction.created_by
         val postId = reaction.post_id
         val emojiId = reaction.emoji_id
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
         val result = reactionDao.existSameReaction(username, postId, emojiId)
@@ -122,8 +133,8 @@ internal class ReactionDaoTest {
         // given
         val reaction = testDto.reactionList[0]
         val reactionId = reaction.id
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
         val result = reactionDao.getReaction(reactionId)
@@ -153,13 +164,13 @@ internal class ReactionDaoTest {
         reactionsWithCreatedBy.sortByDescending { it.created_at }
         reactionsWithPostId.sortByDescending { it.created_at }
         reactionsWithEmojiId.sortByDescending { it.created_at }
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
-        val resultWithCreatedBy = reactionDao.getReactionsWithField(createdBy, CREATED_BY)
-        val resultWithPostId = reactionDao.getReactionsWithField(postId, POST_ID)
-        val resultWithEmojiId = reactionDao.getReactionsWithField(emojiId, EMOJI_ID)
+        val resultWithCreatedBy = reactionDao.getReactionsWithField(createdBy, CREATED_BY.string)
+        val resultWithPostId = reactionDao.getReactionsWithField(postId, POST_ID.string)
+        val resultWithEmojiId = reactionDao.getReactionsWithField(emojiId, EMOJI_ID.string)
 
         // then
         assertAll(
@@ -174,8 +185,8 @@ internal class ReactionDaoTest {
         // given
         val reaction = testDto.reactionList[0]
         val reactionId = reaction.id
-        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME))
-            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME))
+        Mockito.`when`(db.collection(REACTION_COLLECTION_NAME.string))
+            .thenReturn(testDB.collection(REACTION_COLLECTION_NAME.string))
 
         // when
         reactionDao.deleteReaction(reactionId)
@@ -190,7 +201,7 @@ internal class ReactionDaoTest {
         assertEquals(reactionExist, false)
 
         // after work
-        testDB.collection(REACTION_COLLECTION_NAME)
+        testDB.collection(REACTION_COLLECTION_NAME.string)
             .document(reaction.id)
             .set(reaction)
         var reactionGet = reactionDao.getReaction(reactionId)

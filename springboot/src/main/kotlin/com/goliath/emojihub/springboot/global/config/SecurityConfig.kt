@@ -22,11 +22,13 @@ class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
 ) {
     private val POST_WHITELIST = arrayOf("/api/user/signup", "/api/user/login")
+    private val GET_WHITELIST = arrayOf("/api/emoji", "/api/post", "/api/reaction")
 
     @Bean
     fun ignoringCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer { web: WebSecurity ->
             web.ignoring().requestMatchers(HttpMethod.POST, *POST_WHITELIST)
+            web.ignoring().requestMatchers(HttpMethod.GET, *GET_WHITELIST)
         }
     }
 
@@ -46,5 +48,4 @@ class SecurityConfig(
     fun passwordEncoder(): PasswordEncoder {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder()
     }
-
 }

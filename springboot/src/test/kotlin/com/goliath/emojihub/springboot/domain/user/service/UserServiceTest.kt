@@ -10,6 +10,12 @@ import com.goliath.emojihub.springboot.global.auth.JwtTokenProvider
 import com.goliath.emojihub.springboot.global.exception.CustomHttp401
 import com.goliath.emojihub.springboot.global.exception.CustomHttp404
 import com.goliath.emojihub.springboot.global.exception.CustomHttp409
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Conflict.ID_EXIST
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.ID_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.NotFound.USER_NOT_FOUND
+import com.goliath.emojihub.springboot.global.exception.ErrorType.Unauthorized.PASSWORD_INCORRECT
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.CREATED_BY
+import com.goliath.emojihub.springboot.global.util.StringValue.ReactionField.EMOJI_ID
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -50,8 +56,6 @@ internal class UserServiceTest {
     lateinit var reactionDao: ReactionDao
 
     companion object {
-        const val CREATED_BY = "created_by"
-        const val EMOJI_ID = "emoji_id"
         val testDto = TestDto()
     }
 
@@ -70,6 +74,30 @@ internal class UserServiceTest {
     }
 
     @Test
+    @DisplayName("자신의 유저 데이터 가져오기")
+    fun getMe() {
+        // given
+        val user = testDto.userList[0]
+        val wrongUsername = "wrong_username"
+        Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
+        Mockito.`when`(userDao.getUser(wrongUsername)).thenReturn(null)
+
+        // when
+        val result = userService.getMe(user.username)
+        val assertThrows = assertThrows(CustomHttp404::class.java) {
+            userService.getMe(wrongUsername)
+        }
+
+        // then
+        assertAll(
+            { assertEquals(result, user) },
+            { assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage()) }
+        )
+        verify(userDao, times(1)).getUser(user.username)
+        verify(userDao, times(1)).getUser(wrongUsername)
+    }
+
+    @Test
     @DisplayName("회원가입 실패: 아이디 중복")
     fun signUpFail() {
         // given
@@ -82,7 +110,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Id already exists.")
+        assertEquals(assertThrows.message, ID_EXIST.getMessage())
         verify(userDao, times(1)).existUser(user.username)
     }
 
@@ -120,7 +148,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Id doesn't exist.")
+        assertEquals(assertThrows.message, ID_NOT_FOUND.getMessage())
         verify(userDao, times(1)).getUser(user.username)
     }
 
@@ -139,7 +167,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "Password is incorrect.")
+        assertEquals(assertThrows.message, PASSWORD_INCORRECT.getMessage())
         verify(userDao, times(1)).getUser(user.username)
         verify(passwordEncoder, times(1)).matches(wrongPassword, user.password)
     }
@@ -187,7 +215,7 @@ internal class UserServiceTest {
         }
 
         // then
-        assertEquals(assertThrows.message, "User doesn't exist.")
+        assertEquals(assertThrows.message, USER_NOT_FOUND.getMessage())
         verify(userDao, times(1)).getUser(username)
     }
 
@@ -207,7 +235,7 @@ internal class UserServiceTest {
         }
 
         Mockito.`when`(userDao.getUser(user.username)).thenReturn(user)
-        Mockito.`when`(reactionDao.getReactionsWithField(user.username, CREATED_BY)).thenReturn(myReactions)
+        Mockito.`when`(reactionDao.getReactionsWithField(user.username, CREATED_BY.string)).thenReturn(myReactions)
         for (post in testDto.postList) {
             Mockito.`when`(postDao.getPost(post.id)).thenReturn(post)
         }
@@ -219,14 +247,14 @@ internal class UserServiceTest {
             Mockito.`when`(emojiDao.existsEmoji(emoji.id)).thenReturn(true)
         }
         for (userDto in testDto.userList) {
-            val firstEmojiId = userDto.created_emojis!![0]
+            val firstEmojiId = userDto.created_emojis[0]
             val reactions = mutableListOf<ReactionDto>()
             for (reaction in testDto.reactionList) {
                 if (reaction.emoji_id == firstEmojiId) {
                     reactions.add(reaction)
                 }
             }
-            Mockito.`when`(reactionDao.getReactionsWithField(firstEmojiId, EMOJI_ID)).thenReturn(reactions)
+            Mockito.`when`(reactionDao.getReactionsWithField(firstEmojiId, EMOJI_ID.string)).thenReturn(reactions)
         }
 
         // when

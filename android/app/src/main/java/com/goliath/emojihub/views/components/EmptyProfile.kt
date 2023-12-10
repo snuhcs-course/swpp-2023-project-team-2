@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.goliath.emojihub.LocalNavController
 import com.goliath.emojihub.NavigationDestination
+import com.goliath.emojihub.navigateAsOrigin
 import com.goliath.emojihub.ui.theme.Color
 
 @Composable
@@ -54,7 +55,7 @@ fun EmptyProfile() {
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = { navController.navigate(NavigationDestination.Onboard) },
+            onClick = { navController.navigateAsOrigin(NavigationDestination.Onboard) },
             modifier = Modifier.fillMaxWidth().height(44.dp),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(

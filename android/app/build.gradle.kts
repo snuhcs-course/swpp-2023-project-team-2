@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.goliath.emojihub"
-        minSdk = 33
+        minSdk = 31
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -31,11 +31,13 @@ android {
 
         // get properties from `local.properties`
         buildConfigField("String", "API_BASE_URL", getProperty("API_BASE_URL"))
+        buildConfigField("String", "CLIP_BASE_URL", getProperty("CLIP_BASE_URL"))
+        buildConfigField("String", "CLIP_API_KEY", getProperty("CLIP_API_KEY"))
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -123,6 +125,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.44")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.44")
+
+    // json
+    implementation("org.json:json:20210307")
 
     // navigation
     implementation("androidx.navigation:navigation-compose:2.5.3")

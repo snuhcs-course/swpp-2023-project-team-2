@@ -20,6 +20,7 @@ import java.io.IOException
 @RunWith(AndroidJUnit4::class)
 class X3dDataSourceImplTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val mediaDataSourceImpl = MediaDataSourceImpl(context)
     private val x3dDataSourceImpl = X3dDataSourceImpl(context)
     // X3D TESTING UTILS
     private fun getSampleVideoUri(videoFileName: String): Uri {
@@ -124,38 +125,11 @@ class X3dDataSourceImplTest {
         assertNull(filePaths)
     }
 
-    //  how can I access to the video file in the device?
-    //  -> route this issue by using file in assets folder
-    @Test
-    fun loadVideoMediaMetadataRetriever_validVideoUri_returnsMediaMetadataRetriever() {
-        // given
-        val videoUri = getSampleVideoUri("Hagrid/test_palm_video.mp4")
-        // when
-        val mediaMetadataRetriever = x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
-        // then
-        assert(mediaMetadataRetriever is MediaMetadataRetriever)
-        assertTrue(
-            (mediaMetadataRetriever?.extractMetadata(
-                MediaMetadataRetriever.METADATA_KEY_DURATION
-            )?.toLong() ?: 0) > 0
-        )
-    }
-
-    @Test
-    fun loadVideoMediaMetadataRetriever_invalidVideoUri_returnsNull() {
-        // given
-        val videoUri = Uri.EMPTY
-        // when
-        val mediaMetadataRetriever = x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
-        // then
-        assertNull(mediaMetadataRetriever)
-    }
-
     @Test
     fun extractFrameTensorsFromVideo_validMediaMetadataRetriever_returnsTensors() {
         // given
         val videoUri = getSampleVideoUri("Hagrid/test_palm_video.mp4")
-        val mediaMetadataRetriever = x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
+        val mediaMetadataRetriever = mediaDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         // when
         val inputVideoFrameTensors = x3dDataSourceImpl
             .extractFrameTensorsFromVideo(mediaMetadataRetriever!!)
@@ -176,7 +150,7 @@ class X3dDataSourceImplTest {
     fun extractFrameTensorsFromVideo_errorOnLoadingVideo_returnsNull() {
         // given
         val videoUri = getSampleVideoUri("Hagrid/test_palm_video.mp4")
-        val mediaMetadataRetriever = x3dDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
+        val mediaMetadataRetriever = mediaDataSourceImpl.loadVideoMediaMetadataRetriever(videoUri)
         mockkObject(mediaMetadataRetriever!!)
         every {
             mediaMetadataRetriever.getFrameAtTime(any(), any())
