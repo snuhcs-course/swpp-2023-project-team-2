@@ -76,9 +76,6 @@ class LoginPageTest {
         // Assuming an error message is shown when username is invalid
         composeTestRule.onNodeWithText(CustomError.NOT_FOUND.body(), useUnmergedTree = true)
             .assertIsDisplayed()
-        // reset the error message
-        composeTestRule.onNodeWithText("확인")
-            .performClick()
     }
 
     @Test
@@ -97,14 +94,6 @@ class LoginPageTest {
         composeTestRule.onNodeWithText(CustomError.UNAUTHORIZED.body(),
             useUnmergedTree = true, substring = true, ignoreCase = true)
             .assertIsDisplayed()
-//        // reset error state
-//        composeTestRule.onNodeWithText("확인")
-//            .performClick()
-//        composeTestRule.waitForIdle()
-//        composeTestRule.onNodeWithText("Username")
-//            .performTextClearance()
-//        composeTestRule.onNodeWithText("Password")
-//            .performTextClearance()
     }
 
     // @Test
@@ -128,7 +117,7 @@ class LoginPageTest {
         composeTestRule.waitUntilExactlyOneExists(hasText("로그인"))
     }
 
-//    @Test
+    // @Test
     fun registerButton_Clicked_ShowsSignUpPage(){
         composeTestRule.onNodeWithTag("RegisterButton")
             .performClick()
@@ -140,7 +129,7 @@ class LoginPageTest {
             .assertIsDisplayed()
     }
 
-//     @Test
+    // @Test
     // TODO: Not implemented yet
     fun guestModeButton_Clicked_ShowsFeedPage(){
         composeTestRule.onNodeWithText("비회원")
