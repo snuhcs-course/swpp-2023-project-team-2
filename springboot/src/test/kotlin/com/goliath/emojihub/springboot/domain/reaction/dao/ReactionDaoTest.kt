@@ -62,6 +62,12 @@ internal class ReactionDaoTest {
             for (reaction in testDto.reactionList) {
                 testDB.collection(REACTION_COLLECTION_NAME.string).document(reaction.id).set(reaction)
             }
+            var docs = testDB.collection(REACTION_COLLECTION_NAME.string).get().get().documents
+            var a = 1
+            while (docs.size != testDto.reactionList.size && a <= 5) {
+                docs = testDB.collection(REACTION_COLLECTION_NAME.string).get().get().documents
+                a++
+            }
         }
     }
 

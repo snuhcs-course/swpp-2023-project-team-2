@@ -3,6 +3,7 @@ package com.goliath.emojihub.repositories.remote
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import com.goliath.emojihub.data_sources.ApiErrorController
 import com.goliath.emojihub.data_sources.api.ClipApi
 import com.goliath.emojihub.data_sources.local.MediaDataSource
 import com.goliath.emojihub.mockLogClass
@@ -12,6 +13,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -27,7 +29,8 @@ import retrofit2.Response
 class ClipRepositoryImplTest {
     private val clipApi = mockk<ClipApi>()
     private val mediaDataSource = mockk<MediaDataSource>()
-    private val clipRepositoryImpl = ClipRepositoryImpl(clipApi, mediaDataSource)
+    private val errorController = spyk<ApiErrorController>()
+    private val clipRepositoryImpl = ClipRepositoryImpl(clipApi, mediaDataSource, errorController)
 
     private val fakeJSONMap = hashMapOf<String, Any?>(
         "like" to "U+1F44D",

@@ -65,6 +65,12 @@ internal class PostDaoTest {
             for (post in testDto.postList) {
                 testDB.collection(POST_COLLECTION_NAME.string).document(post.id).set(post)
             }
+            var docs = testDB.collection(POST_COLLECTION_NAME.string).get().get().documents
+            var a = 1
+            while (docs.size != testDto.postList.size && a <= 5) {
+                docs = testDB.collection(POST_COLLECTION_NAME.string).get().get().documents
+                a++
+            }
         }
     }
 
@@ -124,8 +130,12 @@ internal class PostDaoTest {
         val index = 1
         val count = testDto.postSize
         val postListForUser = mutableListOf<PostDto>()
-        postListForUser.add(postList[1])
-        postListForUser.add(postList[0])
+        for (post in testDto.postList) {
+            if (post.created_by == username) {
+                postListForUser.add(post)
+            }
+        }
+        postListForUser.sortByDescending { it.created_at }
         Mockito.`when`(db.collection(POST_COLLECTION_NAME.string))
             .thenReturn(testDB.collection(POST_COLLECTION_NAME.string))
 

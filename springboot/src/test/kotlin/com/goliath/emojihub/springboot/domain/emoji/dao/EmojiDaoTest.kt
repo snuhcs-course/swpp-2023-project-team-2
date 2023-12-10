@@ -79,6 +79,12 @@ internal class EmojiDaoTest {
             for (emoji in testDto.emojiList) {
                 testDB.collection(EMOJI_COLLECTION_NAME.string).document(emoji.id).set(emoji)
             }
+            var docs = testDB.collection(EMOJI_COLLECTION_NAME.string).get().get().documents
+            var a = 1
+            while (docs.size != testDto.emojiList.size && a <= 5) {
+                docs = testDB.collection(EMOJI_COLLECTION_NAME.string).get().get().documents
+                a++
+            }
         }
     }
 
@@ -236,6 +242,13 @@ internal class EmojiDaoTest {
         testDB.collection(EMOJI_COLLECTION_NAME.string)
             .document(emojiId)
             .set(emojiList[3])
+        result = emojiDao.existsEmoji(emojiId)
+        var b = 1
+        while (!result && b <= 5) {
+            result = emojiDao.existsEmoji(emojiId)
+            b++
+        }
+        assertEquals(result, true)
     }
 
     @Test

@@ -64,6 +64,12 @@ internal class UserDaoTest {
             for (user in testDto.userList) {
                 testDB.collection(USER_COLLECTION_NAME.string).document(user.username).set(user)
             }
+            var docs = testDB.collection(USER_COLLECTION_NAME.string).get().get().documents
+            var a = 1
+            while (docs.size != testDto.userList.size && a <= 5) {
+                docs = testDB.collection(USER_COLLECTION_NAME.string).get().get().documents
+                a++
+            }
         }
     }
 
