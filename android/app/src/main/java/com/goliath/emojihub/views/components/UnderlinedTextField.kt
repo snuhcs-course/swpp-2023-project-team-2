@@ -8,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
@@ -32,7 +31,6 @@ fun UnderlinedTextField(
             )
         },
         modifier = Modifier
-            .testTag(placeholder+"Field")
             .onFocusChanged { it.isFocused }
             .fillMaxWidth(),
         keyboardActions = KeyboardActions(
