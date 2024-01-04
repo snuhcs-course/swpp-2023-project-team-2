@@ -1,4 +1,4 @@
-pytorchvideo/* linguist-vendored
+pytorchvideo/** linguist-vendored
 pytorchvideo/pytorchvideo/data/hagrid.py linguist-vendored=false
 pytorchvideo/tutorials/accelerator/Use_PytorchVideo_Accelerator_Model_Zoo.ipynb linguist-vendored=false
 pytorchvideo/tutorials/video_classification_example/train_x3d_hagrid.py linguist-vendored=false
